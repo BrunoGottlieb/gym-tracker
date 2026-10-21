@@ -54,7 +54,7 @@ export function validateState(value: unknown): value is AppState {
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
-  if (value.routineRevision !== undefined && !integer(value.routineRevision, 9)) return false;
+  if (value.routineRevision !== undefined && !integer(value.routineRevision, 10)) return false;
   if (typeof value.routineRevision === 'number' && value.routineRevision >= 5 && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;
   return object(p) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';

@@ -131,5 +131,33 @@ export function migrateState(original: AppState): AppState {
     if (state.active?.workoutId === 'd') state.active.exercises = groupTriceps(state.active.exercises, e => e.exerciseId);
     state.routineRevision = 9;
   }
+  if ((state.routineRevision ?? 0) < 10) {
+    for (const workout of state.workouts) for (const exercise of workout.exercises) {
+      if (exercise.id === 'overhead-extension' && exercise.name === 'Tríceps acima da cabeça na polia') exercise.name = 'Tríceps francês na polia';
+    }
+    if (state.active) for (const log of state.active.exercises) {
+      if (log.exerciseId === 'overhead-extension' && log.name === 'Tríceps acima da cabeça na polia') log.name = 'Tríceps francês na polia';
+    }
+    const workout = state.workouts.find(w => w.id === 'a');
+    if (workout?.exercises.some(e => e.id === articulatedChestPress.id)) {
+      workout.exercises = workout.exercises.filter(e => e.id !== articulatedChestPress.id);
+      if (!workout.exercises.some(e => e.id === parallelBarDips.id)) {
+        const firstTriceps = workout.exercises.findIndex(e => getMuscle(e) === 'triceps');
+        workout.exercises.splice(firstTriceps < 0 ? workout.exercises.length : firstTriceps, 0, { ...parallelBarDips });
+      }
+      if (state.active?.workoutId === workout.id) {
+        state.active.exercises = state.active.exercises.filter(e => e.exerciseId !== articulatedChestPress.id || e.done.some(Boolean));
+        if (!state.active.exercises.some(e => e.exerciseId === parallelBarDips.id)) {
+          const firstTriceps = state.active.exercises.findIndex(e => getMuscle(e) === 'triceps');
+          state.active.exercises.splice(firstTriceps < 0 ? state.active.exercises.length : firstTriceps, 0, {
+            exerciseId: parallelBarDips.id, name: parallelBarDips.name, image: parallelBarDips.image,
+            target: parallelBarDips.target, kind: parallelBarDips.kind, muscle: 'triceps',
+            weight: weights[parallelBarDips.id] ?? 0, done: [false, false, false],
+          });
+        }
+      }
+    }
+    state.routineRevision = 10;
+  }
   return state;
 }

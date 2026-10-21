@@ -22,7 +22,7 @@ export function getMuscle(exercise: { id?: string; exerciseId?: string; muscle?:
 }
 export const imageNames: Record<number, string> = {
   0: 'Supino reto', 1: 'Supino na máquina (anterior)', 2: 'Peck deck', 3: 'Tríceps corda',
-  4: 'Tríceps acima da cabeça', 5: 'Halter / personalizado', 6: 'Barra fixa (anterior)',
+  4: 'Tríceps francês na polia', 5: 'Halter / personalizado', 6: 'Barra fixa (anterior)',
   7: 'Remada baixa', 8: 'Remada articulada (anterior)', 9: 'Pulldown', 10: 'Rosca Scott',
   11: 'Rosca martelo (anterior)', 12: 'Leg press', 13: 'Extensora', 14: 'Flexora',
   15: 'Stiff', 16: 'Panturrilha', 17: 'Elevação de joelhos', 18: 'Desenvolvimento',

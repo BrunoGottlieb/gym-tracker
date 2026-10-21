@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createInitialState } from './data';
+import { articulatedChestPress, createInitialState } from './data';
 import { createBackup, createSession, parseBackup, validateState } from './domain';
 import { migrateState } from './migrations';
 
@@ -58,7 +58,7 @@ describe('existing installation upgrades', () => {
   });
   it('upgrades previous-version backups and includes personal notes and muscle metadata in new backups', () => {
     const state = parseBackup(createBackup(legacyState()));
-    expect(state.routineRevision).toBe(9);
+    expect(state.routineRevision).toBe(10);
     expect(state.workouts[1].exercises[0].muscle).toBe('back');
     state.exerciseNotes = { 'bench-press': 'Banco na posição 3' };
     expect(parseBackup(createBackup(state))).toEqual(state);
@@ -77,7 +77,7 @@ describe('existing installation upgrades', () => {
     old.weights['bench-press'] = 0;
     expect(migrateState(old).weights['bench-press']).toBe(0);
   });
-  it('sets three series everywhere and adds the chest press exactly once, without changing past sessions', () => {
+  it('sets three series everywhere and applies the current chest routine without changing past sessions', () => {
     const old = legacyState();
     old.workouts[0].exercises.find(e => e.id === 'pec-deck')!.sets = 2;
     const completed = createSession(old.workouts[0], old.weights, 1000);
@@ -88,12 +88,42 @@ describe('existing installation upgrades', () => {
     old.active.exercises.find(e => e.exerciseId === 'pec-deck')!.done = [true, false];
     const next = migrateState(old);
     expect(next.workouts.every(w => w.exercises.every(e => e.sets === 3))).toBe(true);
-    expect(next.workouts[0].exercises.find(e => e.id === 'articulated-chest-press')?.muscle).toBe('chest');
-    expect(next.active?.exercises.find(e => e.exerciseId === 'articulated-chest-press')?.done).toEqual([false, false, false]);
+    expect(next.workouts[0].exercises.some(e => e.id === 'articulated-chest-press')).toBe(false);
+    expect(next.workouts[0].exercises.filter(e => e.id === 'parallel-bar-dips')).toHaveLength(1);
+    expect(next.active?.exercises.find(e => e.exerciseId === 'parallel-bar-dips')?.done).toEqual([false, false, false]);
     expect(next.active?.exercises.find(e => e.exerciseId === 'pec-deck')?.done).toEqual([true, false, false]);
     expect(next.history[0].exercises.find(e => e.exerciseId === 'pec-deck')?.done).toEqual([true, true]);
     expect(migrateState(next)).toEqual(next);
     expect(validateState(next)).toBe(true);
+  });
+  it.each([false, true])('replaces the chest machine with shared dips while preserving performed machine sets (%s)', performed => {
+    const old = createInitialState();
+    old.routineRevision = 9;
+    const workout = old.workouts[0];
+    workout.exercises = workout.exercises.filter(e => e.id !== 'parallel-bar-dips');
+    workout.exercises.splice(2, 0, { ...articulatedChestPress });
+    workout.exercises.find(e => e.id === 'overhead-extension')!.name = 'Tríceps acima da cabeça na polia';
+    old.weights = { 'articulated-chest-press': 55, 'parallel-bar-dips': 10, 'overhead-extension': 15 };
+    old.active = createSession(workout, old.weights);
+    old.active.exercises.find(e => e.exerciseId === articulatedChestPress.id)!.done[0] = performed;
+    const past = { ...structuredClone(old.active), finishedAt: old.active.startedAt + 60000 };
+    old.history = [past];
+    const next = migrateState(old);
+    expect(next.workouts[0].exercises.map(e => e.id)).toEqual(['bench-press', 'incline-machine', 'pec-deck', 'parallel-bar-dips', 'rope-pushdown', 'overhead-extension']);
+    expect(next.active?.exercises.some(e => e.exerciseId === articulatedChestPress.id)).toBe(performed);
+    expect(next.active?.exercises.filter(e => e.exerciseId === 'parallel-bar-dips')).toHaveLength(1);
+    expect(next.active?.exercises.find(e => e.exerciseId === 'parallel-bar-dips')?.weight).toBe(10);
+    expect(next.active?.exercises.find(e => e.exerciseId === 'overhead-extension')).toMatchObject({ name: 'Tríceps francês na polia', weight: 15 });
+    expect(next.weights).toEqual(old.weights);
+    expect(next.history).toEqual([past]);
+    expect(validateState(next)).toBe(true);
+    expect(migrateState(next)).toEqual(next);
+  });
+  it('preserves a custom overhead-extension name', () => {
+    const old = createInitialState();
+    old.routineRevision = 9;
+    old.workouts[0].exercises.find(e => e.id === 'overhead-extension')!.name = 'Meu francês personalizado';
+    expect(migrateState(old).workouts[0].exercises.find(e => e.id === 'overhead-extension')?.name).toBe('Meu francês personalizado');
   });
   it('replaces stiff and knee raises with two abdominal exercises while preserving old history and loads', () => {
     const old = legacyState();

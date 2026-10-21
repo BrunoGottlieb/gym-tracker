@@ -11,10 +11,10 @@ export const initialWorkouts: Workout[] = [
   { id: 'a', name: 'Peito + tríceps', day: 1, image: 0, exercises: [
     exercise('bench-press', 'Supino reto com barra', 3, '6–10', 0),
     exercise('incline-machine', 'Supino inclinado com barra', 3, '8–12', 30),
-    { ...articulatedChestPress },
     exercise('pec-deck', 'Peck deck (voador)', 3, '10–15', 2),
+    { ...parallelBarDips },
     exercise('rope-pushdown', 'Tríceps na polia com corda', 3, '10–15', 3),
-    exercise('overhead-extension', 'Tríceps acima da cabeça na polia', 3, '10–15', 4),
+    exercise('overhead-extension', 'Tríceps francês na polia', 3, '10–15', 4),
   ] },
   { id: 'b', name: 'Costas + bíceps', day: 2, image: 26, exercises: [
     exercise('lat-pulldown', 'Puxada alta (pulley)', 3, '8–12', 26),
@@ -52,7 +52,7 @@ export const initialWorkouts: Workout[] = [
 
 export function createInitialState(): AppState {
   return {
-    version: 1, routineRevision: 9, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, routineRevision: 10, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };
