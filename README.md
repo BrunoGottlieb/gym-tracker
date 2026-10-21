@@ -1,0 +1,110 @@
+# Gym Tracker
+
+A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
+
+## Included
+
+- Five editable workouts seeded from the supplied routine.
+- Local illustrated exercise library, bundled for offline access.
+- One load per exercise, with independent set completion buttons on one row.
+- Load memory between sessions, resumable active workout, progress and session history.
+- Clickable exercise illustrations in the workout, progression and history, with an enlarged viewer and additional zoom. Workout covers always open the workout directly.
+- Named primary muscle group badges, editable in each exercise.
+- A weekly calendar on the home screen and monthly calendar in history show the actual workouts performed on each local date, with chest/back/legs/shoulders markers and clickable daily records. Suggested weekdays never restrict which workout can be completed.
+- Load progression per exercise: current remembered load, last completed session, personal maximum, date-based graph and session list. Unperformed exercises are excluded from progression.
+- Personal machine/bank setup notes in the illustration viewer, saved per exercise and included in backups.
+- Rest timer with 60/90/120/180 second presets, pause, resume, restart, and +30 seconds. A timestamp is used so backgrounding or reloading does not reset the countdown.
+- Optional automatic rest after completing a set and an optional sound when the open app notices the timer has ended.
+- Editing workout names, weekdays, exercise order, targets, rest times, exercise type, muscle group and illustration. Every exercise has three series. New exercises can be added and removed.
+- Versioned JSON backup export, strict validation, and confirmed replacement on import.
+- Installable PWA, with local images and application assets cached after the first successful online visit.
+- GitHub Actions workflow for free GitHub Pages hosting, including repository subdirectory paths.
+
+Per-set weights and actual repetition entry are intentionally omitted in favor of the approved simplified design. Targets remain visible; timed calisthenics exercises show their target in seconds. Body measurements are outside this version. Progress graphs show recorded loads, not estimated strength or training recommendations.
+
+## Development
+
+No development software is required on the user's phone. Development/build commands can be run in GitHub Codespaces or another cloud environment. This checkout was built with the runtime already provided by Codex; no system-wide Node or editor installation is needed.
+
+```sh
+pnpm install
+pnpm dev
+pnpm test
+pnpm build
+pnpm preview
+```
+
+Use Node 24 and pnpm 11. `pnpm-lock.yaml` pins the resolved dependency graph. Only the esbuild build script is allowed by `pnpm-workspace.yaml`.
+
+`BASE_PATH` defaults to `/`. Set it to `/repository-name/` when building for a GitHub Pages project URL. Application images, service worker scope, manifest, icons, and generated assets use this base. The Pages workflow computes it automatically.
+
+## GitHub Pages deployment
+
+1. Put this project in a dedicated GitHub repository.
+2. In **Settings → Pages**, choose **GitHub Actions** as the build/deployment source.
+3. Push to `main` or `master`, or dispatch **Deploy Gym Tracker to GitHub Pages**.
+4. Open the URL returned by the deployment. On Android Chrome, use **Install app** or **Add to Home screen**.
+
+Repository: https://github.com/BrunoGottlieb/gym-tracker
+
+Public application URL: https://brunogottlieb.github.io/gym-tracker/
+
+The Pages workflow publishes the current `main` branch after its tests and build pass. No paid service, account system, or backend is used. Personal loads and session history stay in the device's IndexedDB and are not committed to the repository.
+
+## Data and offline behavior
+
+Data lives in IndexedDB under the origin of the installed app. New workouts begin with **0 kg**, since initial loads have not been supplied. Zero can also represent bodyweight with no additional load. The last entered load is reused the next time an exercise is opened. Completing a partial workout saves only the sets actually marked; unmarked sets stay visible as incomplete in history.
+
+Writes are queued in order and persistence failures are displayed. The app keeps the in-memory state available for backup export when a write fails. Finishing a session preserves snapshots of exercise names and loads, so editing a routine later does not rewrite historical records.
+
+Changing the hosting origin, clearing browser data, uninstalling in some browsers, or device storage pressure can remove access to local data. Export regular JSON backups from **Ajustes → Seus dados**. Import validates the full schema and asks before replacing existing records. A backup includes the current session and rest timer.
+
+Service worker activation is offered as an explicit update. Offline assets become available after the worker finishes its first cache. Sound is optional and subject to browser policies; an OS notification or alarm while the app is closed is not guaranteed. Countdown timing is recomputed on reopening.
+
+## Validation
+
+`pnpm test` checks timer timestamps, completion/snapshot behavior, corrupt or incompatible backups, and IndexedDB persistence with fake-indexeddb. `pnpm build` typechecks and produces the production PWA.
+
+`scripts/smoke-test.cjs` exercises the production app in a real browser: mobile layout, one load per exercise, completion persistence, reload, timer pause/resume, history, backup restoration and offline reload. It expects a preview at `http://127.0.0.1:4173` (override `APP_URL`) and an existing Playwright Chromium installation. `PLAYWRIGHT_MODULE` and `CHROME_PATH` can point to an already-provided runtime/browser, without installing a new browser.
+
+## Illustrations
+
+`assets/exercise-atlas.png` is the source illustration sheet generated with the built-in image generation tool for this project. `public/images/` contains the individual optimized WebP tiles. No remote images are needed at runtime. The illustrations are visual identifiers, not technical instruction for exercise execution.
+
+Generation brief: “A six-column, five-row exercise illustration atlas, consistent sage green sportswear, cream background, thin charcoal outlines, one illustrated exercise per tile, no labels or photos; exercises in the same order as the seeded five-day routine.”
+
+Source responsibilities: `data.ts` seeds editable routines; `domain.ts` handles validation, timing and session snapshots; `storage.ts` owns IndexedDB; `App.tsx` renders the application and queues state changes; `styles.css` controls the responsive light design.
+
+## Version 1.1 updates
+
+The corrected routine uses barbell incline bench press, pulley instead of pullups, chest-supported Hammer row, and a low-cable rope curl instead of dumbbell hammer curls. Tuesday and Friday pulley entries share a canonical exercise ID and remembered load. Replacing a distinct exercise does not import the old exercise's weight automatically. Archived exercise records remain browsable in **Evolução**.
+
+Every current exercise has exactly three series, including custom exercises. An exercise row turns pale green as soon as all three are marked, and returns to normal when one is unmarked. A workout cover turns green and shows **Concluído** after a fully completed session is finalized on that local date; finishing a partial session does not mark the whole workout complete.
+
+The chest day also includes **Supino articulado na máquina**, a seated chest press with independent machine levers. The leg day contains four leg exercises followed by **Abdominal no banco declinado** (head below feet, lying on the back) and **Abdominal militar (TAF)** (traditional bent-knee sit-up with feet on the floor). Stiff and hanging knee raises are removed from the current leg plan. Historical performed exercises and their recorded loads are retained.
+
+The Thursday workout replaces the machine shoulder press with **Dips livres nas paralelas**. Dips are labeled as triceps, use three series, and store additional external load (0 kg means bodyweight alone). The old shoulder press load remains in storage and historical records; it is not copied to the dips load. The workout cover uses the new dips illustration.
+
+Friday is now **Costas + bíceps**, with pulley, Hammer row, low cable row, straight-arm pulldown and two biceps exercises. Front lever and L-sit are removed from the current gym routine; no new home routine is created automatically. Historical calisthenics sessions remain available. Back exercises reused on different days share their existing load memory and progression.
+
+The Friday cover intentionally uses the dips illustration, as requested, without adding dips to Friday's exercise list. In the shoulders/chest/triceps workout, dips and bar triceps pushdown are consecutive at the end, after the shoulder and chest movements. Existing active session logs are reordered by identity without changing load or completed-series data; historical session ordering is retained.
+
+Primary muscle markers use custom local anatomical SVGs for chest, back, legs and shoulders, with the relevant muscle regions filled. The same markers are reused in exercise badges, the weekly strip, monthly calendar and legend. Text labels remain alongside the icons.
+
+The home weekday is a suggestion only. Any selected workout can be completed on any day. Calendar records are derived from each saved session's actual local finish date and historical exercise snapshots, so editing the weekly plan does not move previous records. Multiple sessions on a date remain separately accessible. Completed whole-workout green states are independent of the suggested weekday. Partial sessions appear in the calendar with their actual completed set count.
+
+`migrations.ts` upgrades existing installations and old version-1 backups without resetting loads or historical session snapshots. Known original entries are renamed; custom names remain untouched. Current plans and active sessions are normalized to three series; the past series counts in history remain unchanged. Already performed replaced exercises in an active session retain their snapshot, while unstarted removed exercises are replaced. New exercises are added to an ongoing matching session. The incline and Hammer corrections keep their existing identities because they clarify the exercise the user already intended. Tuesday and Friday Hammer rows share the same remembered load, notes and progression; the older Friday identifier remains readable.
+
+`catalog.ts` supplies named muscle groups and the image catalog. `progression.ts` derives chronologically ordered session loads; `ProgressionView.tsx` draws the graph and current load library. A current load is saved immediately, even when that session has not been completed. Historical graph points are added only when a session is finished with at least one completed series for that exercise.
+
+Additional local illustration sources: `assets/incline-barbell.png`, `assets/hammer-row.png`, `assets/rope-curl.png`. Optimized, offline-cached versions are `public/images/exercise-30.webp`, `exercise-31.webp`, and `exercise-32.webp`.
+
+Further local sources: `assets/articulated-chest-press.png`, `assets/decline-situp.png`, `assets/military-situp.png`, optimized to `public/images/exercise-33.webp`, `exercise-34.webp`, and `exercise-35.webp`.
+
+`assets/parallel-bar-dips.png` is optimized to `public/images/exercise-36.webp`. Prompt: “Free bodyweight triceps dips, adult athlete in sage sportswear supported on two simple parallel bars, near-upright torso, elbows around 90 degrees, knees bent behind with feet off the floor, complete station visible, flat illustration with cream background, no labels or photos.”
+
+The incomplete preacher-curl bar illustration was replaced in `public/images/exercise-10.webp`, so the correction also appears when viewing previous session images. Source: `assets/preacher-curl-corrected.png`. Built-in image editing prompt: “Front three-quarter preacher curl, both upper arms on the pad, complete symmetrical EZ bar centered in both hands, both ends fully visible with matching round weight plates on the left and right, preserve the sage/cream flat illustration style.”
+
+These illustrations were made with the built-in image generation tool. Shared prompt: “One full-body flat editorial fitness illustration matching the original sage sportswear, charcoal equipment and cream backdrop, thin outlines, no text or photographs, all equipment in frame.” Individual prompts: “Incline free-barbell bench press, visible 30-degree backrest and barbell rack”; “Seated plate-loaded Hammer row with chest supported and elbows drawn backward”; “Standing low-cable rope biceps curl at a crossover station, cable rising from floor to hands.”
+
+Additional prompts: “Seated articulated chest press, pushing two independent machine handles forward at chest height”; “Supine decline-bench abdominal sit-up with feet secured at the high end and head at the low end”; “Traditional military sit-up, feet planted, knees bent, arms across chest, torso lifting toward knees.”
