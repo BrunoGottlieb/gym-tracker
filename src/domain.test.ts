@@ -1,8 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
-import { createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds } from './domain';
+import { beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds } from './domain';
 
 describe('workout sessions', () => {
+  it('starts on the selected series with remembered load and automatic rest', () => {
+    const state = createInitialState();
+    state.weights['lat-pulldown'] = 30;
+    state.preferences.autoRest = true;
+    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 1 }, 1000);
+    expect(state.active).toBeNull();
+    expect(next.active?.exercises[0]).toMatchObject({ weight: 30, done: [false, true, false] });
+    expect(next.active?.startedAt).toBe(1000);
+    expect(next.timer).toMatchObject({ endAt: 91000, started: true, exercise: 'Puxada alta (pulley)' });
+  });
+  it('replaces a session only when explicitly called without mutating its original state or history', () => {
+    const state = createInitialState();
+    state.weights['bench-press'] = 45;
+    state.active = createSession(state.workouts[0], state.weights, 1000);
+    state.active.exercises[0].done[0] = true;
+    const original = structuredClone(state);
+    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 2 }, 2000);
+    expect(state).toEqual(original);
+    expect(next.active?.workoutId).toBe('b');
+    expect(next.active?.exercises[0].done).toEqual([false, false, true]);
+    expect(next.weights).toEqual(original.weights);
+    expect(next.history).toEqual(original.history);
+    expect(next.timer.endAt).toBeNull();
+  });
   it('uses one remembered load per exercise and independent completion for every planned set', () => {
     const state = createInitialState();
     const session = createSession(state.workouts[0], { 'bench-press': 42.5 });

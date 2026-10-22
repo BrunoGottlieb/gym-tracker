@@ -12,6 +12,18 @@ export function getProgress(session: Session) {
   const sets = session.exercises.flatMap(e => e.done);
   return { done: sets.filter(Boolean).length, total: sets.length };
 }
+/** Called only after starting a workout, or after the user confirms replacing a session. */
+export function beginWorkout(state: AppState, workout: Workout, firstSet?: { exerciseId: string; index: number }, now = Date.now()): AppState {
+  const active = createSession(workout, state.weights, now);
+  const exercise = workout.exercises.find(e => e.id === firstSet?.exerciseId);
+  const log = active.exercises.find(e => e.exerciseId === firstSet?.exerciseId);
+  const marked = !!(firstSet && log && Number.isInteger(firstSet.index) && firstSet.index >= 0 && firstSet.index < log.done.length);
+  if (marked) log!.done[firstSet!.index] = true;
+  const timer = marked && exercise && state.preferences.autoRest
+    ? { duration: exercise.rest, remaining: exercise.rest, endAt: now + exercise.rest * 1000, started: true, exercise: exercise.name }
+    : { ...state.timer, started: false, endAt: null, remaining: state.timer.duration };
+  return { ...state, active, timer };
+}
 export function timerSeconds(timer: RestTimer, now = Date.now()): number {
   return timer.endAt === null ? timer.remaining : Math.min(timer.remaining, Math.max(0, Math.ceil((timer.endAt - now) / 1000)));
 }

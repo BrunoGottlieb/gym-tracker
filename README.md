@@ -2,6 +2,18 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Browsing workouts while training
+
+The app always opens on the workout grid, including after reload or restoring a backup with an active session. Opening a card only previews its routine: it does not create or replace a session. A sticky banner on other pages shows the active workout, completed-series count and a return action. The active session retains its load snapshots, marked series and rest timer while other routines are viewed.
+
+Use **Iniciar treino**, or mark a series, to start a session. When another workout is active, the replacement confirmation appears only on these actions. Canceling preserves the original session. Confirming a series-triggered replacement starts the chosen workout and marks exactly that pending series, including automatic rest when enabled. Updating a remembered load in a different workout preview does not rewrite the active session's load snapshot, even for shared exercise IDs.
+
+The framing fixes in `assets/lateral-raise-corrected.png`, `assets/reverse-fly-corrected.png` and `assets/bar-pushdown-corrected.png` replace `public/images/exercise-19.webp`, `exercise-20.webp` and `exercise-23.webp`. Each now has a complete subject with clean edges, also in zoom and history. They were edited with the built-in image generation tool.
+
+Shared edit prompt (exercise name and subject substituted per image): “Edit this exercise illustration: [exercise name]. Correct the broken atlas crop: REMOVE the stray fragments from a different illustration at the BOTTOM edge. Reframe with the ENTIRE athlete, full head, both feet, both hands, relevant equipment and machine completely inside the picture with generous clean margins, nothing cut off at top or bottom. Subject: [subject]. Preserve the same single adult man, sage green tank top, dark green shorts, thin dark outlines, cream background and flat illustrated gym app style. No text, borders, diagrams, extra objects, duplicated body parts or fragments from other exercises. Keep its exercise unmistakable and make the corrected asset suitable for a rectangular app thumbnail.”
+
+Exact substitutions: “Standing dumbbell lateral raise” / “man facing front, both arms out sideways at shoulder height holding one complete dumbbell in each hand, both feet visible”; “Seated reverse pec deck rear delt fly” / “rear three-quarter view of man seated facing the machine chest pad, arms out gripping the two machine handles, full machine and both feet visible”; “Standing straight bar cable triceps pushdown” / “side view of man facing a cable machine, upper arms beside torso, both hands holding a complete straight bar near hips, taut high-pulley cable attached to middle of bar, full body including both feet visible”.
+
 ## Included
 
 - Five editable workouts seeded from the supplied routine.
