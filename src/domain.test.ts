@@ -1,8 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
-import { addSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
+import { addSessionSet, removeSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
 
 describe('workout sessions', () => {
+  it('removes the last pending series without losing completed series, loads, timer or history', () => {
+    const state = beginWorkout(createInitialState(), createInitialState().workouts[0]);
+    state.active!.exercises[0].done = [true, false, true, false, true];
+    state.active!.exercises[0].weight = 45;
+    state.weights['bench-press'] = 45;
+    state.timer = { duration: 90, remaining: 90, endAt: 91000, started: true, exercise: 'Supino' };
+    const original = structuredClone(state);
+    const next = removeSessionSet(state, 'bench-press');
+    expect(next.active?.exercises[0]).toMatchObject({ weight: 45, done: [true, false, true, true] });
+    expect(next.timer).toEqual(original.timer);
+    expect(next.history).toEqual(original.history);
+    expect(next.workouts).toEqual(original.workouts);
+    expect(state).toEqual(original);
+    expect(parseBackup(createBackup(next))).toEqual(next);
+  });
+  it('allows fewer than three series for this session and protects the final or completed series', () => {
+    const state = beginWorkout(createInitialState(), createInitialState().workouts[0], { exerciseId: 'bench-press', index: 0 });
+    const next = removeSessionSet(removeSessionSet(state, 'bench-press'), 'bench-press');
+    expect(next.active?.exercises[0].done).toEqual([true]);
+    expect(removeSessionSet(next, 'bench-press')).toBe(next);
+    expect(parseBackup(createBackup(next))).toEqual(next);
+    expect(createSession(next.workouts[0], next.weights).exercises[0].done).toHaveLength(3);
+    state.active!.exercises[0].done = [true, true, true];
+    expect(removeSessionSet(state, 'bench-press')).toBe(state);
+    const idle = createInitialState();
+    expect(removeSessionSet(idle, 'bench-press')).toBe(idle);
+  });
   it('preserves completed series, weight and timer when adding session-only series, including backups and history', () => {
     let state = createInitialState();
     state.weights['bench-press'] = 45;
@@ -113,7 +140,7 @@ describe('backups', () => {
     state.active.exercises[0].weight = -1;
     expect(() => parseBackup(createBackup(state))).toThrow();
     state.active.exercises[0].weight = 40;
-    state.active.exercises[0].done = [true];
+    state.active.exercises[0].done = [];
     expect(() => parseBackup(createBackup(state))).toThrow();
     state.active.exercises[0].done = [true, false, false];
     state.active.workoutId = 'missing';

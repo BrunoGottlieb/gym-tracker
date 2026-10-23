@@ -160,5 +160,6 @@ export function migrateState(original: AppState): AppState {
     state.routineRevision = 10;
   }
   if ((state.routineRevision ?? 0) < 11) state.routineRevision = 11;
+  if ((state.routineRevision ?? 0) < 12) state.routineRevision = 12;
   return state;
 }

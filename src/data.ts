@@ -52,7 +52,7 @@ export const initialWorkouts: Workout[] = [
 
 export function createInitialState(): AppState {
   return {
-    version: 1, routineRevision: 11, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, routineRevision: 12, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };

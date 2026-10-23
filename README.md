@@ -4,6 +4,8 @@ A personal, offline-first workout tracker with a light interface in Brazilian Po
 
 ## Extra series and rest vibration
 
+**−1** and **+1** are grouped below the horizontally scrolling series buttons, with 44 px touch targets so the controls remain accessible on narrow phones. −1 removes the last uncompleted series only, never a completed entry, and leaves at least one series. Unmark a completed series before removing it. The session may have fewer than the default three series; its count survives reload, backups and history while the next session still starts at three. Removing a series while browsing a different workout uses the existing confirmation before replacing the active session.
+
 Every exercise starts with three planned series. **+1** appends one uncompleted series to the current session only, preserving previous completion, load and timer. The added count survives reload and backup/restore, contributes to progress and remains in finished-session history. New sessions start from the usual three series. A horizontal series scroller keeps the page within the phone width, while the +1 button stays accessible; newly added series scroll into view. Session series are bounded at 100 per exercise for backup validation.
 
 Adding a series while previewing a different workout uses the same explicit replacement confirmation as starting a series. Canceling leaves the original session untouched. Confirming adds the extra series to the new session without marking any series done or starting automatic rest.

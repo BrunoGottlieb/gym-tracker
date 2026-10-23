@@ -22,6 +22,11 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Concluir série 4 de Supino reto com barra', exact: true }).click();
     for (let i = 0; i < 9; i++) await plus.click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
+    const minus = page.getByRole('button', { name: 'Remover série de Supino reto com barra', exact: true });
+    await minus.click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 12);
+    assert.equal(await page.getByRole('button', { name: 'Desmarcar série 4 de Supino reto com barra', exact: true }).getAttribute('aria-pressed'), 'true');
+    await plus.click();
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Extra series overflow at ${width}px`);
@@ -70,6 +75,16 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 3);
     await plus.click();
+    await minus.click();
+    await minus.click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 2);
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.reload();
+    await page.locator('.resume-banner').click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 2);
+    await minus.click();
+    assert.equal(await minus.isDisabled(), true);
+    await plus.click();
     await page.getByRole('button', { name: 'Treinos', exact: true }).click();
     await page.getByRole('button', { name: 'Abrir treino Costas + bíceps (B)', exact: true }).click();
     const otherPlus = page.getByRole('button', { name: 'Adicionar série de Puxada alta (pulley)', exact: true });
@@ -81,6 +96,14 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Descartar e trocar', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 4);
     assert.equal(await page.locator('.set-button[aria-pressed=true]').count(), 0);
+    await page.getByRole('button', { name: 'Treinos', exact: true }).click();
+    await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).click();
+    await minus.click();
+    await page.getByRole('button', { name: 'Descartar e trocar', exact: true }).click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 2);
+    await page.getByRole('button', { name: 'Concluir série 1 de Supino reto com barra', exact: true }).click();
+    await page.getByRole('button', { name: 'Concluir série 2 de Supino reto com barra', exact: true }).click();
+    assert.equal(await minus.isDisabled(), true);
     assert.deepEqual(errors, []);
   } finally { await context.close(); }
 }

@@ -4,6 +4,15 @@ import { migrateState } from './migrations';
 
 export const MAX_SESSION_SETS = 100;
 
+export function removeSessionSet(state: AppState, exerciseId: string): AppState {
+  if (!state.active) return state;
+  const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
+  if (!log || log.done.length <= 1) return state;
+  const index = log.done.lastIndexOf(false);
+  if (index < 0) return state;
+  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: e.done.filter((_, i) => i !== index) } : e) } };
+}
+
 export function addSessionSet(state: AppState, exerciseId: string): AppState {
   if (!state.active) return state;
   const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
@@ -70,12 +79,12 @@ export function validateState(value: unknown): value is AppState {
     if (!workout) return false;
     for (const log of active.exercises) {
       const current = workout.exercises.find(e => e.id === log.exerciseId);
-      if (current && ((typeof value.routineRevision === 'number' && value.routineRevision >= 11) ? log.done.length < current.sets : current.sets !== log.done.length)) return false;
+      if (current && ((typeof value.routineRevision === 'number' && value.routineRevision >= 12) ? log.done.length < 1 : (typeof value.routineRevision === 'number' && value.routineRevision >= 11) ? log.done.length < current.sets : current.sets !== log.done.length)) return false;
     }
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
-  if (value.routineRevision !== undefined && !integer(value.routineRevision, 11)) return false;
+  if (value.routineRevision !== undefined && !integer(value.routineRevision, 12)) return false;
   if (typeof value.routineRevision === 'number' && value.routineRevision >= 5 && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;
   return object(p) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';

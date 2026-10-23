@@ -58,7 +58,7 @@ describe('existing installation upgrades', () => {
   });
   it('upgrades previous-version backups and includes personal notes and muscle metadata in new backups', () => {
     const state = parseBackup(createBackup(legacyState()));
-    expect(state.routineRevision).toBe(11);
+    expect(state.routineRevision).toBe(12);
     expect(state.workouts[1].exercises[0].muscle).toBe('back');
     state.exerciseNotes = { 'bench-press': 'Banco na posição 3' };
     expect(parseBackup(createBackup(state))).toEqual(state);
