@@ -3,6 +3,88 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
+async function verifyExtraSeriesAndVibration(browser, base, output) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true });
+  await context.addInitScript(() => {
+    window.__testVibrations = [];
+    Object.defineProperty(navigator, 'vibrate', { configurable: true, value: pattern => { window.__testVibrations.push(pattern); return true; } });
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto(base);
+    await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).click();
+    const plus = page.getByRole('button', { name: 'Adicionar série de Supino reto com barra', exact: true });
+    await plus.click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 4);
+    await page.getByRole('button', { name: 'Concluir série 1 de Supino reto com barra', exact: true }).click();
+    await page.getByRole('button', { name: 'Concluir série 4 de Supino reto com barra', exact: true }).click();
+    for (let i = 0; i < 9; i++) await plus.click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Extra series overflow at ${width}px`);
+      assert.equal(await page.locator('.set-buttons').first().evaluate(el => el.scrollWidth > el.clientWidth), true);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('.set-buttons').first().evaluate(el => el.scrollTo({ left: el.scrollWidth, behavior: 'instant' }));
+    await page.screenshot({ path: path.join(output, 'extra-series-mobile.png'), animations: 'disabled' });
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.reload();
+    await page.getByRole('heading', { name: 'Seus treinos', exact: true }).waitFor();
+    await page.locator('.resume-banner').click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
+    assert.equal(await page.getByRole('button', { name: 'Desmarcar série 4 de Supino reto com barra', exact: true }).getAttribute('aria-pressed'), 'true');
+    await page.getByRole('button', { name: 'Abrir ajustes', exact: true }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Exportar backup', exact: true }).click();
+    const backupPath = path.join(output, 'extra-series-backup.json');
+    await (await downloadPromise).saveAs(backupPath);
+    const backup = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
+    assert.equal(backup.data.active.exercises[0].done.length, 13);
+    assert.equal(backup.data.workouts[0].exercises[0].sets, 3);
+    backup.data.preferences.sound = false;
+    backup.data.timer = { duration: 15, remaining: 15, endAt: Date.now() + 3000, exercise: 'Teste de descanso', started: true };
+    fs.writeFileSync(backupPath, JSON.stringify(backup));
+    await page.locator('input[type=file]').setInputFiles(backupPath);
+    await page.getByRole('button', { name: 'Substituir e restaurar', exact: true }).click();
+    await page.getByText('Descanso concluído. Bora para a próxima série!', { exact: true }).waitFor();
+    assert.deepEqual(await page.evaluate(() => window.__testVibrations), [180]);
+    await page.waitForTimeout(600);
+    assert.deepEqual(await page.evaluate(() => window.__testVibrations), [180]);
+    // Unsupported devices must still complete the timer and retain the session.
+    await page.evaluate(() => Object.defineProperty(navigator, 'vibrate', { configurable: true, value: undefined }));
+    backup.data.timer.endAt = Date.now() + 2000;
+    fs.writeFileSync(backupPath, JSON.stringify(backup));
+    await page.getByRole('button', { name: 'Abrir ajustes', exact: true }).click();
+    await page.locator('input[type=file]').setInputFiles(backupPath);
+    await page.getByRole('button', { name: 'Substituir e restaurar', exact: true }).click();
+    await page.getByText('Descanso concluído. Bora para a próxima série!', { exact: true }).waitFor();
+    await page.locator('.resume-banner').click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
+    await page.getByRole('button', { name: 'Finalizar treino', exact: true }).click();
+    await page.getByRole('button', { name: 'Salvar e finalizar', exact: true }).click();
+    assert.match(await page.locator('.history-row').first().textContent(), /2\/28 séries/);
+    await page.getByRole('button', { name: 'Treinos', exact: true }).click();
+    await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 3);
+    await plus.click();
+    await page.getByRole('button', { name: 'Treinos', exact: true }).click();
+    await page.getByRole('button', { name: 'Abrir treino Costas + bíceps (B)', exact: true }).click();
+    const otherPlus = page.getByRole('button', { name: 'Adicionar série de Puxada alta (pulley)', exact: true });
+    await otherPlus.click();
+    await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 3);
+    assert.match(await page.locator('.resume-banner').textContent(), /Peito/);
+    await otherPlus.click();
+    await page.getByRole('button', { name: 'Descartar e trocar', exact: true }).click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 4);
+    assert.equal(await page.locator('.set-button[aria-pressed=true]').count(), 0);
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true });
@@ -304,6 +386,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     assert.equal(await page.getByRole('textbox', { name: 'Carga de Remada Hammer com apoio para peito', exact: true }).inputValue(), '33');
     assert.equal(await page.getByRole('textbox', { name: 'Carga de Rosca corda no crossover', exact: true }).inputValue(), '0');
     assert.deepEqual(errors, []);
-    console.log('PASS: card navigation, exercise image zoom, notes, muscle groups, corrected routine, three-series completion, green states, load progression, current load memory, actual-date calendar and day records, persistence, legacy migrations, timer, backups, responsive layouts and offline reload.');
+    await verifyExtraSeriesAndVibration(browser, base, output);
+    console.log('PASS: workout browsing, completion, loads, history, backups, offline reload, extra-series persistence and horizontal scrolling, plus one-shot vibration and unsupported-browser fallback.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

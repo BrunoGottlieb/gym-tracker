@@ -1,8 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
-import { beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds } from './domain';
+import { addSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
 
 describe('workout sessions', () => {
+  it('preserves completed series, weight and timer when adding session-only series, including backups and history', () => {
+    let state = createInitialState();
+    state.weights['bench-press'] = 45;
+    state = beginWorkout(state, state.workouts[0], { exerciseId: 'bench-press', index: 0 }, 1000);
+    state.timer = { duration: 90, remaining: 90, endAt: 91000, started: true, exercise: 'Supino reto com barra' };
+    const previous = structuredClone(state);
+    state = addSessionSet(addSessionSet(state, 'bench-press'), 'bench-press');
+    expect(previous.active?.exercises[0].done).toEqual([true, false, false]);
+    expect(state.active?.exercises[0]).toMatchObject({ weight: 45, done: [true, false, false, false, false] });
+    expect(state.timer).toEqual(previous.timer);
+    expect(state.workouts).toEqual(previous.workouts);
+    expect(getProgress(state.active!)).toEqual({ done: 1, total: 20 });
+    expect(validateState(state)).toBe(true);
+    expect(parseBackup(createBackup(state))).toEqual(state);
+    const finished = finishSession(state, 2000);
+    expect(finished.history[0].exercises[0].done).toHaveLength(5);
+    expect(parseBackup(createBackup(finished))).toEqual(finished);
+    expect(createSession(finished.workouts[0], finished.weights).exercises[0].done).toHaveLength(3);
+  });
+  it('ignores extra-series requests without a matching active exercise', () => {
+    const state = createInitialState();
+    expect(addSessionSet(state, 'bench-press')).toBe(state);
+    state.active = createSession(state.workouts[0], {});
+    expect(addSessionSet(state, 'missing')).toBe(state);
+  });
   it('starts on the selected series with remembered load and automatic rest', () => {
     const state = createInitialState();
     state.weights['lat-pulldown'] = 30;

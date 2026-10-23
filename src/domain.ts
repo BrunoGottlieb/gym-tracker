@@ -2,6 +2,15 @@ import type { AppState, RestTimer, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, LAST_IMAGE_INDEX, muscleLabels } from './catalog';
 import { migrateState } from './migrations';
 
+export const MAX_SESSION_SETS = 100;
+
+export function addSessionSet(state: AppState, exerciseId: string): AppState {
+  if (!state.active) return state;
+  const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
+  if (!log || log.done.length >= MAX_SESSION_SETS) return state;
+  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: [...e.done, false] } : e) } };
+}
+
 export function createSession(workout: Workout, weights: Record<string, number>, now = Date.now()): Session {
   return {
     id: crypto.randomUUID(), workoutId: workout.id, workoutName: workout.name, startedAt: now,
@@ -40,7 +49,7 @@ const text = (value: unknown, max = 160): value is string => typeof value === 's
 const number = (value: unknown, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
 const integer = (value: unknown, max: number): value is number => number(value, max) && Number.isInteger(value);
 function validSession(value: unknown): value is Session {
-  return object(value) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= 12 && e.done.every(d => typeof d === 'boolean'));
+  return object(value) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
 }
 export function validateState(value: unknown): value is AppState {
   if (!object(value) || value.version !== 1 || !Array.isArray(value.workouts) || !value.workouts.length || value.workouts.length > 30) return false;
@@ -61,12 +70,12 @@ export function validateState(value: unknown): value is AppState {
     if (!workout) return false;
     for (const log of active.exercises) {
       const current = workout.exercises.find(e => e.id === log.exerciseId);
-      if (current && current.sets !== log.done.length) return false;
+      if (current && ((typeof value.routineRevision === 'number' && value.routineRevision >= 11) ? log.done.length < current.sets : current.sets !== log.done.length)) return false;
     }
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
-  if (value.routineRevision !== undefined && !integer(value.routineRevision, 10)) return false;
+  if (value.routineRevision !== undefined && !integer(value.routineRevision, 11)) return false;
   if (typeof value.routineRevision === 'number' && value.routineRevision >= 5 && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;
   return object(p) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';

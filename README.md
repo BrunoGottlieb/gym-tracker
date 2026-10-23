@@ -2,6 +2,14 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Extra series and rest vibration
+
+Every exercise starts with three planned series. **+1** appends one uncompleted series to the current session only, preserving previous completion, load and timer. The added count survives reload and backup/restore, contributes to progress and remains in finished-session history. New sessions start from the usual three series. A horizontal series scroller keeps the page within the phone width, while the +1 button stays accessible; newly added series scroll into view. Session series are bounded at 100 per exercise for backup validation.
+
+Adding a series while previewing a different workout uses the same explicit replacement confirmation as starting a series. Canceling leaves the original session untouched. Confirming adds the extra series to the new session without marking any series done or starting automatic rest.
+
+Rest completion requests one 180 ms vibration independently of optional sound, guarded for unavailable or blocked browser APIs. Existing end-time deduplication avoids repeated pulses. Physical vibration depends on device/browser support and settings; a web timer cannot guarantee an alarm while the app is closed or suspended. Unsupported devices still get the on-screen completion notice.
+
 ## Browsing workouts while training
 
 The app always opens on the workout grid, including after reload or restoring a backup with an active session. Opening a card only previews its routine: it does not create or replace a session. A sticky banner on other pages shows the active workout, completed-series count and a return action. The active session retains its load snapshots, marked series and rest timer while other routines are viewed.
@@ -27,7 +35,7 @@ Exact substitutions: “Standing dumbbell lateral raise” / “man facing front
 - Personal machine/bank setup notes in the illustration viewer, saved per exercise and included in backups.
 - Rest timer with 60/90/120/180 second presets, pause, resume, restart, and +30 seconds. A timestamp is used so backgrounding or reloading does not reset the countdown.
 - Optional automatic rest after completing a set and an optional sound when the open app notices the timer has ended.
-- Editing workout names, weekdays, exercise order, targets, rest times, exercise type, muscle group and illustration. Every exercise has three series. New exercises can be added and removed.
+- Editing workout names, weekdays, exercise order, targets, rest times, exercise type, muscle group and illustration. Every exercise starts with three series; extra series can be added within a session. New exercises can be added and removed.
 - Versioned JSON backup export, strict validation, and confirmed replacement on import.
 - Installable PWA, with local images and application assets cached after the first successful online visit.
 - GitHub Actions workflow for free GitHub Pages hosting, including repository subdirectory paths.
