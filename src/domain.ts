@@ -4,6 +4,11 @@ import { migrateState } from './migrations';
 
 export const MAX_SESSION_SETS = 100;
 
+export function toggleSeriesCompletion(done: boolean[], index: number): boolean[] {
+  if (!Number.isInteger(index) || index < 0 || index >= done.length) return done;
+  return done[index] ? done.map((value, i) => i === index ? false : value) : done.map((value, i) => i <= index || value);
+}
+
 export function removeSessionSet(state: AppState, exerciseId: string): AppState {
   if (!state.active) return state;
   const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
@@ -36,7 +41,7 @@ export function beginWorkout(state: AppState, workout: Workout, firstSet?: { exe
   const exercise = workout.exercises.find(e => e.id === firstSet?.exerciseId);
   const log = active.exercises.find(e => e.exerciseId === firstSet?.exerciseId);
   const marked = !!(firstSet && log && Number.isInteger(firstSet.index) && firstSet.index >= 0 && firstSet.index < log.done.length);
-  if (marked) log!.done[firstSet!.index] = true;
+  if (marked) log!.done = toggleSeriesCompletion(log!.done, firstSet!.index);
   const timer = marked && exercise && state.preferences.autoRest
     ? { duration: exercise.rest, remaining: exercise.rest, endAt: now + exercise.rest * 1000, started: true, exercise: exercise.name }
     : { ...state.timer, started: false, endAt: null, remaining: state.timer.duration };

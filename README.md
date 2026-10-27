@@ -4,6 +4,8 @@ A personal, offline-first workout tracker with a light interface in Brazilian Po
 
 ## Light blue interface
 
+Series completion is cumulative: tapping an uncompleted series marks it and every preceding series complete, for any session count. Tapping a completed series unmarks only that series, allowing corrections. This applies both to an ongoing workout and to the first series action that starts or confirms replacing a session. Batch completion triggers automatic rest once, and existing historical records are not rewritten.
+
 The interface follows the approved minimalist mockup: an almost-white canvas, navy typography, blue primary actions, soft white workout tiles and coral/mint/yellow/lilac identity badges. The weekly blue panel derives its completed-session count from actual local-week history and retains the existing date buttons and muscle markers; no demonstration statistics are shown. Completed exercises and workout tiles remain pale green.
 
 `src/theme.css` applies the shared visual system across training, progression, calendar, settings and dialogs without changing stored routines or data. Exercise illustrations, enlarged viewing, series adjustment, active-session browsing, rest controls and offline behavior remain available. The web page and installable app manifest share the new blue theme color.
@@ -22,7 +24,7 @@ Rest completion requests one 180 ms vibration independently of optional sound, g
 
 The app always opens on the workout grid, including after reload or restoring a backup with an active session. Opening a card only previews its routine: it does not create or replace a session. A sticky banner on other pages shows the active workout, completed-series count and a return action. The active session retains its load snapshots, marked series and rest timer while other routines are viewed.
 
-Use **Iniciar treino**, or mark a series, to start a session. When another workout is active, the replacement confirmation appears only on these actions. Canceling preserves the original session. Confirming a series-triggered replacement starts the chosen workout and marks exactly that pending series, including automatic rest when enabled. Updating a remembered load in a different workout preview does not rewrite the active session's load snapshot, even for shared exercise IDs.
+Use **Iniciar treino**, or mark a series, to start a session. When another workout is active, the replacement confirmation appears only on these actions. Canceling preserves the original session. Confirming a series-triggered replacement starts the chosen workout and marks that pending series and all preceding series, including automatic rest when enabled. Updating a remembered load in a different workout preview does not rewrite the active session's load snapshot, even for shared exercise IDs.
 
 The framing fixes in `assets/lateral-raise-corrected.png`, `assets/reverse-fly-corrected.png` and `assets/bar-pushdown-corrected.png` replace `public/images/exercise-19.webp`, `exercise-20.webp` and `exercise-23.webp`. Each now has a complete subject with clean edges, also in zoom and history. They were edited with the built-in image generation tool.
 

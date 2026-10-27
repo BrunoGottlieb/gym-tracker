@@ -20,6 +20,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 4);
     await page.getByRole('button', { name: 'Concluir série 1 de Supino reto com barra', exact: true }).click();
     await page.getByRole('button', { name: 'Concluir série 4 de Supino reto com barra', exact: true }).click();
+    assert.equal(await page.locator('.exercise-row').first().locator('.set-button[aria-pressed=true]').count(), 4);
     for (let i = 0; i < 9; i++) await plus.click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
     const minus = page.getByRole('button', { name: 'Remover série de Supino reto com barra', exact: true });
@@ -70,7 +71,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 13);
     await page.getByRole('button', { name: 'Finalizar treino', exact: true }).click();
     await page.getByRole('button', { name: 'Salvar e finalizar', exact: true }).click();
-    assert.match(await page.locator('.history-row').first().textContent(), /2\/28 séries/);
+    assert.match(await page.locator('.history-row').first().textContent(), /4\/28 séries/);
     await page.getByRole('button', { name: 'Treinos', exact: true }).click();
     await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 3);
@@ -279,6 +280,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Concluir série 2 de Puxada alta (pulley)', exact: true }).click();
     await page.getByRole('button', { name: 'Descartar e trocar', exact: true }).click();
     assert.equal(await page.getByRole('button', { name: 'Desmarcar série 2 de Puxada alta (pulley)', exact: true }).getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.getByRole('button', { name: 'Desmarcar série 1 de Puxada alta (pulley)', exact: true }).getAttribute('aria-pressed'), 'true');
     assert.doesNotMatch(await page.locator('.exercise-list').textContent(), /front lever|L-sit|sustentação/i);
     assert.match(await page.locator('.exercise-list').textContent(), /Remada baixa na polia/);
     assert.match(await page.locator('.exercise-list').textContent(), /Pulldown com braços estendidos/);

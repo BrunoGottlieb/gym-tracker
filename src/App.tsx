@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CalendarDays, Check, ChevronRight, CircleCheck, CloudOff, Download, Dumbbell, History, Leaf, LayoutGrid, LoaderCircle, MoreHorizontal, Pause, Pencil, Play, Plus, RotateCcw, Settings, ShieldCheck, Timer, Trash2, TrendingUp, Upload, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { addSessionSet, removeSessionSet, MAX_SESSION_SETS, beginWorkout, createSession, finishSession, formatTime, getProgress, createBackup, parseBackup, timerSeconds } from './domain';
+import { toggleSeriesCompletion, addSessionSet, removeSessionSet, MAX_SESSION_SETS, beginWorkout, createSession, finishSession, formatTime, getProgress, createBackup, parseBackup, timerSeconds } from './domain';
 import { loadState, saveState } from './storage';
 import type { AppState, Exercise, ExerciseLog, MuscleGroup, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, imageNames, LAST_IMAGE_INDEX, muscleLabels, snapshotExercise } from './catalog';
@@ -163,7 +163,7 @@ export default function App() {
     commit(s => {
       if (!s.active) return s;
       const wasDone = s.active.exercises.find(e => e.exerciseId === exercise.id)!.done[index];
-      const active = { ...s.active, exercises: s.active.exercises.map(e => e.exerciseId === exercise.id ? { ...e, done: e.done.map((d, i) => i === index ? !d : d) } : e) };
+      const active = { ...s.active, exercises: s.active.exercises.map(e => e.exerciseId === exercise.id ? { ...e, done: toggleSeriesCompletion(e.done, index) } : e) };
       return { ...s, active, timer: !wasDone && s.preferences.autoRest ? { duration: exercise.rest, remaining: exercise.rest, endAt: Date.now() + exercise.rest * 1000, exercise: exercise.name, started: true } : s.timer };
     });
   }

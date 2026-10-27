@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
-import { addSessionSet, removeSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
+import { toggleSeriesCompletion, addSessionSet, removeSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
 
 describe('workout sessions', () => {
+  it.each([2, 3, 4, 13, 100])('completes every series up to the selected number, including %i-series sessions', count => {
+    const original = Array(count).fill(false);
+    const result = toggleSeriesCompletion(original, count - 1);
+    expect(result).toEqual(Array(count).fill(true));
+    expect(original).toEqual(Array(count).fill(false));
+    expect(toggleSeriesCompletion(result, count - 1)).toEqual([...Array(count - 1).fill(true), false]);
+  });
+  it('fills previous gaps without changing later marked series, and ignores an invalid index', () => {
+    const done = [false, false, false, false, true];
+    expect(toggleSeriesCompletion(done, 2)).toEqual([true, true, true, false, true]);
+    expect(toggleSeriesCompletion(done, -1)).toBe(done);
+    expect(toggleSeriesCompletion(done, 5)).toBe(done);
+  });
   it('removes the last pending series without losing completed series, loads, timer or history', () => {
     const state = beginWorkout(createInitialState(), createInitialState().workouts[0]);
     state.active!.exercises[0].done = [true, false, true, false, true];
@@ -61,7 +74,7 @@ describe('workout sessions', () => {
     state.preferences.autoRest = true;
     const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 1 }, 1000);
     expect(state.active).toBeNull();
-    expect(next.active?.exercises[0]).toMatchObject({ weight: 30, done: [false, true, false] });
+    expect(next.active?.exercises[0]).toMatchObject({ weight: 30, done: [true, true, false] });
     expect(next.active?.startedAt).toBe(1000);
     expect(next.timer).toMatchObject({ endAt: 91000, started: true, exercise: 'Puxada alta (pulley)' });
   });
@@ -74,7 +87,7 @@ describe('workout sessions', () => {
     const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 2 }, 2000);
     expect(state).toEqual(original);
     expect(next.active?.workoutId).toBe('b');
-    expect(next.active?.exercises[0].done).toEqual([false, false, true]);
+    expect(next.active?.exercises[0].done).toEqual([true, true, true]);
     expect(next.weights).toEqual(original.weights);
     expect(next.history).toEqual(original.history);
     expect(next.timer.endAt).toBeNull();
