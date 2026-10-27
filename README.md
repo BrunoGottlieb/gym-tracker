@@ -182,3 +182,7 @@ French triceps edit prompt: “Edit target: the attached exercise illustration. 
 Calf illustration edit prompt: “Precise object removal edit of this seated calf raise gym illustration. Remove ONLY the stray black marks / cropped fragments along the TOP edge above the man's head and the stray fragments at the bottom border, replacing these with the same smooth pale cream background. Preserve the seated man, exact pose, sage clothes, complete seated calf raise machine with thigh pads and weights, outlines, shadows, framing, colors and style. Do not add text or objects. Keep the entire image otherwise identical.”
 
 Additional prompts: “Seated articulated chest press, pushing two independent machine handles forward at chest height”; “Supine decline-bench abdominal sit-up with feet secured at the high end and head at the low end”; “Traditional military sit-up, feet planted, knees bent, arms across chest, torso lifting toward knees.”
+
+## Approved application icon
+
+Option A (white geometric dumbbell with mint accent on blue) is the installed PWA, browser tab and Apple home-screen icon. The approved source is `assets/app-icon-source.png`; its built-in image generation prompt is `assets/app-icon-prompt.txt`. PNG exports are 192/512 px for the manifest, 180 px for Apple and 32 px for the favicon. Versioned icon filenames make the artwork change discoverable by browser/launcher caches. No training data or application behavior changes.
