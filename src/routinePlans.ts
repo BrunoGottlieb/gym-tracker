@@ -57,7 +57,7 @@ export function createSheetWorkouts(): Workout[] {
 
 export function createIvanWorkouts(): Workout[] {
   const entry = (id: string, sets: number, instructions?: string): Exercise => ({ ...exercise(id, sets, '12', instructions), rest: 90 });
-  const plank = (): Exercise => ({ ...entry('front-plank', 3, 'Meta provisória de 30 segundos, editável nos ajustes da ficha.'), target: '30', kind: 'seconds' });
+  const plank = (): Exercise => ({ ...entry('front-plank', 3, 'Meta de 60 segundos, editável nos ajustes da ficha.'), target: '60', kind: 'seconds' });
   const flexor = (): Exercise => entry('leg-curl', 3, 'Alternativa: stiff (3 séries de 12). Escolha um dos dois; substitua pelo catálogo na edição do treino.');
   return [
     { id: 'a', name: 'Push · Peito, ombros + tríceps', day: 1, image: 1, exercises: [

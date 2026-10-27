@@ -5,6 +5,27 @@ import { migrateState } from './migrations';
 import { createIvanWorkouts, createSheetWorkouts, planLabels, selectRoutinePlan } from './routinePlans';
 
 describe('local routine choice', () => {
+  it('uses 60-second Ivan planks and corrects only identifiable provisional saved defaults', () => {
+    const state = selectRoutinePlan(createInitialState(), 'ivan');
+    const planks = state.workouts.flatMap(w => w.exercises).filter(e => e.id === 'front-plank');
+    expect(planks.map(e => e.target)).toEqual(['60', '60']);
+    for (const plank of planks) { plank.target = '30'; plank.instructions = 'Meta provisória de 30 segundos, editável nos ajustes da ficha.'; }
+    state.planSnapshots = { ivan: structuredClone(state.workouts) };
+    state.planSnapshots.ivan![4].exercises.find(e => e.id === 'front-plank')!.target = '45';
+    state.active = createSession(state.workouts[2], {});
+    state.history = [{ ...createSession(state.workouts[2], {}, 1000), finishedAt: 2000 }];
+    const next = migrateState(state);
+    expect(next.workouts.flatMap(w => w.exercises).filter(e => e.id === 'front-plank').map(e => e.target)).toEqual(['60', '60']);
+    expect(next.planSnapshots?.ivan?.[4].exercises.find(e => e.id === 'front-plank')?.target).toBe('45');
+    expect(next.active?.exercises.find(e => e.exerciseId === 'front-plank')?.target).toBe('60');
+    expect(next.history).toEqual(state.history);
+    expect(migrateState(next)).toEqual(next);
+    const inactive = selectRoutinePlan({ ...state, active: null }, 'original');
+    expect(migrateState(inactive).planSnapshots?.ivan?.[2].exercises.find(e => e.id === 'front-plank')?.target).toBe('60');
+    expect(migrateState(inactive).workouts).toEqual(inactive.workouts);
+    state.active!.exercises.find(e => e.exerciseId === 'front-plank')!.done[0] = true;
+    expect(migrateState(state).active?.exercises.find(e => e.exerciseId === 'front-plank')?.target).toBe('30');
+  });
   it('adds Ivan without renaming persisted plan identities or changing Bruno and Nick', () => {
     expect(planLabels).toEqual({ original: 'Bruno', sheet: 'Nick', ivan: 'Ivan' });
     const state = createInitialState();

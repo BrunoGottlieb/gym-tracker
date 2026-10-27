@@ -14,6 +14,19 @@ const replacements: Record<string, { previous: string[]; patch: Partial<Exercise
 /** Upgrade only known seed entries; custom names, stored loads and history remain intact. */
 export function migrateState(original: AppState): AppState {
   const state = structuredClone(original);
+  // Correct only Ivan's identifiable provisional default, including saved inactive plans.
+  const provisional = 'Meta provisória de 30 segundos, editável nos ajustes da ficha.';
+  const confirmed = 'Meta de 60 segundos, editável nos ajustes da ficha.';
+  for (const workout of [...(state.selectedPlan === 'ivan' ? state.workouts : []), ...(state.planSnapshots?.ivan ?? [])]) {
+    for (const exercise of workout.exercises) if (exercise.id === 'front-plank' && exercise.target === '30' && exercise.instructions === provisional) {
+      exercise.target = '60'; exercise.instructions = confirmed;
+    }
+  }
+  if (state.selectedPlan === 'ivan' && state.active) for (const log of state.active.exercises) {
+    if (log.exerciseId === 'front-plank' && log.target === '30' && log.instructions === provisional && !log.done.some(Boolean)) {
+      log.target = '60'; log.instructions = confirmed;
+    }
+  }
   const weights = state.weights;
   for (const session of [...state.history].sort((a, b) => (b.finishedAt ?? b.startedAt) - (a.finishedAt ?? a.startedAt))) {
     for (const log of session.exercises) if (!Object.hasOwn(weights, log.exerciseId) && log.done.some(Boolean) && log.weight > 0) weights[log.exerciseId] = log.weight;
