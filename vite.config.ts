@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'Gym Tracker', short_name: 'Gym Tracker', lang: 'pt-BR',
         description: 'Treinos, cargas e séries no seu ritmo.',
-        theme_color: '#286344', background_color: '#fafbf8',
+        theme_color: '#4161f3', background_color: '#f7f8fd',
         display: 'standalone', start_url: '.', scope: '.',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },

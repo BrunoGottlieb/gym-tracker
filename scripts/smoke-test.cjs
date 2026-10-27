@@ -154,7 +154,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Concluir série 2 de Supino reto com barra', exact: true }).click();
     await page.getByRole('button', { name: 'Concluir série 3 de Supino reto com barra', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').first().evaluate(el => el.classList.contains('exercise-complete')), true);
-    assert.equal(await page.locator('.exercise-row').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(234, 243, 226)');
+    assert.equal(await page.locator('.exercise-row').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(237, 248, 242)');
     await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
     await page.reload();
     await page.getByRole('heading', { name: 'Seus treinos', exact: true }).waitFor();
@@ -331,6 +331,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.locator('.workout-done').count(), 1);
     assert.match(await page.locator('.workout-done').textContent(), /Pernas \+ abdômen/);
     assert.match(await page.locator('.workout-done .completed-badge').textContent(), /Concluído/);
+    assert.equal(await page.locator('.week-total').textContent(), '1 treino concluído');
     await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
     await page.reload();
     await page.locator('.workout-done').waitFor();

@@ -2,6 +2,12 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Light blue interface
+
+The interface follows the approved minimalist mockup: an almost-white canvas, navy typography, blue primary actions, soft white workout tiles and coral/mint/yellow/lilac identity badges. The weekly blue panel derives its completed-session count from actual local-week history and retains the existing date buttons and muscle markers; no demonstration statistics are shown. Completed exercises and workout tiles remain pale green.
+
+`src/theme.css` applies the shared visual system across training, progression, calendar, settings and dialogs without changing stored routines or data. Exercise illustrations, enlarged viewing, series adjustment, active-session browsing, rest controls and offline behavior remain available. The web page and installable app manifest share the new blue theme color.
+
 ## Extra series and rest vibration
 
 **−1** and **+1** are grouped below the horizontally scrolling series buttons, with 44 px touch targets so the controls remain accessible on narrow phones. −1 removes the last uncompleted series only, never a completed entry, and leaves at least one series. Unmark a completed series before removing it. The session may have fewer than the default three series; its count survives reload, backups and history while the next session still starts at three. Removing a series while browsing a different workout uses the existing confirmation before replacing the active session.
