@@ -1,0 +1,170 @@
+[
+  {
+    "id": 37,
+    "name": "Remada curvada com barra",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Standing bent-over barbell row, hips hinged, flat back, slightly bent knees, both hands pulling complete barbell toward lower ribs, both barbell ends visible, side three-quarter view.",
+    "file": "exercise-37.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 38,
+    "name": "Rosca Scott na máquina",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Seated preacher curl on selectorized machine, upper arms supported on sloped preacher pad, both hands curling connected machine lever handles against weight stack. No free barbell.",
+    "file": "exercise-38.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 39,
+    "name": "Rosca alternada com halteres",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Standing alternating dumbbell biceps curl, one forearm flexed upwards and the other arm down by side, two complete dumbbells.",
+    "file": "exercise-39.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 40,
+    "name": "Hack linear",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Linear hack squat machine, back against inclined moving padded carriage, shoulder pads above shoulders, feet on broad base platform, knees bent halfway into squat. Complete coherent machine.",
+    "file": "exercise-40.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 41,
+    "name": "Walking lunges (passada)",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Forward walking lunge with two dumbbells held at sides, front knee bent approximately 90 degrees, back knee near floor. Whole body.",
+    "file": "exercise-41.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 42,
+    "name": "Agachamento isométrico",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Wall sit isometric squat, back flat against simple pale wall, thighs horizontal knees90degrees, feet planted, hands relaxed above thighs.",
+    "file": "exercise-42.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 43,
+    "name": "Panturrilha no leg press 45°",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Calf raise on inclined45degree leg press, seated in reclined seat, legs almost straight, balls of feet at platform lower edge and heels hanging below edge. Clear side view of feet and inclined sled, full machine.",
+    "file": "exercise-43.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 44,
+    "name": "Agachamento búlgaro",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Bulgarian split squat holding two dumbbells at sides, back foot resting on low flat bench, front foot on floor, front knee bent, upright balanced torso. Show both feet and bench.",
+    "file": "exercise-44.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 45,
+    "name": "Flexão de braços",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Strict pushup near bottom position, straight body from head to heels, palms on floor under shoulders, toes on floor. Side view.",
+    "file": "exercise-45.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 46,
+    "name": "Supino vertical no aparelho",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Seated upright selectorized chest press machine, padded backrest vertical, handles at chest height pushed FORWARD horizontally, elbows bent. Weight stack, not an overhead press.",
+    "file": "exercise-46.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 47,
+    "name": "Desenvolvimento com halteres",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Seated dumbbell overhead shoulder press on upright bench, dumbbells above shoulders, arms raised, elbows bent90degrees, each hand holds one complete dumbbell.",
+    "file": "exercise-47.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 48,
+    "name": "Elevação frontal com halteres",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Standing dumbbell front raise, both arms extended FORWARD to shoulder level, side three-quarter view clearly distinguishing forward raise from lateral raise.",
+    "file": "exercise-48.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 49,
+    "name": "Elevação de pernas na barra fixa",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Hanging straight-leg raise, both hands grasp overhead pullup bar on simple full frame, arms straight above head, both legs extended straight forward horizontal at hip90degrees. Whole frame and feet visible.",
+    "file": "exercise-49.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 50,
+    "name": "Abdominal oblíquo unilateral",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Unilateral oblique crunch lying on mat, knees bent feet on floor, shoulder blades slightly lifted and torso rotating toward opposite bent knee, fingertips gently beside head, not pulling neck.",
+    "file": "exercise-50.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 51,
+    "name": "Prancha lateral",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Side plank on one forearm and sides of stacked feet, elbow below shoulder, hips lifted, body straight, free hand resting on hip. Side view.",
+    "file": "exercise-51.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 52,
+    "name": "Abdominal supra com anilha",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Weighted abdominal crunch lying on mat knees bent feet flat, weight plate held against chest with both hands, shoulder blades lifted slightly off mat.",
+    "file": "exercise-52.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 53,
+    "name": "Abdominal supra com pernas a 90°",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Supine abdominal crunch on mat, both hips and knees bent90degrees shins horizontal floating above floor, shoulder blades lifted, hands lightly beside head.",
+    "file": "exercise-53.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 54,
+    "name": "Prancha frontal",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Front forearm plank on mat, both elbows below shoulders, forearms on mat, toes on floor, hips aligned in straight body head to heels. Side view.",
+    "file": "exercise-54.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 55,
+    "name": "Abdominal supra no cabo",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Kneeling cable crunch FACING high pulley station, kneeling on floor, rope held beside temples, cable attached overhead, torso curled forward with ribs toward pelvis, hips above knees. Full station visible.",
+    "file": "exercise-55.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 56,
+    "name": "Mesa flexora (banco flexor)",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Lying leg curl machine, athlete prone with chest and hips on long padded bench, knees flexed curling heels upward, padded roller across BACK of lower ankles. Coherent machine and complete feet.",
+    "file": "exercise-56.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 57,
+    "name": "Rosca direta com barra reta na polia",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching the attached style reference, with the NEW subject below (replace reference pose and equipment completely). Same athletic adult man, short dark hair, sage green tank top, dark forest green shorts, cream trainers. Clean crisp dark outlines, flat softly shaded illustrated anatomy, neutral cream background, charcoal gray equipment, subtle ground shadow. Center entire athlete and necessary equipment with generous 8% margins so no head, feet, bar ends or machine is cropped. No text, letters, arrows, logos, collage or panels. Anatomically plausible two arms and two legs; correct exercise equipment mechanics. Subject: Standing low cable biceps curl, both hands supinated on complete STRAIGHT short metal bar, elbows beside torso flexed, cable connects middle of bar to pulley near floor on station. Both ends of straight bar visible.",
+    "file": "exercise-57.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  }
+]

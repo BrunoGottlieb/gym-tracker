@@ -1,6 +1,6 @@
 import type { Exercise, MuscleGroup } from './types';
 
-export const LAST_IMAGE_INDEX = 36;
+export const LAST_IMAGE_INDEX = 57;
 export const canonicalExerciseId = (id: string): string => id === 'supported-row' ? 'chest-supported-row' : id;
 export const muscleLabels: Record<MuscleGroup, string> = {
   chest: 'Peito', back: 'Costas', biceps: 'Bíceps', triceps: 'Tríceps',
@@ -33,6 +33,14 @@ export const imageNames: Record<number, string> = {
   33: 'Supino articulado na máquina',
   34: 'Abdominal no banco declinado', 35: 'Abdominal militar (TAF)',
   36: 'Dips livres nas paralelas',
+  37: 'Remada curvada com barra', 38: 'Rosca Scott na máquina',
+  39: 'Rosca alternada com halteres', 40: 'Hack linear', 41: 'Passada (walking lunges)',
+  42: 'Agachamento isométrico', 43: 'Panturrilha no leg press 45°', 44: 'Agachamento búlgaro',
+  45: 'Flexão de braços', 46: 'Supino vertical no aparelho', 47: 'Desenvolvimento com halteres',
+  48: 'Elevação frontal com halteres', 49: 'Elevação de pernas na barra fixa',
+  50: 'Abdominal oblíquo unilateral', 51: 'Prancha lateral', 52: 'Abdominal supra com anilha',
+  53: 'Abdominal supra com pernas a 90°', 54: 'Prancha frontal', 55: 'Abdominal supra no cabo',
+  56: 'Mesa flexora (banco flexor)', 57: 'Rosca direta com barra reta na polia',
 };
 export function snapshotExercise(log: { exerciseId: string; name: string; image: number; target: string; kind: Exercise['kind']; done: boolean[]; muscle?: MuscleGroup }): Exercise {
   return { id: log.exerciseId, name: log.name, image: log.image, target: log.target, kind: log.kind, sets: log.done.length, rest: 90, muscle: getMuscle(log) };

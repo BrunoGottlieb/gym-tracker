@@ -2,6 +2,16 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Searchable exercise catalog
+
+The workout editor has an alphabetical preset catalog with name, illustration, primary muscle, three initial sets, target, repetition/time type and rest. Search ignores accents/case and also matches muscle labels and common aliases from the training sheet. Select a preset to add it or replace an existing exercise, then adjust any details before saving. Exercises already in the draft are disabled to prevent duplicate identities. Custom exercises and a separately alphabetized illustration selector remain available.
+
+`src/exerciseLibrary.ts` is bundled static catalog data. Catalog expansion does not migrate or modify existing routines, loads, active sessions, notes or history. Selection changes only the editor draft until Save; Cancel discards all draft changes. New variants have distinct IDs so machine Scott, barbell Scott, seated/lying curls and calf variations do not share progression accidentally. The full catalog and illustrations are available offline after the updated service worker is installed.
+
+The additions include all missing variants identified from the supplied training sheet, reusing the existing pull-up and articulated chest-press illustrations and adding 21 distinct illustrations (`exercise-37.webp` through `exercise-57.webp`). Source images and exact prompts are in `assets/exercise-catalog/`. The supplied personal training-sheet photograph is excluded from version control and deployment.
+
+Catalog browser checks: `node scripts/catalog-smoke.cjs` using the same `PLAYWRIGHT_MODULE`, `CHROME_PATH` and `APP_URL` settings as the main smoke checks. Covers search, alphabetical order, full metadata, duplicate prevention, cancellation, replacement, saving, unchanged routines/loads/history, narrow screens and offline images.
+
 ## Light blue interface
 
 Series completion is cumulative: tapping an uncompleted series marks it and every preceding series complete, for any session count. Tapping a completed series unmarks only that series, allowing corrections. This applies both to an ongoing workout and to the first series action that starts or confirms replacing a session. Batch completion triggers automatic rest once, and existing historical records are not rewritten.
