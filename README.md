@@ -2,6 +2,16 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Local choice of training sheet
+
+**Ajustes → Escolher ficha de treino** offers **Meu treino atual** (the existing configuration, unchanged and selected by default) and **Treino da folha** (five routines transcribed from the supplied sheet). There are no accounts or shared server records: each device/browser chooses independently and keeps its own loads and history. This is a routine selector for separate devices, not multiple isolated people on one device. Loads, notes and history remain on that device when switching sheets.
+
+Choosing a different sheet requires confirmation and is blocked while a session is active. `src/routinePlans.ts` saves the current workout configuration before switching; returning restores its customized names, order, exercises and targets. The first switch never reseeds an existing user's routine. The selected sheet and saved configurations are included in JSON backups, validated on import and retained in IndexedDB/offline.
+
+The photographed sheet has 8/9/8/7/8 exercises in A/B/C/D/E, with the printed 3/4 series, repetition pyramids, MAX, drop sets, 45-second rest, bi-set/tri-set descriptions and timed holds. Combinations are shown as instructions; the timer is still operated per exercise. The photo does not specify the machine model for “Remada no aparelho”, so that entry has a generic existing illustration and an explicit editable note. Weekdays are editable suggestions. No personal names, registration details or photograph are bundled. Sheet exercises preserve and allow editing their planned series; the original routine still starts each exercise at three.
+
+`node scripts/plans-smoke.cjs` checks two isolated browser contexts, unchanged original routines and loads, sheet confirmation/cancellation, prescribed series, edited configurations, blocked switching during training, history, reload, narrow layouts and offline illustrations. Use the same environment settings as the main smoke checks.
+
 ## Searchable exercise catalog
 
 The workout editor has an alphabetical preset catalog with name, illustration, primary muscle, three initial sets, target, repetition/time type and rest. Search ignores accents/case and also matches muscle labels and common aliases from the training sheet. Select a preset to add it or replace an existing exercise, then adjust any details before saving. Exercises already in the draft are disabled to prevent duplicate identities. Custom exercises and a separately alphabetized illustration selector remain available.

@@ -1,4 +1,5 @@
 export type MuscleGroup = 'chest' | 'back' | 'biceps' | 'triceps' | 'shoulders' | 'legs' | 'abs' | 'other';
+export type RoutinePlan = 'original' | 'sheet';
 export interface Exercise {
   id: string;
   name: string;
@@ -8,6 +9,7 @@ export interface Exercise {
   image: number;
   rest: number;
   muscle?: MuscleGroup;
+  instructions?: string;
 }
 export interface Workout {
   id: string;
@@ -25,6 +27,7 @@ export interface ExerciseLog {
   weight: number;
   done: boolean[];
   muscle?: MuscleGroup;
+  instructions?: string;
 }
 export interface Session {
   id: string;
@@ -48,6 +51,8 @@ export interface Preferences {
 }
 export interface AppState {
   version: 1;
+  selectedPlan?: RoutinePlan;
+  planSnapshots?: Partial<Record<RoutinePlan, Workout[]>>;
   workouts: Workout[];
   weights: Record<string, number>;
   active: Session | null;
