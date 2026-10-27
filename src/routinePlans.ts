@@ -2,7 +2,7 @@ import { exerciseLibrary, copyPreset } from './exerciseLibrary';
 import { initialWorkouts } from './data';
 import type { AppState, Exercise, RoutinePlan, Workout } from './types';
 
-export const planLabels: Record<RoutinePlan, string> = { original: 'Meu treino atual', sheet: 'Treino da folha' };
+export const planLabels: Record<RoutinePlan, string> = { original: 'Bruno', sheet: 'Nick', ivan: 'Ivan' };
 const pyramid = '12–10–8–6';
 const drop = '10 + drop set';
 function exercise(id: string, sets: number, target: string, instructions?: string): Exercise {
@@ -55,11 +55,34 @@ export function createSheetWorkouts(): Workout[] {
   ];
 }
 
+export function createIvanWorkouts(): Workout[] {
+  const entry = (id: string, sets: number, instructions?: string): Exercise => ({ ...exercise(id, sets, '12', instructions), rest: 90 });
+  const plank = (): Exercise => ({ ...entry('front-plank', 3, 'Meta provisória de 30 segundos, editável nos ajustes da ficha.'), target: '30', kind: 'seconds' });
+  const flexor = (): Exercise => entry('leg-curl', 3, 'Alternativa: stiff (3 séries de 12). Escolha um dos dois; substitua pelo catálogo na edição do treino.');
+  return [
+    { id: 'a', name: 'Push · Peito, ombros + tríceps', day: 1, image: 1, exercises: [
+      entry('machine-chest-press', 4), entry('pec-deck', 3), entry('shoulder-press', 3), entry('lateral-raise', 5), entry('machine-triceps', 4),
+    ] },
+    { id: 'b', name: 'Pull · Costas, bíceps + ombros', day: 2, image: 31, exercises: [
+      entry('lat-pulldown', 4), entry('machine-row', 3), entry('reverse-fly', 4), entry('alternating-curl', 3), entry('hammer-curl', 2), entry('cable-lateral-raise', 3),
+    ] },
+    { id: 'c', name: 'Legs · Pernas + abdômen', day: 3, image: 12, exercises: [
+      entry('leg-press', 4), entry('calf-raise', 3), entry('hip-thrust', 3), flexor(), plank(), entry('roman-chair-extension', 2),
+    ] },
+    { id: 'd', name: 'Upper · Superior completo', day: 5, image: 30, exercises: [
+      entry('incline-machine', 3), entry('lat-pulldown', 3), entry('cable-row', 3), entry('lateral-raise', 3), entry('cable-lateral-raise', 3), entry('alternating-curl', 3), entry('bar-pushdown', 3),
+    ] },
+    { id: 'e', name: 'Lower · Pernas + abdômen', day: 6, image: 63, exercises: [
+      entry('deadlift', 3), entry('smith-squat', 3), entry('calf-raise', 3), flexor(), entry('hip-abduction', 3), plank(), entry('roman-chair-extension', 3),
+    ] },
+  ];
+}
+
 export function selectRoutinePlan(state: AppState, plan: RoutinePlan): AppState {
   const current = state.selectedPlan ?? 'original';
   if (current === plan || state.active) return state;
   const snapshots = { ...state.planSnapshots, [current]: structuredClone(state.workouts) };
-  const workouts = structuredClone(snapshots[plan] ?? (plan === 'sheet' ? createSheetWorkouts() : initialWorkouts));
+  const workouts = structuredClone(snapshots[plan] ?? (plan === 'ivan' ? createIvanWorkouts() : plan === 'sheet' ? createSheetWorkouts() : initialWorkouts));
   return { ...state, selectedPlan: plan, planSnapshots: snapshots, workouts,
     timer: { ...state.timer, endAt: null, started: false, remaining: state.timer.duration } };
 }

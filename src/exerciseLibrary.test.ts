@@ -16,7 +16,7 @@ describe('predefined exercise catalog', () => {
       expect(exercise.target.length).toBeGreaterThan(0);
       expect(exercise.rest).toBeGreaterThanOrEqual(15);
     }
-    expect(exerciseLibrary.filter(e => e.image >= 37)).toHaveLength(21);
+    expect(exerciseLibrary.filter(e => e.image >= 37 && e.image <= 57)).toHaveLength(21);
   });
   it('searches aliases, accents, multiple words and muscle names', () => {
     expect(searchExercises('BULGARO').map(e => e.id)).toEqual(['bulgarian-split-squat']);

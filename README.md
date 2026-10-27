@@ -2,9 +2,19 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Ivan and Sunday-first calendars
+
+The saved plan keys remain `original` and `sheet`; only their visible labels change to **Bruno** and **Nick**, preserving installed users' current selection and customized routines. The additive `ivan` plan contains Push Monday, Pull Tuesday, Legs Wednesday, Upper Friday and Lower Saturday. Thursday and Sunday are suggested rest days; browsing and recording any workout remains unrestricted.
+
+Ivan's per-exercise counts are preserved exactly, giving totals **19/19/18/21/21**; the supplied Legs total of 16 and Lower total of 18 disagree with their itemized series. Repetition targets are 12. Pending clarification, “flexora / stiff” uses flexora with stiff as an explicit alternative, Upper's unilateral cable raise is lateral, Roman chair means lumbar extension, and plank uses an editable provisional 30 seconds. Rest defaults to an editable 90 seconds because none was supplied. These assumptions do not modify Bruno or Nick.
+
+The catalog adds missing entries, reuses existing matching images for machine chest/shoulder presses, machine row, hammer curl and stiff, and adds seven independent built-in generated illustrations (58–64) for machine triceps, cable lateral raise, hip thrust, Roman chair extension, conventional deadlift, Smith squat and hip abduction. Original PNGs and exact prompts are in `assets/ivan-catalog/`; optimized WebP files are precached offline.
+
+Both the home weekly strip and monthly history calendar start Sunday. The weekly completed total uses the same Sunday-to-Sunday local date range. `scripts/ivan-smoke.cjs` verifies an actual Sunday/month boundary, exclusion of the previous Saturday, exact series/schedule, original-plan preservation, edited-plan recovery, offline exercise images and phone widths.
+
 ## Local choice of training sheet
 
-**Ajustes → Escolher ficha de treino** offers **Meu treino atual** (the existing configuration, unchanged and selected by default) and **Treino da folha** (five routines transcribed from the supplied sheet). There are no accounts or shared server records: each device/browser chooses independently and keeps its own loads and history. This is a routine selector for separate devices, not multiple isolated people on one device. Loads, notes and history remain on that device when switching sheets.
+**Ajustes → Escolher ficha de treino** offers **Bruno** (the existing configuration, unchanged and selected by default), **Nick** (five routines transcribed from the supplied sheet) and **Ivan** (the supplied Push/Pull/Legs/Upper/Lower plan). There are no accounts or shared server records: each device/browser chooses independently and keeps its own loads and history. This is a routine selector for separate devices, not multiple isolated people on one device. Loads, notes and history remain on that device when switching sheets.
 
 Choosing a different sheet requires confirmation and is blocked while a session is active. `src/routinePlans.ts` saves the current workout configuration before switching; returning restores its customized names, order, exercises and targets. The first switch never reseeds an existing user's routine. The selected sheet and saved configurations are included in JSON backups, validated on import and retained in IndexedDB/offline.
 

@@ -6,6 +6,18 @@ export interface ExercisePreset extends Exercise { aliases?: string[] }
 const preset = (id: string, name: string, image: number, muscle: MuscleGroup, aliases: string[] = [], target = '8–12', kind: Exercise['kind'] = 'reps'): ExercisePreset =>
   ({ id, name, image, muscle, aliases, target, kind, sets: 3, rest: 90 });
 const additions: ExercisePreset[] = [
+  preset('machine-chest-press', 'Supino na máquina', 1, 'chest'),
+  preset('machine-row', 'Remada na máquina', 8, 'back'),
+  preset('shoulder-press', 'Desenvolvimento de ombros na máquina', 18, 'shoulders'),
+  preset('hammer-curl', 'Rosca martelo com halteres', 11, 'biceps'),
+  preset('romanian-deadlift', 'Stiff', 15, 'legs'),
+  preset('machine-triceps', 'Tríceps na máquina', 58, 'triceps'),
+  preset('cable-lateral-raise', 'Elevação lateral unilateral na polia', 59, 'shoulders'),
+  preset('hip-thrust', 'Elevação pélvica com barra', 60, 'legs'),
+  preset('roman-chair-extension', 'Extensão lombar no banco romano', 61, 'back'),
+  preset('deadlift', 'Levantamento terra com barra', 62, 'legs'),
+  preset('smith-squat', 'Agachamento no Smith', 63, 'legs'),
+  preset('hip-abduction', 'Cadeira abdutora', 64, 'legs'),
   { ...articulatedChestPress },
   preset('pullup', 'Barra fixa', 6, 'back', ['Puxada na barra fixa'], '6–10'),
   preset('bent-over-row', 'Remada curvada com barra', 37, 'back'),
@@ -33,7 +45,8 @@ const additions: ExercisePreset[] = [
 const aliases: Record<string, string[]> = {
   'pec-deck': ['Pectoral fly', 'Voador', 'Peck deck'],
   'lat-pulldown': ['Pulley frente', 'Puxada na frente'],
-  'chest-supported-row': ['Remada no aparelho', 'Remada articulada Hammer'],
+  'chest-supported-row': ['Remada articulada Hammer'],
+  'machine-row': ['Remada no aparelho'],
   'leg-extension': ['Banco extensor'],
   'bar-pushdown': ['Tríceps pulley', 'Tríceps crossover'],
   'overhead-extension': ['Tríceps francês com corda', 'Tríceps acima da cabeça'],

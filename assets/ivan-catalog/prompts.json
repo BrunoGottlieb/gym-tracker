@@ -1,0 +1,58 @@
+[
+  {
+    "id": 58,
+    "name": "Tríceps na máquina",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Seated triceps extension machine: upper arms rest on horizontal padded support in front of body, elbows flexing to push connected lever handles DOWN and forward, weight stack at side. Not a chest press.",
+    "file": "exercise-58.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 61,
+    "name": "Extensão lombar no banco romano",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Back extension on45degree Roman chair: pelvis supported on angled pad, ankles secured below heel rollers, torso and legs in a neutral straight line diagonal upward, arms crossed chest, whole Roman chair and feet visible.",
+    "file": "exercise-61.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 59,
+    "name": "Elevação lateral unilateral na polia",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Standing single-arm cable LATERAL shoulder raise, arm extended sideways at shoulder level, cable handle in hand attached to opposite-side low pulley near floor; complete station and cable clearly visible.",
+    "file": "exercise-59.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 62,
+    "name": "Levantamento terra com barra",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Conventional barbell deadlift midlift with bar close to shins just below knees, hips hinged and knees bent, neutral straight back, both hands gripping complete barbell outside legs, both plate ends visible.",
+    "file": "exercise-62.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 60,
+    "name": "Elevação pélvica com barra",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Barbell hip thrust, upper back resting on low flat bench, feet flat on ground knees90degrees, hips raised horizontal, padded complete barbell lies across hip crease supported by both hands, both plate ends visible.",
+    "file": "exercise-60.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 64,
+    "name": "Cadeira abdutora",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Seated hip abduction machine front three-quarter view, back supported, knees bent feet on footrests, outer thighs pressing two padded lateral supports OUTWARD with legs spread, weight stack at side. Clearly outer thigh pads, not inner-thigh adduction.",
+    "file": "exercise-64.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  },
+  {
+    "id": 63,
+    "name": "Agachamento no Smith",
+    "prompt": "Use case: scientific-educational. One square exercise illustration. Match attached reference STYLE only; replace its pose and equipment completely. Same athletic adult man with short dark hair, sage tank, forest-green shorts and cream shoes. Crisp dark outlines, soft flat shading, charcoal equipment, cream background, subtle ground shadow. Show whole body and complete equipment with8percent margins, no cropping, two arms and two legs, anatomically coherent mechanics. No text, arrows, labels, logos or panels. Subject: Smith machine squat at half depth, complete guided bar on vertical rails rests across upper back, both hands hold bar, knees bent feet flat slightly forward, entire machine and person visible.",
+    "file": "exercise-63.png",
+    "tool": "built-in image_gen",
+    "styleReference": "public/images/exercise-31.webp"
+  }
+]

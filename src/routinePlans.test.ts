@@ -2,9 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { createBackup, createSession, parseBackup, validateState } from './domain';
 import { migrateState } from './migrations';
-import { createSheetWorkouts, selectRoutinePlan } from './routinePlans';
+import { createIvanWorkouts, createSheetWorkouts, planLabels, selectRoutinePlan } from './routinePlans';
 
 describe('local routine choice', () => {
+  it('adds Ivan without renaming persisted plan identities or changing Bruno and Nick', () => {
+    expect(planLabels).toEqual({ original: 'Bruno', sheet: 'Nick', ivan: 'Ivan' });
+    const state = createInitialState();
+    const original = structuredClone(state.workouts);
+    const nick = selectRoutinePlan(state, 'sheet');
+    const nickWorkouts = structuredClone(nick.workouts);
+    const ivan = selectRoutinePlan(nick, 'ivan');
+    expect(ivan.workouts.map(w => w.day)).toEqual([1, 2, 3, 5, 6]);
+    expect(ivan.workouts.map(w => w.exercises.reduce((total, e) => total + e.sets, 0))).toEqual([19, 19, 18, 21, 21]);
+    expect(ivan.workouts.map(w => w.exercises.length)).toEqual([5, 6, 6, 7, 7]);
+    expect(ivan.workouts[0].exercises.find(e => e.id === 'lateral-raise')?.sets).toBe(5);
+    expect(ivan.workouts.flatMap(w => w.exercises).filter(e => e.kind === 'reps').every(e => e.target === '12')).toBe(true);
+    expect(ivan.workouts[2].exercises.find(e => e.id === 'leg-curl')?.instructions).toContain('Alternativa: stiff');
+    expect(parseBackup(createBackup(ivan))).toEqual(ivan);
+    expect(selectRoutinePlan(ivan, 'sheet').workouts).toEqual(nickWorkouts);
+    expect(selectRoutinePlan(ivan, 'original').workouts).toEqual(original);
+    ivan.workouts[0].name = 'Push personalizado';
+    expect(selectRoutinePlan(selectRoutinePlan(ivan, 'original'), 'ivan').workouts[0].name).toBe('Push personalizado');
+    expect(createIvanWorkouts()[0].name).not.toBe('Push personalizado');
+  });
   it('leaves the existing routine untouched until an explicit choice', () => {
     const state = createInitialState();
     state.workouts[0].name = 'Meu treino editado';
