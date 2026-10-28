@@ -186,3 +186,7 @@ Additional prompts: “Seated articulated chest press, pushing two independent m
 ## Approved application icon
 
 Option A (white geometric dumbbell with mint accent on blue) is the installed PWA, browser tab and Apple home-screen icon. The approved source is `assets/app-icon-source.png`; its built-in image generation prompt is `assets/app-icon-prompt.txt`. PNG exports are 192/512 px for the manifest, 180 px for Apple and 32 px for the favicon. Versioned icon filenames make the artwork change discoverable by browser/launcher caches. No training data or application behavior changes.
+
+## Seated leg curl illustration correction
+
+`public/images/exercise-14.webp` now depicts a seated hamstring curl in side view: lap restraint above the thighs, knees flexed with feet under the seat, and posterior calf/Achilles roller behind the lower legs. This replaces the ambiguous extension-like illustration for all existing references, including Ivan Legs/Lower and the catalog, without modifying exercise identities, series, loads, active sessions or history. Built-in generated source and final correction prompt: `assets/seated-leg-curl-corrected.png` and `assets/seated-leg-curl-prompt.txt`.
