@@ -327,7 +327,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     for (const row of await page.locator('.exercise-row').all()) assert.equal(await row.locator('.set-button').count(), 3);
     while (await page.locator('.set-button[aria-pressed=false]').count()) await page.locator('.set-button[aria-pressed=false]').first().click();
     assert.equal(await page.locator('.exercise-complete').count(), 6);
-    await page.getByRole('button', { name: 'Finalizar treino', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Treino completo. Mandou bem!', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Salvar e finalizar', exact: true }).click();
     await page.getByRole('button', { name: 'Gym Tracker, início', exact: true }).click();
     assert.equal(await page.locator('.workout-done').count(), 1);

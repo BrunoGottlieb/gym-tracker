@@ -120,11 +120,17 @@ export default function App() {
   useEffect(() => { const status = () => setOnline(navigator.onLine); const install = (e: Event) => { e.preventDefault(); setInstallPrompt(e as Event & { prompt: () => Promise<void> }); }; window.addEventListener('online', status); window.addEventListener('offline', status); window.addEventListener('beforeinstallprompt', install); return () => { window.removeEventListener('online', status); window.removeEventListener('offline', status); window.removeEventListener('beforeinstallprompt', install); }; }, []);
   useEffect(() => { if (!notice) return; const id = setTimeout(() => setNotice(''), 4500); return () => clearTimeout(id); }, [notice]);
 
-  const commit = useCallback((transform: (current: AppState) => AppState) => {
+  const commit = useCallback((transform: (current: AppState) => AppState, promptCompletion = false) => {
     if (!stateRef.current) return;
+    const previous = stateRef.current.active;
     const next = transform(stateRef.current);
     stateRef.current = next;
     setState(next);
+    if (promptCompletion && next.active) {
+      const progress = getProgress(next.active);
+      const wasComplete = previous?.id === next.active.id && getProgress(previous).done === getProgress(previous).total;
+      if (!wasComplete && progress.total > 0 && progress.done === progress.total) setDialog({ type: 'finish' });
+    }
     setSaving(true);
     const currentRevision = ++revision.current;
     queue.current = queue.current.catch(() => {}).then(() => saveState(next)).then(() => { if (currentRevision === revision.current) { setSaving(false); setError(''); } }).catch(() => { setSaving(false); setError('Não foi possível salvar. Mantenha o app aberto e exporte um backup para proteger seus registros.'); });
@@ -154,9 +160,9 @@ export default function App() {
   }
   function startWorkout(workout: Workout, firstSet?: { exerciseId: string; index: number }, setAdjustment?: SetAdjustment) {
     if (stateRef.current?.active && stateRef.current.active.workoutId !== workout.id) { setDialog({ type: 'switch', workout, firstSet, setAdjustment }); return; }
-    commit(s => { const next = beginWorkout(s, workout, firstSet); return setAdjustment ? adjustSession(next, setAdjustment) : next; });
     setViewedWorkoutId(workout.id);
     navigate('workout');
+    commit(s => { const next = beginWorkout(s, workout, firstSet); return setAdjustment ? adjustSession(next, setAdjustment) : next; }, true);
   }
   function startRest(duration: number, exercise = '') {
     timerEnd.current = null;
@@ -180,13 +186,13 @@ export default function App() {
       const wasDone = s.active.exercises.find(e => e.exerciseId === exercise.id)!.done[index];
       const active = { ...s.active, exercises: s.active.exercises.map(e => e.exerciseId === exercise.id ? { ...e, done: toggleSeriesCompletion(e.done, index) } : e) };
       return { ...s, active, timer: !wasDone && s.preferences.autoRest ? { duration: exercise.rest, remaining: exercise.rest, endAt: Date.now() + exercise.rest * 1000, exercise: exercise.name, started: true } : s.timer };
-    });
+    }, true);
   }
   function adjustSet(exerciseId: string, change: 1 | -1) {
     const workout = stateRef.current?.workouts.find(w => w.id === viewedWorkoutId);
     if (!workout) return;
     if (stateRef.current?.active?.workoutId !== workout.id) { startWorkout(workout, undefined, { exerciseId, change }); return; }
-    commit(s => adjustSession(s, { exerciseId, change }));
+    commit(s => adjustSession(s, { exerciseId, change }), true);
   }
   function exportBackup() {
     if (!state) return;
@@ -273,7 +279,7 @@ export default function App() {
     {dialog?.type === 'timer' && <Modal title="Um respiro entre as séries" onClose={() => setDialog(null)}>{restPanel(true)}<label className="toggle-row"><span><strong>Começar automaticamente</strong><small>Ao marcar uma série como concluída.</small></span><input role="switch" type="checkbox" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label></Modal>}
     {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar por hoje?'} onClose={() => setDialog(null)}><div className="finish-summary"><CircleCheck size={42} /><strong>{progress.done}<span> de {progress.total} séries</span></strong><p>{active.workoutName}</p></div><p className="subtle">{progress.done === progress.total ? 'Suas cargas e séries serão guardadas no histórico.' : 'As séries concluídas serão guardadas. As restantes ficarão como não realizadas.'}</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Continuar treino</button><button className="primary" onClick={() => { commit(s => finishSession(s)); navigate('history'); setNotice('Treino registrado. Mais um passo dado!'); }}>Salvar e finalizar</button></div></Modal>}
     {dialog?.type === 'discard' && <Modal title="Descartar este treino?" onClose={() => setDialog(null)}><p className="subtle">As séries marcadas nesta sessão serão descartadas. Suas cargas continuarão salvas para o próximo treino.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Continuar treino</button><button className="danger-button" onClick={() => { commit(s => ({ ...s, active: null, timer: { ...s.timer, started: false, endAt: null, remaining: s.timer.duration } })); navigate('home'); }}>Descartar sessão</button></div></Modal>}
-    {dialog?.type === 'switch' && <Modal title="Você já começou um treino" onClose={() => setDialog(null)}><p className="subtle">Seu treino “{active?.workoutName}” está em andamento. Você pode consultar “{dialog.workout.name}” sem interromper o treino atual. Para iniciar este outro treino, finalize o atual ou confirme a troca. As séries não finalizadas do treino atual serão descartadas; as cargas continuam salvas.</p><div className="modal-actions"><button className="secondary" onClick={returnToActive}>Continuar o atual</button><button className="danger-button" onClick={() => { const { workout, firstSet, setAdjustment } = dialog; commit(s => { const next = beginWorkout(s, workout, firstSet); return setAdjustment ? adjustSession(next, setAdjustment) : next; }); setViewedWorkoutId(workout.id); navigate('workout'); }}>Descartar e trocar</button></div></Modal>}
+    {dialog?.type === 'switch' && <Modal title="Você já começou um treino" onClose={() => setDialog(null)}><p className="subtle">Seu treino “{active?.workoutName}” está em andamento. Você pode consultar “{dialog.workout.name}” sem interromper o treino atual. Para iniciar este outro treino, finalize o atual ou confirme a troca. As séries não finalizadas do treino atual serão descartadas; as cargas continuam salvas.</p><div className="modal-actions"><button className="secondary" onClick={returnToActive}>Continuar o atual</button><button className="danger-button" onClick={() => { const { workout, firstSet, setAdjustment } = dialog; setViewedWorkoutId(workout.id); navigate('workout'); commit(s => { const next = beginWorkout(s, workout, firstSet); return setAdjustment ? adjustSession(next, setAdjustment) : next; }, true); }}>Descartar e trocar</button></div></Modal>}
     {dialog?.type === 'edit' && <WorkoutEditor flexibleSets={state.selectedPlan === 'sheet' || state.selectedPlan === 'ivan'} workout={dialog.workout} onClose={() => setDialog(null)} onSave={workout => { commit(s => ({ ...s, workouts: s.workouts.map(w => w.id === workout.id ? workout : w) })); setDialog(null); setNotice('Treino atualizado.'); }} />}
     {dialog?.type === 'day' && <Modal title={new Date(`${dialog.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })} onClose={() => setDialog(null)}>{sessionsOnDate(state.history, dialog.date).length ? sessionsOnDate(state.history, dialog.date).map(s => <button className="day-session" key={s.id} onClick={() => setDialog({ type: 'detail', session: s })}><span><strong>{s.workoutName}</strong><small>{new Date(s.finishedAt!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · {getProgress(s).done}/{getProgress(s).total} séries</small></span><ChevronRight size={17} /></button>) : <div className="calendar-empty"><CalendarDays size={32} /><p>Nenhum treino registrado neste dia.</p></div>}</Modal>}
     {dialog?.type === 'import' && <Modal title="Restaurar este backup?" onClose={() => setDialog(null)}><p className="subtle">O arquivo contém {dialog.data.workouts.length} treinos e {dialog.data.history.length} sessões de histórico. Ele substituirá todos os registros deste aparelho, incluindo o treino em andamento.</p><button className="text-button" onClick={exportBackup}><Download size={16} />Exportar os dados atuais antes</button><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" onClick={() => { const data = dialog.data; commit(() => data); setViewedWorkoutId(null); navigate('home'); setNotice('Backup restaurado.'); }}>Substituir e restaurar</button></div></Modal>}

@@ -190,3 +190,7 @@ Option A (white geometric dumbbell with mint accent on blue) is the installed PW
 ## Seated leg curl illustration correction
 
 `public/images/exercise-14.webp` now depicts a seated hamstring curl in side view: lap restraint above the thighs, legs extended forward in the starting position, with posterior calf/Achilles resting on top of the moving ankle roller. This replaces the ambiguous extension-like illustration for all existing references, including Ivan Legs/Lower and the catalog, without modifying exercise identities, series, loads, active sessions or history. Built-in generated source and final correction prompt: `assets/seated-leg-curl-straight.png` and `assets/seated-leg-curl-straight-prompt.txt` (earlier bent-knee artwork is retained as a source variant).
+
+## Automatic completion prompt
+
+Marking the last outstanding series opens the existing finish confirmation automatically when all exercises are complete, including cumulative taps, extra series, a one-series routine started by its first tap, and an explicitly confirmed session switch. Removing the final unfinished extra series also opens it. The session is saved to history only after **Salvar e finalizar**. Dismissing/continuing does not repeatedly reopen the dialog on timer ticks, load edits, navigation or reload; making the routine incomplete and completing it again can prompt again. Hydration and backup restoration do not trigger this prompt. `scripts/auto-finish-smoke.cjs` verifies these transitions in Chrome.
