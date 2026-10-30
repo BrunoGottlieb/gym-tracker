@@ -102,6 +102,7 @@ export function validateState(value: unknown): value is AppState {
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
+  if (value.brunoFridayRevision !== undefined && value.brunoFridayRevision !== 1) return false;
   if (value.routineRevision !== undefined && !integer(value.routineRevision, 12)) return false;
   if (typeof value.routineRevision === 'number' && value.routineRevision >= 5 && !['sheet', 'ivan'].includes(String(value.selectedPlan)) && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;

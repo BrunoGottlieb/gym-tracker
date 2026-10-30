@@ -60,5 +60,6 @@ export interface AppState {
   timer: RestTimer;
   preferences: Preferences;
   routineRevision?: number;
+  brunoFridayRevision?: 1;
   exerciseNotes?: Record<string, string>;
 }

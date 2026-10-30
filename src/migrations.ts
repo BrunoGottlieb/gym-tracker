@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -185,6 +185,17 @@ export function migrateState(original: AppState): AppState {
       return workout.exercises.some(current => current.id === replacement.id) ? [] : [{ ...replacement }];
     });
     if (hadAbdominals && workout.name === 'Pernas + abdômen') workout.name = 'Pernas';
+  }
+  if (state.brunoFridayRevision !== 1) {
+    for (const workout of [...((state.selectedPlan ?? 'original') === 'original' ? state.workouts : []), ...(state.planSnapshots?.original ?? [])]) {
+      if (workout.id !== 'e' || workout.day !== 5) continue;
+      workout.exercises = workout.exercises.flatMap(exercise => {
+        if (exercise.id !== 'incline-curl') return [exercise];
+        return workout.exercises.some(current => current.id === preacherCurl.id) ? [] : [{ ...preacherCurl }];
+      });
+      if (workout.exercises.some(exercise => exercise.id === preacherCurl.id)) workout.image = preacherCurl.image;
+    }
+    state.brunoFridayRevision = 1;
   }
   return state;
 }

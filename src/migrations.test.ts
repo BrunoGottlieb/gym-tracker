@@ -192,7 +192,7 @@ describe('existing installation upgrades', () => {
     old.active = createSession(friday, old.weights);
     const next = migrateState(old);
     expect(next.workouts[4].name).toBe('Costas + bíceps');
-    expect(next.workouts[4].exercises.map(e => e.id)).toEqual(['lat-pulldown', 'chest-supported-row', 'cable-row', 'straight-arm-pulldown', 'incline-curl', 'cable-curl']);
+    expect(next.workouts[4].exercises.map(e => e.id)).toEqual(['lat-pulldown', 'chest-supported-row', 'cable-row', 'straight-arm-pulldown', 'preacher-curl', 'cable-curl']);
     expect(next.active?.exercises.some(e => ['front-lever', 'l-sit'].includes(e.exerciseId))).toBe(false);
     expect(next.active?.exercises.find(e => e.exerciseId === 'cable-row')?.weight).toBe(40);
     expect(validateState(next)).toBe(true);

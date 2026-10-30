@@ -1,0 +1,18 @@
+[
+  {
+    "id": 9,
+    "name": "Pulldown com braços estendidos",
+    "slug": "straight-arm-pulldown-clear",
+    "prompt": "Edit the attached gym exercise illustration into a clearer educational illustration. Preserve SAME athletic adult man with short dark brown hair, sage-green tank, forest-green shorts, cream trainers, crisp dark outlines, softly shaded flat colors and cream background. ONE whole athlete and complete coherent high cable station, square artwork, margins at all edges, no cropped head/feet/handles. Exactly two arms and two legs, no ghost limbs, no panels. Include ONE subtle blue curved movement arrow as described to explain the motion, no words or labels. Depict the START/MID POSITION of a STRAIGHT-ARM LAT PULLDOWN so it cannot be confused with triceps pushdown. Athlete in SIDE PROFILE stands well BACK from the high pulley, roughly one large step away. Hips slightly hinged, torso tilted forward20degrees with neutral back, knees soft. BOTH arms reach FORWARD and UP from shoulders toward cable, hands on complete short straight bar around lower face/upper chest height, hands clearly FAR IN FRONT of torso. Elbows remain almost straight, with only10degree soft bend, angle stays fixed. Cable taut from top pulley to center of bar. Draw one subtle blue arc arrow centered at SHOULDER sweeping from the hands' forward elevated position DOWN toward the thighs, indicating the WHOLE nearly straight arm swings at shoulder. Bar is not already at thighs. Back/lat area visible in three-quarter SIDE view. No elbows tucked against ribs and no90degree bent-elbow pressdown posture.",
+    "file": "straight-arm-pulldown-clear.png",
+    "tool": "built-in image_gen"
+  },
+  {
+    "id": 23,
+    "name": "Tríceps na polia com barra",
+    "slug": "bar-pushdown-clear",
+    "prompt": "Edit the attached gym exercise illustration into a clearer educational illustration. Preserve SAME athletic adult man with short dark brown hair, sage-green tank, forest-green shorts, cream trainers, crisp dark outlines, softly shaded flat colors and cream background. ONE whole athlete and complete coherent high cable station, square artwork, margins at all edges, no cropped head/feet/handles. Exactly two arms and two legs, no ghost limbs, no panels. Include ONE subtle blue curved movement arrow as described to explain the motion, no words or labels. Depict the START/MID POSITION of a CABLE TRICEPS PUSHDOWN, clearly unlike straight-arm pulldown. Athlete in SIDE PROFILE stands close to high pulley, torso almost UPRIGHT. BOTH UPPER ARMS point VERTICALLY down close to his ribs; ELBOWS stay BESIDE WAIST. BOTH elbows bent approximately90degrees, FOREARMS nearly horizontal in FRONT, both hands overhand grip a complete short straight bar near upper waist/lower chest. Cable taut from upper pulley to center of bar. Draw ONE subtle blue curved arrow centered on ELBOW, sweeping the bar DOWN toward front of thighs as FOREARM extends while upper arm remains still. Keep upper arms fixed alongside body, not reaching forward/up at shoulder. Depict same cream/green palette, full machine, face and both feet visible. No duplicated arms or endpoint silhouettes.",
+    "file": "bar-pushdown-clear.png",
+    "tool": "built-in image_gen"
+  }
+]

@@ -6,6 +6,7 @@ export interface ExercisePreset extends Exercise { aliases?: string[] }
 const preset = (id: string, name: string, image: number, muscle: MuscleGroup, aliases: string[] = [], target = '8–12', kind: Exercise['kind'] = 'reps'): ExercisePreset =>
   ({ id, name, image, muscle, aliases, target, kind, sets: 3, rest: 90 });
 const additions: ExercisePreset[] = [
+  preset('incline-curl', 'Rosca inclinada com halteres', 28, 'biceps'),
   { ...declineSitup }, { ...militarySitup },
   preset('machine-chest-press', 'Supino na máquina', 1, 'chest'),
   preset('machine-row', 'Remada na máquina', 8, 'back'),

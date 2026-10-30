@@ -124,7 +124,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.locator('.workout-tile').count(), 5);
     await page.locator('.workout-cover img').evaluateAll(images => Promise.all(images.map(image => image.decode())));
     assert.ok(await page.locator('.workout-cover img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)));
-    assert.match(await page.getByRole('button', { name: 'Abrir treino Costas + bíceps (E)', exact: true }).locator('img').getAttribute('src'), /exercise-36.webp/);
+    assert.match(await page.getByRole('button', { name: 'Abrir treino Costas + bíceps (E)', exact: true }).locator('img').getAttribute('src'), /exercise-10.webp/);
     await page.screenshot({ path: path.join(output, 'home-mobile.png'), fullPage: true });
     await page.getByRole('button', { name: 'Abrir treino Peito + tríceps', exact: true }).locator('img').click();
     assert.equal(await page.getByRole('dialog').count(), 0);
