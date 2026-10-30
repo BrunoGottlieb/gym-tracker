@@ -1,4 +1,4 @@
-import { articulatedChestPress, initialWorkouts } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, initialWorkouts } from './data';
 import { canonicalExerciseId, muscleLabels } from './catalog';
 import type { Exercise, MuscleGroup } from './types';
 
@@ -6,6 +6,7 @@ export interface ExercisePreset extends Exercise { aliases?: string[] }
 const preset = (id: string, name: string, image: number, muscle: MuscleGroup, aliases: string[] = [], target = '8–12', kind: Exercise['kind'] = 'reps'): ExercisePreset =>
   ({ id, name, image, muscle, aliases, target, kind, sets: 3, rest: 90 });
 const additions: ExercisePreset[] = [
+  { ...declineSitup }, { ...militarySitup },
   preset('machine-chest-press', 'Supino na máquina', 1, 'chest'),
   preset('machine-row', 'Remada na máquina', 8, 'back'),
   preset('shoulder-press', 'Desenvolvimento de ombros na máquina', 18, 'shoulders'),

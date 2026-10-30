@@ -1,6 +1,6 @@
 import type { Exercise, MuscleGroup } from './types';
 
-export const LAST_IMAGE_INDEX = 64;
+export const LAST_IMAGE_INDEX = 66;
 export const canonicalExerciseId = (id: string): string => id === 'supported-row' ? 'chest-supported-row' : id;
 export const muscleLabels: Record<MuscleGroup, string> = {
   chest: 'Peito', back: 'Costas', biceps: 'Bíceps', triceps: 'Tríceps',
@@ -12,7 +12,7 @@ const groups: Record<MuscleGroup, string[]> = {
   biceps: ['preacher-curl', 'hammer-curl', 'rope-curl', 'incline-curl', 'cable-curl'],
   triceps: ['rope-pushdown', 'overhead-extension', 'bar-pushdown', 'parallel-bar-dips'],
   shoulders: ['shoulder-press', 'lateral-raise', 'reverse-fly'],
-  legs: ['leg-press', 'leg-extension', 'leg-curl', 'romanian-deadlift', 'calf-raise'],
+  legs: ['horizontal-leg-press', 'lever-squat', 'leg-press', 'leg-extension', 'leg-curl', 'romanian-deadlift', 'calf-raise'],
   abs: ['hanging-knee-raise', 'decline-situp', 'military-situp', 'l-sit'], other: [],
 };
 export function getMuscle(exercise: { id?: string; exerciseId?: string; muscle?: MuscleGroup }): MuscleGroup {
@@ -44,6 +44,7 @@ export const imageNames: Record<number, string> = {
   58: 'Tríceps na máquina', 59: 'Elevação lateral unilateral na polia', 60: 'Elevação pélvica com barra',
   61: 'Extensão lombar no banco romano', 62: 'Levantamento terra com barra',
   63: 'Agachamento no Smith', 64: 'Cadeira abdutora',
+  65: 'Leg press horizontal com banco móvel', 66: 'Agachamento no squat articulado',
 };
 export function snapshotExercise(log: { exerciseId: string; name: string; image: number; target: string; kind: Exercise['kind']; done: boolean[]; muscle?: MuscleGroup }): Exercise {
   return { id: log.exerciseId, name: log.name, image: log.image, target: log.target, kind: log.kind, sets: log.done.length, rest: 90, muscle: getMuscle(log) };

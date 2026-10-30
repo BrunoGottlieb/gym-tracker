@@ -317,13 +317,13 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.getByRole('textbox', { name: 'Carga de Dips livres nas paralelas', exact: true }).inputValue(), '10');
     await page.getByRole('button', { name: 'Descartar treino em andamento', exact: true }).click();
     await page.getByRole('button', { name: 'Descartar sessão', exact: true }).click();
-    await page.getByRole('button', { name: 'Abrir treino Pernas + abdômen', exact: true }).click();
+    await page.getByRole('button', { name: 'Abrir treino Pernas', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').count(), 6);
-    assert.equal(await page.locator('.exercise-row .muscle-legs').count(), 4);
-    assert.equal(await page.locator('.exercise-row .muscle-abs').count(), 2);
+    assert.equal(await page.locator('.exercise-row .muscle-legs').count(), 6);
+    assert.equal(await page.locator('.exercise-row .muscle-legs').count(), 6);
     assert.doesNotMatch(await page.locator('.exercise-list').textContent(), /Stiff|Elevação de joelhos/);
-    assert.match(await page.locator('.exercise-list').textContent(), /Abdominal no banco declinado/);
-    assert.match(await page.locator('.exercise-list').textContent(), /Abdominal militar \(TAF\)/);
+    assert.match(await page.locator('.exercise-list').textContent(), /Leg press horizontal com banco móvel/);
+    assert.match(await page.locator('.exercise-list').textContent(), /Agachamento no squat articulado/);
     for (const row of await page.locator('.exercise-row').all()) assert.equal(await row.locator('.set-button').count(), 3);
     while (await page.locator('.set-button[aria-pressed=false]').count()) await page.locator('.set-button[aria-pressed=false]').first().click();
     assert.equal(await page.locator('.exercise-complete').count(), 6);
@@ -331,7 +331,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Salvar e finalizar', exact: true }).click();
     await page.getByRole('button', { name: 'Gym Tracker, início', exact: true }).click();
     assert.equal(await page.locator('.workout-done').count(), 1);
-    assert.match(await page.locator('.workout-done').textContent(), /Pernas \+ abdômen/);
+    assert.match(await page.locator('.workout-done').textContent(), /Pernas/);
     assert.match(await page.locator('.workout-done .completed-badge').textContent(), /Concluído/);
     assert.equal(await page.locator('.week-total').textContent(), '1 treino concluído');
     await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
@@ -345,7 +345,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await weeklyDay.click();
     assert.equal(await page.locator('.day-session').count(), 3);
     assert.match(await page.getByRole('dialog').textContent(), /Peito \+ tríceps/);
-    assert.match(await page.getByRole('dialog').textContent(), /Pernas \+ abdômen/);
+    assert.match(await page.getByRole('dialog').textContent(), /Pernas/);
     await page.getByRole('button', { name: 'Fechar', exact: true }).click();
     await page.getByRole('button', { name: 'Calendário', exact: true }).click();
     assert.equal(await page.locator(`.calendar-day[data-date="${actualDate}"] [data-muscle=chest]`).count(), 1);

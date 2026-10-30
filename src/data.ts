@@ -7,6 +7,9 @@ export const declineSitup = exercise('decline-situp', 'Abdominal no banco declin
 export const militarySitup = exercise('military-situp', 'Abdominal militar (TAF)', 3, '10–15', 35);
 export const parallelBarDips = exercise('parallel-bar-dips', 'Dips livres nas paralelas', 3, '6–10', 36);
 
+export const horizontalLegPress = exercise('horizontal-leg-press', 'Leg press horizontal com banco móvel', 3, '8–12', 65);
+export const leverSquat = exercise('lever-squat', 'Agachamento no squat articulado', 3, '8–12', 66);
+
 export const initialWorkouts: Workout[] = [
   { id: 'a', name: 'Peito + tríceps', day: 1, image: 0, exercises: [
     exercise('bench-press', 'Supino reto com barra', 3, '6–10', 0),
@@ -24,13 +27,13 @@ export const initialWorkouts: Workout[] = [
     exercise('preacher-curl', 'Rosca Scott', 3, '8–12', 10),
     exercise('rope-curl', 'Rosca corda no crossover', 3, '10–12', 32),
   ] },
-  { id: 'c', name: 'Pernas + abdômen', day: 3, image: 12, exercises: [
+  { id: 'c', name: 'Pernas', day: 3, image: 12, exercises: [
     exercise('leg-press', 'Leg press 45°', 3, '8–12', 12),
     exercise('leg-extension', 'Cadeira extensora', 3, '10–15', 13),
     exercise('leg-curl', 'Cadeira flexora', 3, '10–15', 14),
     exercise('calf-raise', 'Panturrilha sentado na máquina', 3, '12–20', 16),
-    { ...declineSitup },
-    { ...militarySitup },
+    { ...horizontalLegPress },
+    { ...leverSquat },
   ] },
   { id: 'd', name: 'Ombros, peito + tríceps', day: 4, image: 36, exercises: [
     exercise('lateral-raise', 'Elevação lateral com halteres', 3, '10–15', 19),

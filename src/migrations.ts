@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -174,5 +174,17 @@ export function migrateState(original: AppState): AppState {
   }
   if ((state.routineRevision ?? 0) < 11) state.routineRevision = 11;
   if ((state.routineRevision ?? 0) < 12) state.routineRevision = 12;
+  // Apply the requested Bruno-only replacements without rewriting session snapshots.
+  for (const workout of [...((state.selectedPlan ?? 'original') === 'original' ? state.workouts : []), ...(state.planSnapshots?.original ?? [])]) {
+    if (workout.id !== 'c' || workout.day !== 3) continue;
+    const replacements = new Map([['decline-situp', horizontalLegPress], ['military-situp', leverSquat]]);
+    const hadAbdominals = workout.exercises.some(e => replacements.has(e.id));
+    workout.exercises = workout.exercises.flatMap(e => {
+      const replacement = replacements.get(e.id);
+      if (!replacement) return [e];
+      return workout.exercises.some(current => current.id === replacement.id) ? [] : [{ ...replacement }];
+    });
+    if (hadAbdominals && workout.name === 'Pernas + abdômen') workout.name = 'Pernas';
+  }
   return state;
 }

@@ -58,6 +58,13 @@ export function finishSession(state: AppState, now = Date.now()): AppState {
   return { ...state, history: [{ ...state.active, finishedAt: now }, ...state.history], active: null, timer: { ...state.timer, started: false, endAt: null, remaining: state.timer.duration } };
 }
 
+export function editHistorySession(state: AppState, session: Session): AppState {
+  const previous = state.history.find(record => record.id === session.id);
+  if (!previous || session.workoutId !== previous.workoutId || !validSession(session) || session.finishedAt === undefined || !session.exercises.some(log => log.done.some(Boolean))) throw new Error('Confira os dados e as séries realizadas deste registro.');
+  const saved = structuredClone(session);
+  return { ...state, history: state.history.map(record => record.id === saved.id ? saved : record).sort((a, b) => b.finishedAt! - a.finishedAt!) };
+}
+
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 160): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 const number = (value: unknown, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;

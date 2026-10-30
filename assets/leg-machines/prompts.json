@@ -1,0 +1,18 @@
+[
+  {
+    "id": 65,
+    "name": "Leg press horizontal com banco móvel",
+    "slug": "horizontal-leg-press",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching reference STYLE only, replace pose and machine entirely. Same athletic adult male short dark hair, sage tank top, dark forest green shorts, cream trainers. Crisp dark outlines and softly shaded flat colors, charcoal machine, cream background and subtle ground shadow. Whole machine and entire athlete with generous clean margins, anatomical two arms two legs. No text, arrows, logos or panels. Seated HORIZONTAL LEG PRESS WITH MOVING SEAT AND FIXED VERTICAL FOOTPLATE. Side profile, large footplate on LEFT is upright VERTICAL and fixed to frame at90degrees to floor. Both feet flat on that fixed platform. Athlete reclined comfortably on seat at RIGHT, knees bent90degrees, hands on side grips. Seat/backrest assembly mounted on rails that run MOSTLY HORIZONTAL with only a small upward inclination toward the right/back, so athlete pushes HIS SEAT/BODY backward, not a sled above head. Show the seat carriage wheels on the near-horizontal rails and fixed base of footplate clearly. Compact plate-loaded/selectorized machine, lower than45degree sled, no upper diagonal footplate or high inclined sled. Mechanically coherent knee/hip alignment.",
+    "file": "horizontal-leg-press.png",
+    "tool": "built-in image_gen"
+  },
+  {
+    "id": 66,
+    "name": "Agachamento no squat articulado",
+    "slug": "lever-squat",
+    "prompt": "Use case: scientific-educational. Create ONE square gym exercise illustration matching reference STYLE only, replace pose and machine entirely. Same athletic adult male short dark hair, sage tank top, dark forest green shorts, cream trainers. Crisp dark outlines and softly shaded flat colors, charcoal machine, cream background and subtle ground shadow. Whole machine and entire athlete with generous clean margins, anatomical two arms two legs. No text, arrows, logos or panels. PLATE-LOADED LEVER SQUAT MACHINE (squat articulado / V-squat), NOT sliding hack squat or Smith. Athlete stands on wide solid platform, shoulders under two padded shoulder yokes, hands holding handles next to shoulders, knees bent into half squat with feet firmly planted, torso supported by small upright back pad. Shoulder/back pad assembly attached to a long thick steel swing-arm lever hinged at a clearly visible fixed pivot behind/below athlete. Round weight plates mounted on weight horns attached to the lever arm. The entire yoke rotates in an ARC about hinge during squat: NO straight sliding rails or guide rods. Side three-quarter view clearly shows pivot, arm, shoulder pads and athlete's squat position. Full coherent machine and full feet visible.",
+    "file": "lever-squat.png",
+    "tool": "built-in image_gen"
+  }
+]

@@ -125,7 +125,7 @@ describe('existing installation upgrades', () => {
     old.workouts[0].exercises.find(e => e.id === 'overhead-extension')!.name = 'Meu francês personalizado';
     expect(migrateState(old).workouts[0].exercises.find(e => e.id === 'overhead-extension')?.name).toBe('Meu francês personalizado');
   });
-  it('replaces stiff and knee raises with two abdominal exercises while preserving old history and loads', () => {
+  it('upgrades legacy stiff and knee raises to the current leg routine while preserving snapshots and loads', () => {
     const old = legacyState();
     old.workouts[2].exercises = old.workouts[2].exercises.filter(e => !['decline-situp', 'military-situp'].includes(e.id));
     old.workouts[2].exercises.push({ id: 'romanian-deadlift', name: 'Stiff / levantamento terra romeno', sets: 3, target: '8–12', image: 15, kind: 'reps', rest: 90 });
@@ -134,12 +134,12 @@ describe('existing installation upgrades', () => {
     old.active = createSession(old.workouts[2], old.weights);
     old.active.exercises.find(e => e.exerciseId === 'romanian-deadlift')!.done[0] = true;
     const next = migrateState(old);
-    expect(next.workouts[2].exercises.map(e => e.id)).toEqual(['leg-press', 'leg-extension', 'leg-curl', 'calf-raise', 'decline-situp', 'military-situp']);
+    expect(next.workouts[2].exercises.map(e => e.id)).toEqual(['leg-press', 'leg-extension', 'leg-curl', 'calf-raise', 'horizontal-leg-press', 'lever-squat']);
     expect(next.weights['romanian-deadlift']).toBe(50);
     expect(next.active?.exercises.find(e => e.exerciseId === 'romanian-deadlift')?.done[0]).toBe(true);
     expect(next.active?.exercises.some(e => e.exerciseId === 'hanging-knee-raise')).toBe(false);
     expect(next.active?.exercises.find(e => e.exerciseId === 'decline-situp')?.weight).toBe(0);
-    expect(next.workouts[2].exercises.filter(e => e.muscle === 'abs')).toHaveLength(2);
+    expect(next.workouts[2].exercises.filter(e => e.muscle === 'legs')).toHaveLength(6);
     expect(migrateState(next)).toEqual(next);
     expect(validateState(next)).toBe(true);
   });
