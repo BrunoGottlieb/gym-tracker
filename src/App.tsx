@@ -12,6 +12,7 @@ import { HistoryEditor } from './HistoryEditor';
 import { MuscleBadge } from './components';
 import { Progression } from './ProgressionView';
 import { loadPoints } from './progression';
+import { WeeklyMuscleSummary, WeeklyCompletedChart } from './TrainingOverview';
 import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
 import { localDateKey, sessionsOnDate } from './calendar';
 
@@ -244,6 +245,7 @@ export default function App() {
         </section>
         <div className="section-heading"><h2>Seus treinos</h2><span>{completedWorkoutIds.size ? `${completedWorkoutIds.size} treino${completedWorkoutIds.size > 1 ? 's' : ''} concluído${completedWorkoutIds.size > 1 ? 's' : ''} hoje` : workoutToday ? `Sugestão de hoje: ${workoutToday.id.toUpperCase()}` : 'Você escolhe a ordem'}</span></div>
         <div className="workout-grid">{state.workouts.map(w => { const completed = completedWorkoutIds.has(w.id); const duplicateName = state.workouts.filter(other => other.name === w.name).length > 1; return <button className={`workout-tile ${completed ? 'workout-done' : ''}`} key={w.id} data-workout={w.id} onClick={() => openWorkout(w)} aria-label={`Abrir treino ${w.name}${duplicateName ? ` (${w.id.toUpperCase()})` : ''}`}><div className="workout-cover"><img src={imageUrl(w.image)} alt={`Ilustração do treino ${w.name}`} fetchPriority={w.day === day ? 'high' : 'auto'} />{completed ? <span className="completed-badge"><Check size={11} />Concluído</span> : w.day === day && <span className="today-badge">Sugerido</span>}<span className="cover-arrow"><ArrowRight size={18} /></span></div><div className="workout-caption"><span className="workout-letter">{w.id.length === 1 ? w.id.toUpperCase() : <Dumbbell size={15} />}</span><div><h3>{w.name}</h3><p>{days[w.day]} <span>·</span> {w.exercises.length} exercícios</p></div><ArrowRight size={17} /></div></button>; })}</div>
+        <WeeklyMuscleSummary workouts={state.workouts} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
       {view === 'workout' && displayedSession && selectedWorkout && <>
@@ -261,6 +263,7 @@ export default function App() {
       {view === 'history' && <>
         <div className="page-heading"><div><span className="eyebrow">UM PASSO DE CADA VEZ</span><h1>Seu histórico<span className="accent">.</span></h1><p className="subtitle">Cada treino conta. Aqui ficam os seus.</p></div><History className="heading-decoration" size={38} strokeWidth={1.4} /></div>
         <TrainingCalendar history={state.history} now={now} onDate={date => setDialog({ type: 'day', date })} />
+        <WeeklyCompletedChart history={state.history} />
         {state.history.length ? <><div className="history-summary"><span><strong>{state.history.length}</strong> {state.history.length === 1 ? 'treino registrado' : 'treinos registrados'}</span><span><strong>{state.history.reduce((n, s) => n + getProgress(s).done, 0)}</strong> séries concluídas</span></div><div className="history-list">{state.history.map(s => <button className="history-row" key={s.id} onClick={() => setDialog({ type: 'detail', session: s })}><span className="history-date"><strong>{new Date(s.finishedAt!).getDate()}</strong><span>{new Date(s.finishedAt!).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></span><span className="history-copy"><strong>{s.workoutName}</strong><span>{getProgress(s).done}/{getProgress(s).total} séries <span>·</span> {Math.max(1, Math.round((s.finishedAt! - s.startedAt) / 60000))} min</span></span><ChevronRight size={19} /></button>)}</div></> : <div className="empty-state"><div className="empty-illustration"><History size={38} strokeWidth={1.4} /></div><h2>O primeiro é só o começo.</h2><p>Finalize um treino e acompanhe por aqui<br />as cargas e séries que você registrou.</p><button className="primary" onClick={() => navigate('home')}>Escolher um treino<ArrowRight size={17} /></button></div>}
       </>}
       {view === 'settings' && <>
