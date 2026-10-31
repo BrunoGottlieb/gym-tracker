@@ -249,3 +249,10 @@ A full-screen blue native dialog celebrates the first available completion seen 
 
 
 The flame entrance now lasts 2.6 seconds: a close-camera arrival from the upper left, perspective banking and a full spiral, followed by a damped landing. Eighteen staggered gold/cream embers trace the flight; twenty radial sparks and two offset rings mark arrival. The title enters at 2.15 s, the counter at 2.4 s; all transient particles have faded by the resting state. Reduced motion hides the trails and bursts and displays the final layout immediately. Replay remounts the whole choreography. The celebration smoke test seeks real browser animation timelines at 300/950/1900/3400 ms, checks distinct flight poses, live/faded particles and delayed text, and saves screenshots of those phases.
+
+
+## Header flame and gentle idle fire
+
+The home sequence card is replaced by a flame button beside the Gym Tracker wordmark on every page. It is gray with a zero when nobody has a qualifying completion today, and orange/yellow with the number of **distinct people** who completed today (0–3), independent of the total streak count. Clicking it opens **Quem manteve a chama?**, with today's named contributors, current/best group sequence, week markers, sync state and animation preview. The automatic daily celebration and the settings preview remain available; settings stay above personal data.
+
+The existing flyby now banks gently between −24° and +12°, without flipping the flat artwork in 3D or spinning it upside down. After landing the SVG continuously varies its width/height while a warm radial aura softly pulses. Reduced motion disables movement and keeps a static subtle glow. `scripts/streak-header-smoke.cjs` checks the gray/lit states, duplicate-person counts, popup names, reload suppression/new-day celebration, header layouts at 320–1280 px, replay, reduced motion and actual continuing idle animation. The legacy celebration-smoke command delegates to this updated entry-point coverage.

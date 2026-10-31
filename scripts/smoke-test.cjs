@@ -38,7 +38,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.locator('.set-buttons').first().evaluate(el => el.scrollTo({ left: el.scrollWidth, behavior: 'instant' }));
     await page.screenshot({ path: path.join(output, 'extra-series-mobile.png'), animations: 'disabled' });
-    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor({ state: 'attached' });
     await page.reload();
     await page.getByRole('heading', { name: 'Seus treinos', exact: true }).waitFor();
     await page.locator('.resume-banner').click();
@@ -81,7 +81,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await minus.click();
     await minus.click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 2);
-    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor({ state: 'attached' });
     await page.reload();
     await page.locator('.resume-banner').click();
     assert.equal(await page.locator('.exercise-row').first().locator('.set-button').count(), 2);
@@ -160,7 +160,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     await page.getByRole('button', { name: 'Concluir série 3 de Supino reto com barra', exact: true }).click();
     assert.equal(await page.locator('.exercise-row').first().evaluate(el => el.classList.contains('exercise-complete')), true);
     assert.equal(await page.locator('.exercise-row').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(237, 248, 242)');
-    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor({ state: 'attached' });
     await page.reload();
     await page.getByRole('heading', { name: 'Seus treinos', exact: true }).waitFor();
     await page.locator('.resume-banner').click();
@@ -338,7 +338,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.match(await page.locator('.workout-done').textContent(), /Pernas/);
     assert.match(await page.locator('.workout-done .completed-badge').textContent(), /Concluído/);
     assert.equal(await page.locator('.week-total').textContent(), '1 treino concluído');
-    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor({ state: 'attached' });
     await page.reload();
     await page.locator('.workout-done').waitFor();
     assert.equal(await page.locator('.workout-done').count(), 1);
@@ -397,7 +397,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     assert.equal(await page.getByRole('button', { name: 'Desmarcar série 1 de Barra fixa pronada', exact: true }).getAttribute('aria-pressed'), 'true');
     assert.equal(await page.getByRole('textbox', { name: 'Carga de Rosca corda no crossover', exact: true }).inputValue(), '0');
     assert.equal(await page.locator('.exercise-row').last().locator('.set-button').count(), 3);
-    await page.getByText('Salvo no aparelho', { exact: true }).waitFor();
+    await page.getByText('Salvo no aparelho', { exact: true }).waitFor({ state: 'attached' });
     await page.reload();
     await page.getByRole('heading', { name: 'Seus treinos', exact: true }).waitFor();
     await page.locator('.resume-banner').click();

@@ -7,23 +7,26 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const errors=[],contexts=[],ids=[];let posts=0;
  const get=async()=>{const r=await fetch(api,{headers:{Authorization:`Bearer ${code}`}});assert.equal(r.status,200);return r.json()};
  const wait=async predicate=>{for(let i=0;i<80;i++){if(await predicate())return;await new Promise(r=>setTimeout(r,150));}throw Error('Cloud assertion timeout')};
- const make=async()=>{const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'America/Sao_Paulo'});contexts.push(c);await c.route('**/api/streaks',async route=>{const req=route.request();if(req.method()==='POST'){posts++;for(const e of req.postDataJSON().events||[])ids.push({id:e.id,person:e.person,date:e.date});}const response=await route.fetch({url:api});await route.fulfill({response});});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(app);await p.locator('.workout-grid').waitFor();return[c,p]};
+ const make=async()=>{const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'America/Sao_Paulo'});contexts.push(c);await c.route('**/api/streaks',async route=>{const req=route.request();if(req.method()==='POST'){posts++;for(const e of req.postDataJSON().events||[])ids.push({id:e.id,person:e.person,date:e.date});}const response=await route.fetch({url:api});await route.fulfill({response});});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.addLocatorHandler(p.locator('.streak-celebration'),async()=>{await p.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click()});await p.goto(app);await p.locator('.workout-grid').waitFor();return[c,p]};
  const dismiss=async p=>{const d=p.locator('.streak-celebration');if(await d.count())await d.getByRole('button',{name:'Continuar',exact:true}).click()};
- const connect=async p=>{await p.locator('.streak-panel').waitFor();await p.getByText(/Atualizado às/).first().waitFor()};
+ const details=async p=>{await p.locator('.streak-header-badge').click();return p.getByRole('dialog',{name:'Quem manteve a chama?',exact:true})};
+ const closeDetails=p=>p.getByRole('dialog',{name:'Quem manteve a chama?',exact:true}).getByRole('button',{name:'Fechar',exact:true}).click();
+ const connect=async p=>{await details(p);await p.getByText(/Atualizado às/).first().waitFor();await closeDetails(p)};
+ const count=async p=>{await details(p);const v=await p.locator('.shared-streak-count strong').textContent();await closeDetails(p);return v};
  const finish=async p=>{await p.getByRole('button',{name:'Abrir treino Peito + tríceps',exact:true}).click();const rows=p.locator('.exercise-row');for(let i=0;i<await rows.count();i++)await rows.nth(i).locator('.set-button').last().click();await p.getByRole('button',{name:'Salvar e finalizar',exact:true}).click();await p.locator('.history-list').waitFor();await p.waitForTimeout(200);await dismiss(p);await p.getByRole('button',{name:'Treinos',exact:true}).click()};
  try{
-  const[c,p]=await make();await connect(p);assert.equal(await p.getByLabel('Código da sala',{exact:true}).count(),0);assert.equal(await p.locator('.shared-streak-people>span').count(),3);
+  const[c,p]=await make();await connect(p);assert.equal(await p.getByLabel('Código da sala',{exact:true}).count(),0);await details(p);assert.equal(await p.locator('.shared-streak-people>span').count(),3);await closeDetails(p);
   await finish(p);await wait(async()=> (await get()).dates.some(d=>d.person==='original'));
-  assert.equal(await p.locator('.shared-streak-count strong').textContent(),'1');
-  const[,p2]=await make();await connect(p2);await p2.locator('.streak-celebration').waitFor();await dismiss(p2);assert.equal(await p2.locator('.shared-streak-count strong').textContent(),'1');
+  assert.equal(await count(p),'1');
+  const[,p2]=await make();await connect(p2);assert.equal(await count(p2),'1');
   await p.getByRole('button',{name:'Histórico',exact:true}).click();await p.locator('.history-row').first().click();await p.getByRole('button',{name:'Editar este treino',exact:true}).click();await p.locator('.history-editor-exercise').first().locator('.set-button').last().click();await p.getByRole('button',{name:'Salvar registro',exact:true}).click();await p.getByRole('button',{name:'Fechar',exact:true}).click();await wait(async()=> !(await get()).dates.some(d=>d.person==='original'));
   await p.getByRole('button',{name:'Treinos',exact:true}).click();await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload();await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
-  await c.setOffline(true);await finish(p);await p.reload();await p.locator('.streak-panel').waitFor();assert.match(await p.locator('.streak-status').textContent(),/pendente/);
-  await c.setOffline(false);await wait(async()=> (await get()).dates.some(d=>d.person==='original'));await p.getByRole('button',{name:'Sincronizar sequências',exact:true}).click();await p.getByText(/Atualizado às/).first().waitFor();
+  await c.setOffline(true);await finish(p);await p.reload();await details(p);assert.match(await p.locator('.streak-status').textContent(),/pendente/);await closeDetails(p);
+  await c.setOffline(false);await wait(async()=> (await get()).dates.some(d=>d.person==='original'));await details(p);await p.getByRole('button',{name:'Sincronizar sequências',exact:true}).click();await p.getByText(/Atualizado às/).first().waitFor();await closeDetails(p);
   const out=path.resolve('artifacts/streaks');fs.mkdirSync(out,{recursive:true});
   for(const width of[320,390,768,1280]){await p.setViewportSize({width,height:900});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'overflow '+width);}
   await p.setViewportSize({width:390,height:844});await p.screenshot({path:path.join(out,'mobile.png'),fullPage:true});
-  const before=posts;await p.reload();await p.locator('.streak-panel').waitFor();await p.getByText(/Atualizado às/).first().waitFor();assert.equal(posts,before,'acknowledged events should not upload again');
+  const before=posts;await p.reload();await connect(p);assert.equal(posts,before,'acknowledged events should not upload again');
   assert.deepEqual(errors,[]);console.log('PASS: two devices, saved completion, history revocation, offline finish/reload/retry, persistent acknowledgements, mobile widths and no runtime errors.');
  }finally{for(const c of contexts)await c.close();await browser.close();const events=[...new Map(ids.map(e=>[e.id,e])).values()].map(e=>({...e,completed:false}));if(events.length)await fetch(api,{method:'POST',headers:{Authorization:`Bearer ${code}`,'Content-Type':'application/json'},body:JSON.stringify({events})});}
 })().catch(e=>{console.error(e);process.exitCode=1});
