@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import Dexie from 'dexie';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TrackerDatabase, loadState, saveState } from './storage';
 import { createInitialState } from './data';
@@ -8,6 +9,17 @@ let db: TrackerDatabase;
 afterEach(async () => { if (db) await db.delete(); });
 
 describe('IndexedDB persistence', () => {
+  it('upgrades version 1 without losing workouts, history or loads and keeps room credentials out of workout data', async () => {
+    const name=`test-${crypto.randomUUID()}`;
+    const old=new Dexie(name);old.version(1).stores({state:'id'});
+    const state=createInitialState();state.weights['bench-press']=52;
+    await old.table('state').put({id:'main',value:state});old.close();
+    db=new TrackerDatabase(name);
+    expect(await loadState(db)).toEqual(state);
+    await db.sync.put({id:'streak-room',value:{code:'test-room-secret'}});
+    expect((await db.sync.get('streak-room'))?.value).toEqual({code:'test-room-secret'});
+    expect(JSON.stringify(await loadState(db))).not.toContain('test-room-secret');
+  });
   it('seeds a fresh installation with all five editable routines', async () => {
     db = new TrackerDatabase(`test-${crypto.randomUUID()}`);
     const state = await loadState(db);

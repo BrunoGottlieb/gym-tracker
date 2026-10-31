@@ -6,9 +6,11 @@ import { migrateState } from './migrations';
 
 export class TrackerDatabase extends Dexie {
   state!: Table<{ id: string; value: AppState }, string>;
+  sync!: Table<{ id: string; value: unknown }, string>;
   constructor(name = 'gym-tracker') {
     super(name);
     this.version(1).stores({ state: 'id' });
+    this.version(2).stores({ state: 'id', sync: 'id' });
   }
 }
 export const database = new TrackerDatabase();

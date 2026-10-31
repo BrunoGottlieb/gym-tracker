@@ -37,7 +37,7 @@ export function getProgress(session: Session) {
 }
 /** Called only after starting a workout, or after the user confirms replacing a session. */
 export function beginWorkout(state: AppState, workout: Workout, firstSet?: { exerciseId: string; index: number }, now = Date.now()): AppState {
-  const active = createSession(workout, state.weights, now);
+  const active = { ...createSession(workout, state.weights, now), person: state.selectedPlan ?? 'original' };
   const exercise = workout.exercises.find(e => e.id === firstSet?.exerciseId);
   const log = active.exercises.find(e => e.exerciseId === firstSet?.exerciseId);
   const marked = !!(firstSet && log && Number.isInteger(firstSet.index) && firstSet.index >= 0 && firstSet.index < log.done.length);
@@ -55,12 +55,12 @@ export function formatTime(seconds: number): string {
 }
 export function finishSession(state: AppState, now = Date.now()): AppState {
   if (!state.active || !getProgress(state.active).done) return state;
-  return { ...state, history: [{ ...state.active, finishedAt: now }, ...state.history], active: null, timer: { ...state.timer, started: false, endAt: null, remaining: state.timer.duration } };
+  return { ...state, history: [{ ...state.active, person: state.active.person ?? state.selectedPlan ?? 'original', finishedAt: now }, ...state.history], active: null, timer: { ...state.timer, started: false, endAt: null, remaining: state.timer.duration } };
 }
 
 export function editHistorySession(state: AppState, session: Session): AppState {
   const previous = state.history.find(record => record.id === session.id);
-  if (!previous || session.workoutId !== previous.workoutId || !validSession(session) || session.finishedAt === undefined || !session.exercises.some(log => log.done.some(Boolean))) throw new Error('Confira os dados e as séries realizadas deste registro.');
+  if (!previous || session.workoutId !== previous.workoutId || session.person !== previous.person || !validSession(session) || session.finishedAt === undefined || !session.exercises.some(log => log.done.some(Boolean))) throw new Error('Confira os dados e as séries realizadas deste registro.');
   const saved = structuredClone(session);
   return { ...state, history: state.history.map(record => record.id === saved.id ? saved : record).sort((a, b) => b.finishedAt! - a.finishedAt!) };
 }
@@ -70,7 +70,7 @@ const text = (value: unknown, max = 160): value is string => typeof value === 's
 const number = (value: unknown, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
 const integer = (value: unknown, max: number): value is number => number(value, max) && Number.isInteger(value);
 function validSession(value: unknown): value is Session {
-  return object(value) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
+  return object(value) && (value.person === undefined || ['original', 'sheet', 'ivan'].includes(String(value.person))) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
 }
 function validWorkouts(workouts: unknown): workouts is Workout[] {
   if (!Array.isArray(workouts) || !workouts.length || workouts.length > 30) return false;

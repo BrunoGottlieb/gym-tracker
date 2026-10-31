@@ -33,6 +33,7 @@ export interface Session {
   id: string;
   workoutId: string;
   workoutName: string;
+  person?: RoutinePlan;
   startedAt: number;
   finishedAt?: number;
   exercises: ExerciseLog[];
