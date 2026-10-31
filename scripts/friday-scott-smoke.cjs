@@ -2,7 +2,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
- const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});await context.route('**/api/streaks', route => route.abort());
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const output=path.resolve('artifacts/friday-scott');fs.mkdirSync(output,{recursive:true});
  const settings=()=>page.getByRole('button',{name:'Abrir ajustes',exact:true}).click();
  const backup=async name=>{await settings();const wait=page.waitForEvent('download');await page.getByRole('button',{name:'Exportar backup',exact:true}).click();const file=path.join(output,name+'.json');await(await wait).saveAs(file);return JSON.parse(fs.readFileSync(file,'utf8'));};

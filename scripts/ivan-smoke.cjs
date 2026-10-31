@@ -5,7 +5,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 (async () => {
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true,timezoneId:'America/Sao_Paulo'});
- const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await context.route('**/api/streaks', route => route.abort());
+  const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.clock.install({time:new Date('2026-11-01T12:00:00-03:00')});
  const output=path.resolve('artifacts/ivan-smoke');fs.mkdirSync(output,{recursive:true});
  const settings=()=>page.getByRole('button',{name:'Abrir ajustes',exact:true}).click();

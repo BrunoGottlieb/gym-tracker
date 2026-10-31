@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { database } from './storage';
+import { STREAK_GROUP_KEY } from './streakConfig';
 import { completionEvents, eventSignature, isSnapshot, type CloudSnapshot, type CompletionEvent } from './streaks';
 import type { AppState } from './types';
 
 export const STREAK_API = 'https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/streaks';
 interface SyncSettings { code: string; cache: CloudSnapshot | null; acknowledgements: Record<string, string>; profileSignature: string; lastSync: number | null }
-const blank = (): SyncSettings => ({ code: '', cache: null, acknowledgements: {}, profileSignature: '', lastSync: null });
+const blank = (): SyncSettings => ({ code: STREAK_GROUP_KEY, cache: null, acknowledgements: {}, profileSignature: '', lastSync: null });
 function savedSettings(value: unknown): SyncSettings {
   if (!value || typeof value !== 'object') return blank();
   const data = value as SyncSettings;
-  if (typeof data.code !== 'string' || data.code.length > 120 || (data.cache !== null && !isSnapshot(data.cache)) || !data.acknowledgements || typeof data.acknowledgements !== 'object' || !Object.values(data.acknowledgements).every(value => typeof value === 'string') || typeof data.profileSignature !== 'string' || (data.lastSync !== null && (typeof data.lastSync !== 'number' || !Number.isFinite(data.lastSync)))) return blank();
+  if (data.code !== STREAK_GROUP_KEY || (data.cache !== null && !isSnapshot(data.cache)) || !data.acknowledgements || typeof data.acknowledgements !== 'object' || !Object.values(data.acknowledgements).every(value => typeof value === 'string') || typeof data.profileSignature !== 'string' || (data.lastSync !== null && (typeof data.lastSync !== 'number' || !Number.isFinite(data.lastSync)))) return blank();
   return data;
 }
 export type CloudStatus = 'loading' | 'disconnected' | 'syncing' | 'synced' | 'offline' | 'error';
@@ -44,7 +45,7 @@ export function useCloudStreaks(state: AppState | null) {
       const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 12000);
       try {
         const response = await fetch(STREAK_API, { method, headers: { Authorization: `Bearer ${code}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), cache: 'no-store', credentials: 'omit', signal: controller.signal });
-        if (response.status === 401 || response.status === 403) throw new Error('Confira o código da sala. O serviço também precisa estar liberado para os celulares.');
+        if (response.status === 401 || response.status === 403) throw new Error('O serviço de sequências está indisponível. Seus treinos continuam salvos no aparelho.');
         if (!response.ok) throw new Error('A nuvem está indisponível. Seus treinos continuam salvos no aparelho.');
         return response.json();
       } finally { clearTimeout(timeout); }
@@ -89,16 +90,8 @@ export function useCloudStreaks(state: AppState | null) {
     window.addEventListener('online', refresh); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', refresh);
     return () => { clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', refresh); };
   }, [synchronize]);
-  const connect = async (code: string) => {
-    const normalized = code.trim().toUpperCase();
-    if (normalized.length < 12 || normalized.length > 120) throw new Error('Cole o código completo da sala.');
-    generation.current++;
-    await persist({ ...blank(), code: normalized }); setError(''); setStatus('offline');
-    if (!busy.current) await synchronize();
-  };
-  const disconnect = async () => { generation.current++; await persist(blank()); setStatus('disconnected'); setError(''); };
   const localEvents = useMemo(() => state ? completionEvents(state) : [], [state?.history]);
   const pending = localEvents.filter(event => settings.acknowledgements[event.id] !== eventSignature(event)).length;
-  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, connect, disconnect };
+  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize };
 }
 export type CloudStreakController = ReturnType<typeof useCloudStreaks>;

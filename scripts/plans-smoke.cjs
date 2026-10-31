@@ -6,6 +6,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, headless: true });
   const options = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true };
   const first = await browser.newContext(options), second = await browser.newContext(options);
+  await first.route('**/api/streaks', route => route.abort());
+  await second.route('**/api/streaks', route => route.abort());
   const page = await first.newPage(), brother = await second.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));

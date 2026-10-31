@@ -3,7 +3,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
  const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});
- const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await context.route('**/api/streaks', route => route.abort());
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const output=path.resolve('artifacts/auto-finish');fs.mkdirSync(output,{recursive:true});
  const settings=()=>page.getByRole('button',{name:'Abrir ajustes',exact:true}).click();
  const complete=()=>page.getByRole('dialog',{name:'Treino completo. Mandou bem!',exact:true});

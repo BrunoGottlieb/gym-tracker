@@ -9,10 +9,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const wait=async predicate=>{for(let i=0;i<80;i++){if(await predicate())return;await new Promise(r=>setTimeout(r,150));}throw Error('Cloud assertion timeout')};
  const make=async()=>{const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'America/Sao_Paulo'});contexts.push(c);await c.route('**/api/streaks',async route=>{const req=route.request();if(req.method()==='POST'){posts++;for(const e of req.postDataJSON().events||[])ids.push({id:e.id,person:e.person,date:e.date});}const response=await route.fetch({url:api});await route.fulfill({response});});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(app);await p.locator('.workout-grid').waitFor();return[c,p]};
  const settings=p=>p.getByRole('button',{name:'Abrir ajustes',exact:true}).click();
- const connect=async p=>{await settings(p);await p.getByLabel('Código da sala',{exact:true}).fill(code);await p.getByRole('button',{name:'Conectar sala',exact:true}).click();await p.getByRole('button',{name:'Treinos',exact:true}).click();await p.locator('.streak-panel').waitFor();await p.getByText(/Atualizado às/).first().waitFor()};
+ const connect=async p=>{await p.locator('.streak-panel').waitFor();await p.getByText(/Atualizado às/).first().waitFor()};
  const finish=async p=>{await p.getByRole('button',{name:'Abrir treino Peito + tríceps',exact:true}).click();const rows=p.locator('.exercise-row');for(let i=0;i<await rows.count();i++)await rows.nth(i).locator('.set-button').last().click();await p.getByRole('button',{name:'Salvar e finalizar',exact:true}).click();await p.getByRole('button',{name:'Treinos',exact:true}).click()};
  try{
-  const[c,p]=await make();assert.equal(posts,0);await connect(p);assert.equal(await p.locator('.streak-person').count(),3);
+  const[c,p]=await make();await connect(p);assert.equal(await p.getByLabel('Código da sala',{exact:true}).count(),0);assert.equal(await p.locator('.streak-person').count(),3);
   await finish(p);await wait(async()=> (await get()).dates.some(d=>d.person==='original'));
   assert.equal(await p.locator('[data-person=original] .streak-person-count strong').textContent(),'1');
   const[,p2]=await make();await connect(p2);assert.equal(await p2.locator('[data-person=original] .streak-person-count strong').textContent(),'1');
