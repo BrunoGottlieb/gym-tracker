@@ -31,8 +31,9 @@ function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () =
       {data.preview && <span className="celebration-preview">Prévia da animação</span>}
       <div className="celebration-content">
         <div className="celebration-art">
-          <span className="celebration-halo" /><span className="celebration-ring" />
-          <div className="celebration-sparks">{Array.from({ length: 8 }, (_, index) => <i key={index} style={{ '--angle': `${index * 45 + 15}deg`, '--spark-delay': `${420 + index * 35}ms`, '--distance': `${index % 2 ? 102 : 122}px` } as CSSProperties} />)}</div>
+          <span className="celebration-halo" /><span className="celebration-ring" /><span className="celebration-ring celebration-ring-echo" />
+          <div className="celebration-flight-trail" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ '--trail-delay': `${90 + index * 38}ms`, '--trail-size': `${3 + index % 4}px`, '--trail-offset': `${(index % 5 - 2) * 9}px`, '--trail-color': ['#FFD54A', '#FFAE33', '#FFF2B5'][index % 3] } as CSSProperties} />)}</div>
+          <div className="celebration-sparks">{Array.from({ length: 20 }, (_, index) => <i key={index} style={{ '--angle': `${index * 137.508}deg`, '--spark-delay': `${1800 + index % 4 * 45}ms`, '--distance': `${82 + index % 5 * 14}px` } as CSSProperties} />)}</div>
           <div className="celebration-flame-arrival"><StreakFlame /></div>
         </div>
         <h1 id="celebration-title" className="celebration-title"><strong>{personNames(data.people)}</strong><span>{data.people.length > 1 ? 'mantiveram a' : 'manteve a'}<br />chama acesa!</span></h1>

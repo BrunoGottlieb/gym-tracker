@@ -14,12 +14,23 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.goto(process.env.APP_URL||'http://127.0.0.1:4174/gym-tracker/');
   await screen.waitFor();assert.match(await screen.locator('h1').textContent(),/Ivan/);assert.match(await screen.locator('.celebration-count').textContent(),/4 treinos/);
   assert.equal(await screen.locator('.celebration-preview').count(),0);
-  await page.waitForTimeout(1800);await page.screenshot({path:path.join(output,'mobile.png')});
+  await page.waitForTimeout(3400);await page.screenshot({path:path.join(output,'mobile.png')});
+  // Seek actual CSS timelines to verify choreography, rather than just checking class names.
+  const poses=[];
+  for(const ms of [300,950,1900,3400]){
+    await screen.locator('.celebration-stage').evaluate((el,time)=>{for(const a of el.getAnimations({subtree:true})){a.pause();a.currentTime=time;}},ms);
+    poses.push(await screen.locator('.celebration-flame-arrival').evaluate(el=>getComputedStyle(el).transform));
+    if(ms===950){assert.equal(await screen.locator('h1').evaluate(el=>getComputedStyle(el).opacity),'0');assert.ok(await screen.locator('.celebration-flight-trail i').evaluateAll(els=>els.some(el=>Number(getComputedStyle(el).opacity)>.2)));}
+    if(ms===3400){assert.equal(await screen.locator('h1').evaluate(el=>getComputedStyle(el).opacity),'1');assert.ok(await screen.locator('.celebration-flight-trail i').evaluateAll(els=>els.every(el=>Number(getComputedStyle(el).opacity)===0)));}
+    await page.screenshot({path:path.join(output,`flight-${ms}.png`)});
+  }
+  assert.equal(new Set(poses).size,4,'flight should move and rotate through distinct poses');
+
   const savedData=()=>page.evaluate(async()=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('gym-tracker');r.onsuccess=()=>resolve(r.result);r.onerror=reject;});const val=await new Promise((resolve,reject)=>{const r=db.transaction('state').objectStore('state').get('main');r.onsuccess=()=>resolve(r.result);r.onerror=reject;});db.close();return JSON.stringify(val);});
   const before=await savedData();
   await screen.getByRole('button',{name:'Repetir animação',exact:true}).click();assert.equal(await screen.locator('.celebration-stage').getAttribute('data-replay'),'1');
   const animations=await screen.locator('.celebration-flame-arrival').evaluate(el=>el.getAnimations().map(a=>({name:a.animationName,state:a.playState})));assert.ok(animations.some(a=>a.name==='flame-arrive'));
-  await page.waitForTimeout(1800);
+  await page.waitForTimeout(3400);
   for(const size of[{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){await page.setViewportSize(size);assert.equal(await screen.evaluate(el=>el.scrollWidth>el.clientWidth),false,'dialog overflow '+size.width);await screen.getByRole('button',{name:'Continuar',exact:true}).scrollIntoViewIfNeeded();}
   await page.setViewportSize({width:390,height:844});await close();await screen.waitFor({state:'detached'});
   assert.equal(await page.locator('.shared-streak-count strong').textContent(),'4');
