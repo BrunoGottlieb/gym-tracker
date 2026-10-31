@@ -90,6 +90,18 @@ export function useCloudStreaks(state: AppState | null) {
     window.addEventListener('online', refresh); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', refresh);
     return () => { clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', refresh); };
   }, [synchronize]);
+  const checkToday = useCallback(async (): Promise<CloudSnapshot | null> => {
+    if (!navigator.onLine) return null;
+    const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 4500);
+    try {
+      const response = await fetch(STREAK_API, { headers: { Authorization: `Bearer ${STREAK_GROUP_KEY}` }, credentials: 'omit', cache: 'no-store', signal: controller.signal });
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!isSnapshot(data)) return null;
+      await persist({ ...settingsRef.current, cache: data, lastSync: Date.now() });
+      return data;
+    } catch { return null; } finally { clearTimeout(timeout); }
+  }, [persist]);
   const localEvents = useMemo(() => state ? completionEvents(state) : [], [state?.history]);
   const pending = localEvents.filter(event => settings.acknowledgements[event.id] !== eventSignature(event)).length;
   const today = streakDate();
@@ -98,6 +110,6 @@ export function useCloudStreaks(state: AppState | null) {
     if (state) schedules[state.selectedPlan ?? 'original'] = [...new Set(state.workouts.map(workout => workout.day))];
     return sharedStreak([...(settings.cache?.dates ?? []), ...localEvents.filter(event => event.completed)], schedules, today);
   }, [settings.cache, localEvents, state?.selectedPlan, state?.workouts, today]);
-  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, group, loaded };
+  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, checkToday, group, loaded };
 }
 export type CloudStreakController = ReturnType<typeof useCloudStreaks>;

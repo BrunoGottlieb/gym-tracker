@@ -17,6 +17,7 @@ import { StreakCelebration } from './StreakCelebration';
 import { useCloudStreaks } from './useCloudStreaks';
 import { WeeklyMuscleSummary, WeeklyCompletedChart } from './TrainingOverview';
 import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
+import { streakDate } from './streaks';
 import { localDateKey, sessionsOnDate } from './calendar';
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -26,10 +27,10 @@ type SetAdjustment = { exerciseId: string; change: 1 | -1 };
 const adjustSession = (state: AppState, action: SetAdjustment) => action.change === 1 ? addSessionSet(state, action.exerciseId) : removeSessionSet(state, action.exerciseId);
 type DialogState = { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'switch'; workout: Workout; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
 
-function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
+function Modal({ title, onClose, children, wide = false, className = '' }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const dialog = ref.current!; dialog.showModal(); return () => { if (dialog.open) dialog.close(); }; }, []);
-  return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''}`} onCancel={onClose} onClick={e => { if (e.target === ref.current) onClose(); }} aria-label={title}>
+  return <dialog ref={ref} className={`modal ${wide ? 'modal-wide' : ''} ${className}`} onCancel={event => { event.preventDefault(); onClose(); }} onClick={e => { if (e.target === ref.current) onClose(); }} aria-label={title}>
     <div className="modal-heading"><h2>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Fechar"><X size={21} /></button></div>{children}
   </dialog>;
 }
@@ -104,6 +105,9 @@ export default function App() {
   const stateRef = useRef<AppState | null>(null);
   const cloudStreak = useCloudStreaks(state);
   const [streakPreview, setStreakPreview] = useState(0);
+  const [selfCompletion, setSelfCompletion] = useState<string | null>(null);
+  const [finishing, setFinishing] = useState(false);
+  const finishLock = useRef(false);
   const queue = useRef(Promise.resolve());
   const revision = useRef(0);
   const [view, setView] = useState<View>('home');
@@ -154,6 +158,23 @@ export default function App() {
     setNotice('Descanso concluído. Bora para a próxima série!');
     commit(s => ({ ...s, timer: { ...s.timer, remaining: 0, endAt: null } }));
   }, [remaining, state?.timer.endAt, state?.preferences.sound, commit]);
+
+  async function saveFinishedWorkout() {
+    const session = stateRef.current?.active;
+    if (!session || finishLock.current) return;
+    finishLock.current = true; setFinishing(true);
+    try {
+      const complete = getProgress(session).total > 0 && getProgress(session).done === getProgress(session).total;
+      // Check the cloud immediately before saving, instead of trusting an old cached day.
+      const latest = complete ? await cloudStreak.checkToday() : null;
+      if (stateRef.current?.active?.id !== session.id) return;
+      const today = streakDate();
+      const first = complete && !!latest && latest.today === today && !latest.dates.some(day => day.date === today) && !cloudStreak.localEvents.some(event => event.completed && event.date === today);
+      commit(s => finishSession(s));
+      if (first) setSelfCompletion(session.id);
+      navigate('history'); setNotice('Treino registrado. Mais um passo dado!');
+    } finally { finishLock.current = false; setFinishing(false); }
+  }
 
   function navigate(next: View) { setView(next); setDialog(null); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openProgress(exerciseId: string) { setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
@@ -285,18 +306,18 @@ export default function App() {
     <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button></nav>
     {notice && <div className="toast" role="status"><CircleCheck size={18} /><span>{notice}</span></div>}
     <input ref={importRef} type="file" accept=".json,application/json" hidden aria-label="Selecionar arquivo de backup" onChange={e => { const file = e.target.files?.[0]; if (file) void importBackup(file); e.target.value = ''; }} />
-    {dialog?.type === 'streak' && <Modal title="Quem manteve a chama?" onClose={() => setDialog(null)}><StreakDetails cloud={cloudStreak} onPreview={() => { setDialog(null); setStreakPreview(value => value + 1); }} /></Modal>}
+    {dialog?.type === 'streak' && <Modal title="Chama do grupo" className="streak-mini-modal" onClose={() => setDialog(null)}><StreakDetails cloud={cloudStreak} /></Modal>}
     {dialog?.type === 'plan' && <Modal title={`Usar ${planLabels[dialog.plan]}?`} onClose={() => setDialog(null)}><p className="subtle">A escolha vale apenas para este aparelho. A configuração da ficha atual ficará guardada para quando você voltar. Suas cargas e seu histórico serão mantidos neste aparelho; eles não são enviados para outro celular.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" disabled={!!active} onClick={() => { const plan = dialog.plan; commit(current => selectRoutinePlan(current, plan)); setViewedWorkoutId(null); navigate('home'); setNotice(`Ficha selecionada: ${planLabels[plan]}.`); }}>Usar esta ficha</button></div></Modal>}
     {dialog?.type === 'timer' && <Modal title="Um respiro entre as séries" onClose={() => setDialog(null)}>{restPanel(true)}<label className="toggle-row"><span><strong>Começar automaticamente</strong><small>Ao marcar uma série como concluída.</small></span><input role="switch" type="checkbox" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label></Modal>}
-    {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar por hoje?'} onClose={() => setDialog(null)}><div className="finish-summary"><CircleCheck size={42} /><strong>{progress.done}<span> de {progress.total} séries</span></strong><p>{active.workoutName}</p></div><p className="subtle">{progress.done === progress.total ? 'Suas cargas e séries serão guardadas no histórico.' : 'As séries concluídas serão guardadas. As restantes ficarão como não realizadas.'}</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Continuar treino</button><button className="primary" onClick={() => { commit(s => finishSession(s)); navigate('history'); setNotice('Treino registrado. Mais um passo dado!'); }}>Salvar e finalizar</button></div></Modal>}
-    {dialog?.type === 'discard' && <Modal title="Descartar este treino?" onClose={() => setDialog(null)}><p className="subtle">As séries marcadas nesta sessão serão descartadas. Suas cargas continuarão salvas para o próximo treino.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Continuar treino</button><button className="danger-button" onClick={() => { commit(s => ({ ...s, active: null, timer: { ...s.timer, started: false, endAt: null, remaining: s.timer.duration } })); navigate('home'); }}>Descartar sessão</button></div></Modal>}
+    {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar por hoje?'} onClose={() => { if (!finishing) setDialog(null); }}><div className="finish-summary"><CircleCheck size={42} /><strong>{progress.done}<span> de {progress.total} séries</span></strong><p>{active.workoutName}</p></div><p className="subtle">{progress.done === progress.total ? 'Suas cargas e séries serão guardadas no histórico.' : 'As séries concluídas serão guardadas. As restantes ficarão como não realizadas.'}</p><div className="modal-actions"><button className="secondary" disabled={finishing} onClick={() => setDialog(null)}>Continuar treino</button><button className="primary" disabled={finishing} onClick={() => { void saveFinishedWorkout(); }}>{finishing ? 'Finalizando…' : 'Salvar e finalizar'}</button></div></Modal>}
+    {dialog?.type === 'discard' && <Modal title="Descartar este treino?" onClose={() => setDialog(null)}><p className="subtle">As séries marcadas nesta sessão serão descartadas. Suas cargas continuarão salvas para o próximo treino.</p><div className="modal-actions"><button className="secondary" disabled={finishing} onClick={() => setDialog(null)}>Continuar treino</button><button className="danger-button" onClick={() => { commit(s => ({ ...s, active: null, timer: { ...s.timer, started: false, endAt: null, remaining: s.timer.duration } })); navigate('home'); }}>Descartar sessão</button></div></Modal>}
     {dialog?.type === 'switch' && <Modal title="Você já começou um treino" onClose={() => setDialog(null)}><p className="subtle">Seu treino “{active?.workoutName}” está em andamento. Você pode consultar “{dialog.workout.name}” sem interromper o treino atual. Para iniciar este outro treino, finalize o atual ou confirme a troca. As séries não finalizadas do treino atual serão descartadas; as cargas continuam salvas.</p><div className="modal-actions"><button className="secondary" onClick={returnToActive}>Continuar o atual</button><button className="danger-button" onClick={() => { const { workout, firstSet, setAdjustment } = dialog; setViewedWorkoutId(workout.id); navigate('workout'); commit(s => { const next = beginWorkout(s, workout, firstSet); return setAdjustment ? adjustSession(next, setAdjustment) : next; }, true); }}>Descartar e trocar</button></div></Modal>}
     {dialog?.type === 'edit' && <WorkoutEditor flexibleSets={state.selectedPlan === 'sheet' || state.selectedPlan === 'ivan'} workout={dialog.workout} onClose={() => setDialog(null)} onSave={workout => { commit(s => ({ ...s, workouts: s.workouts.map(w => w.id === workout.id ? workout : w) })); setDialog(null); setNotice('Treino atualizado.'); }} />}
     {dialog?.type === 'day' && <Modal title={new Date(`${dialog.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })} onClose={() => setDialog(null)}>{sessionsOnDate(state.history, dialog.date).length ? sessionsOnDate(state.history, dialog.date).map(s => <button className="day-session" key={s.id} onClick={() => setDialog({ type: 'detail', session: s })}><span><strong>{s.workoutName}</strong><small>{new Date(s.finishedAt!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · {getProgress(s).done}/{getProgress(s).total} séries</small></span><ChevronRight size={17} /></button>) : <div className="calendar-empty"><CalendarDays size={32} /><p>Nenhum treino registrado neste dia.</p></div>}</Modal>}
     {dialog?.type === 'import' && <Modal title="Restaurar este backup?" onClose={() => setDialog(null)}><p className="subtle">O arquivo contém {dialog.data.workouts.length} treinos e {dialog.data.history.length} sessões de histórico. Ele substituirá todos os registros deste aparelho, incluindo o treino em andamento.</p><button className="text-button" onClick={exportBackup}><Download size={16} />Exportar os dados atuais antes</button><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" onClick={() => { const data = dialog.data; commit(() => data); setViewedWorkoutId(null); navigate('home'); setNotice('Backup restaurado.'); }}>Substituir e restaurar</button></div></Modal>}
     {dialog?.type === 'edit-history' && <Modal title="Editar treino realizado" onClose={() => setDialog({ type: 'detail', session: dialog.session })} wide><HistoryEditor session={dialog.session} onClose={() => setDialog({ type: 'detail', session: dialog.session })} onSave={session => { commit(current => editHistorySession(current, session)); setDialog({ type: 'detail', session }); setNotice('Registro atualizado.'); }} /></Modal>}
     {dialog?.type === 'detail' && <Modal title={dialog.session.workoutName} onClose={() => setDialog(null)}><p className="subtle capitalize">{new Date(dialog.session.finishedAt!).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {Math.max(1, Math.round((dialog.session.finishedAt! - dialog.session.startedAt) / 60000))} min</p><button className="secondary full-width history-edit-button" onClick={() => setDialog({ type: 'edit-history', session: dialog.session })}><Pencil size={17} />Editar este treino</button><div className="session-detail">{dialog.session.exercises.map(e => <div className="detail-exercise" key={e.exerciseId}><button className="detail-image-button" aria-label={`Ampliar imagem de ${e.name}`} onClick={() => setPreview({ image: e.image, title: e.name, exerciseId: e.exerciseId })}><img src={imageUrl(e.image)} alt="" /><ZoomIn size={12} /></button><div><strong>{e.name}</strong><MuscleBadge muscle={getMuscle(e)} /><p>{e.weight.toLocaleString('pt-BR')} kg · Meta: {e.target} {e.kind === 'seconds' ? 's' : 'reps'}</p><span>{e.done.filter(Boolean).length}/{e.done.length} séries concluídas</span><button className="text-button" onClick={() => openProgress(e.exerciseId)}><TrendingUp size={13} />Ver evolução</button></div></div>)}</div></Modal>}
-    <StreakCelebration cloud={cloudStreak} person={state.selectedPlan ?? 'original'} blocked={!!dialog || !!preview} previewRequest={streakPreview} />
+    <StreakCelebration cloud={cloudStreak} person={state.selectedPlan ?? 'original'} blocked={!!dialog || !!preview} previewRequest={streakPreview} selfCompletion={selfCompletion} />
     {preview && <ImagePreview image={preview.image} title={preview.title} onClose={() => setPreview(null)} note={preview.exerciseId ? state.exerciseNotes?.[canonicalExerciseId(preview.exerciseId)] : undefined} onNote={preview.exerciseId ? note => commit(s => ({ ...s, exerciseNotes: { ...s.exerciseNotes, [canonicalExerciseId(preview.exerciseId!)]: note } })) : undefined} />}
   </div>;
 }

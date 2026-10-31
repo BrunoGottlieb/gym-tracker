@@ -14,7 +14,7 @@ export function personNames(people: RoutinePlan[]) {
   const names = people.map(person => planLabels[person]);
   return names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names.at(-1)}` : names[0];
 }
-interface Celebration { people: RoutinePlan[]; count: number; preview: boolean }
+interface Celebration { people: RoutinePlan[]; count: number; preview: boolean; self?: boolean }
 
 function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -36,8 +36,8 @@ function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () =
           <div className="celebration-sparks">{Array.from({ length: 20 }, (_, index) => <i key={index} style={{ '--angle': `${index * 137.508}deg`, '--spark-delay': `${1800 + index % 4 * 45}ms`, '--distance': `${82 + index % 5 * 14}px` } as CSSProperties} />)}</div>
           <div className="celebration-flame-arrival"><StreakFlame /></div>
         </div>
-        <h1 id="celebration-title" className="celebration-title"><strong>{personNames(data.people)}</strong><span>{data.people.length > 1 ? 'mantiveram a' : 'manteve a'}<br />chama acesa!</span></h1>
-        <div className="celebration-count"><StreakFlame /><span>{data.count} {data.count === 1 ? 'treino' : 'treinos'} em sequência</span></div>
+        <h1 id="celebration-title" className="celebration-title"><strong>{data.self ? 'Você' : personNames(data.people)}</strong><span>{!data.self && data.people.length > 1 ? 'mantiveram a' : 'manteve a'}<br />chama acesa!</span></h1>
+        <div className="celebration-count"><StreakFlame /><span>{data.count} {data.count === 1 ? 'dia' : 'dias'} de chama</span></div>
       </div>
       <footer className="celebration-actions">
         <button className="celebration-replay" onClick={() => setReplay(value => value + 1)}><RotateCcw size={15} />Repetir animação</button>
@@ -47,23 +47,32 @@ function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () =
   </dialog>;
 }
 
-export function StreakCelebration({ cloud, person, blocked, previewRequest }: { cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number }) {
+export function StreakCelebration({ cloud, person, blocked, previewRequest, selfCompletion }: { cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number; selfCompletion: string | null }) {
   const [seen, setSeen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
   const [screen, setScreen] = useState<Celebration | null>(null);
   const handledPreview = useRef(0);
+  const handledSelf = useRef<string | null>(null);
   useEffect(() => { const update = () => setVisible(!document.hidden); document.addEventListener('visibilitychange', update); return () => document.removeEventListener('visibilitychange', update); }, []);
   useEffect(() => { let alive = true; database.sync.get('streak-celebration-seen').then(record => {
     if (alive) { setSeen(isDate(record?.value) ? record.value : null); setReady(true); }
   }).catch(() => { if (alive) setReady(true); }); return () => { alive = false; }; }, []);
   useEffect(() => {
+    if (selfCompletion && handledSelf.current !== selfCompletion) return;
     if (!ready || !visible || !cloud.loaded || blocked || screen || seen === cloud.group.today || !cloud.group.completedToday) return;
     const { today, peopleToday, current } = cloud.group;
     setSeen(today); setScreen({ people: peopleToday, count: current, preview: false });
     // Separate from workout backups. StrictMode, reloads and replay never reset it.
     void database.sync.put({ id: 'streak-celebration-seen', value: today }).catch(() => {});
-  }, [ready, visible, cloud.loaded, cloud.group, blocked, screen, seen]);
+  }, [ready, visible, cloud.loaded, cloud.group, blocked, screen, seen, selfCompletion]);
+  useEffect(() => {
+    if (!selfCompletion || handledSelf.current === selfCompletion || !ready || !visible || blocked || !cloud.group.completedToday) return;
+    handledSelf.current = selfCompletion;
+    const today = cloud.group.today;
+    setSeen(today); setScreen({ people: [person], count: cloud.group.current, preview: false, self: true });
+    void database.sync.put({ id: 'streak-celebration-seen', value: today }).catch(() => {});
+  }, [selfCompletion, ready, visible, blocked, cloud.group, person]);
   useEffect(() => {
     if (!previewRequest || previewRequest === handledPreview.current) return;
     handledPreview.current = previewRequest;
