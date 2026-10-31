@@ -11,6 +11,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
   });
   await context.route('**/api/streaks', route => route.abort());
   const page = await context.newPage();
+  await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   try {
@@ -115,6 +116,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true });
   await context.route('**/api/streaks', route => route.abort());
   const page = await context.newPage();
+  await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const base = process.env.APP_URL || 'http://127.0.0.1:4173/';

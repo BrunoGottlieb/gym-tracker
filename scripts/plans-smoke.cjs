@@ -9,6 +9,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   await first.route('**/api/streaks', route => route.abort());
   await second.route('**/api/streaks', route => route.abort());
   const page = await first.newPage(), brother = await second.newPage();
+  for (const p of [page,brother]) await p.addLocatorHandler(p.locator('.streak-celebration'), async () => { await p.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   brother.on('pageerror', e => errors.push(e.message));

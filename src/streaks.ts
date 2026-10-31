@@ -47,3 +47,12 @@ export function isSnapshot(value: unknown): value is CloudSnapshot {
   const data = value as CloudSnapshot;
   return data.version === 1 && isDate(data.today) && Array.isArray(data.dates) && data.dates.length <= 20000 && data.dates.every(day => day && validPerson(day.person) && isDate(day.date)) && !!data.trainingDays && streakPeople.every(person => Array.isArray(data.trainingDays[person]) && data.trainingDays[person].length > 0 && data.trainingDays[person].length <= 7 && data.trainingDays[person].every(day => Number.isInteger(day) && day >= 0 && day <= 6));
 }
+
+// A single shared sequence: any member's completion covers the calendar date.
+// A day is a group rest day only when nobody is scheduled to train.
+export function sharedStreak(days: StreakDay[], schedules: Record<RoutinePlan, number[]>, today = streakDate()) {
+  const dates = [...new Set(days.map(day => day.date))];
+  const trainingDays = [...new Set(streakPeople.flatMap(person => schedules[person]))];
+  const peopleToday = streakPeople.filter(person => days.some(day => day.person === person && day.date === today));
+  return { ...streakSummary(dates, trainingDays, today), dates, trainingDays, peopleToday, today };
+}

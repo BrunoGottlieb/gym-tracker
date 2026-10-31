@@ -7,6 +7,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true });
   await context.route('**/api/streaks', route => route.abort());
   const page = await context.newPage();
+  await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   const output = path.resolve('artifacts/catalog-smoke');

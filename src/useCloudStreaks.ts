@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
-import { completionEvents, eventSignature, isSnapshot, type CloudSnapshot, type CompletionEvent } from './streaks';
+import { completionEvents, defaultTrainingDays, eventSignature, isSnapshot, sharedStreak, streakDate, type CloudSnapshot, type CompletionEvent } from './streaks';
 import type { AppState } from './types';
 
 export const STREAK_API = 'https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/streaks';
@@ -92,6 +92,12 @@ export function useCloudStreaks(state: AppState | null) {
   }, [synchronize]);
   const localEvents = useMemo(() => state ? completionEvents(state) : [], [state?.history]);
   const pending = localEvents.filter(event => settings.acknowledgements[event.id] !== eventSignature(event)).length;
-  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize };
+  const today = streakDate();
+  const group = useMemo(() => {
+    const schedules = { ...(settings.cache?.trainingDays ?? defaultTrainingDays) };
+    if (state) schedules[state.selectedPlan ?? 'original'] = [...new Set(state.workouts.map(workout => workout.day))];
+    return sharedStreak([...(settings.cache?.dates ?? []), ...localEvents.filter(event => event.completed)], schedules, today);
+  }, [settings.cache, localEvents, state?.selectedPlan, state?.workouts, today]);
+  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, group, loaded };
 }
 export type CloudStreakController = ReturnType<typeof useCloudStreaks>;

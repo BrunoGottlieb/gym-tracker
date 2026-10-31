@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { beginWorkout, finishSession, validateState } from './domain';
-import { completionEvents, sessionEvent, streakDate, streakSummary, isDate, isSnapshot, defaultTrainingDays } from './streaks';
+import { completionEvents, sessionEvent, streakDate, streakSummary, sharedStreak, isDate, isSnapshot, defaultTrainingDays } from './streaks';
 
 describe('shared streaks', () => {
+  it('shares one sequence across alternating people and counts multiple members on a date only once', () => {
+    const result=sharedStreak([{person:'original',date:'2026-10-28'},{person:'sheet',date:'2026-10-29'},{person:'ivan',date:'2026-10-30'},{person:'original',date:'2026-10-30'}],defaultTrainingDays,'2026-10-30');
+    expect(result.current).toBe(3);
+    expect(result.peopleToday).toEqual(['original','ivan']);
+  });
+  it('preserves days when everybody rests, but requires Saturday because Ivan trains', () => {
+    expect(sharedStreak([{person:'original',date:'2026-10-30'}],defaultTrainingDays,'2026-11-01').current).toBe(0);
+    const result=sharedStreak([{person:'ivan',date:'2026-10-31'},{person:'sheet',date:'2026-11-02'}],defaultTrainingDays,'2026-11-02');
+    expect(result.current).toBe(2);
+    expect(sharedStreak([{person:'ivan',date:'2026-10-31'}],defaultTrainingDays,'2026-11-01')).toMatchObject({current:1,restToday:true});
+  });
   it('preserves weekends without adding free training days', () => {
     expect(streakSummary(['2026-10-23', '2026-10-26'], [1,2,3,4,5], '2026-10-26')).toMatchObject({current:2,best:2});
     expect(streakSummary(['2026-10-23'], [1,2,3,4,5], '2026-10-25').current).toBe(1);
