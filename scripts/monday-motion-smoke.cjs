@@ -9,16 +9,32 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const workout = process.env.MOTION_WORKOUT || 'a';
-  const cover = workout === 'b' ? 'assisted-pullup' : 'bench-press';
-  const folder = workout === 'b' ? 'tuesday-motion' : 'monday-motion';
+  const cover = workout === 'c' ? 'lever-squat' : workout === 'b' ? 'assisted-pullup' : 'bench-press';
+  const folder = workout === 'c' ? 'wednesday-motion' : workout === 'b' ? 'tuesday-motion' : 'monday-motion';
   const home = () => page.getByRole('button', { name: 'Treinos', exact: true }).click();
   try {
     await page.goto(process.env.APP_URL || 'http://127.0.0.1:4174/gym-tracker/');
     await page.locator(`.workout-tile[data-workout=${workout}]`).waitFor();
-    assert.match(await page.locator(`.workout-tile[data-workout=${workout}] img`).getAttribute('src'), new RegExp(`motion/${cover}-1\\.webp$`));
+    assert.match(await page.locator(`.workout-tile[data-workout=${workout}] img`).getAttribute('src'), new RegExp(`motion/covers/${cover}\\.webp$`));
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const id of ['a', 'b', 'c']) {
+        const coverImage = page.locator(`.workout-tile[data-workout=${id}] .motion-cover img`);
+        await coverImage.evaluate(img => img.decode());
+        const layout = await coverImage.evaluate(img => {
+          const rect = img.getBoundingClientRect(), parent = img.parentElement.getBoundingClientRect(), css = getComputedStyle(img);
+          return { fit: css.objectFit, blend: css.mixBlendMode, width: Math.abs(rect.width - parent.width), height: Math.abs(rect.height - parent.height), naturalWidth: img.naturalWidth };
+        });
+        assert.equal(layout.fit, 'cover'); assert.equal(layout.blend, 'normal'); assert.equal(layout.naturalWidth, 1440);
+        assert.ok(layout.width < 1 && layout.height < 1, 'Blue image fills cover at width ' + width);
+      }
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    fs.mkdirSync(`artifacts/${folder}`, { recursive: true });
+    await page.screenshot({ path: `artifacts/${folder}/home.png`, fullPage: true });
     await page.locator(`.workout-tile[data-workout=${workout}]`).click();
-    assert.equal(await page.locator('.exercise-motion').count(), 6);
-    assert.equal(await page.locator('.set-button').count(), 18);
+    assert.equal(await page.locator('.exercise-motion').count(), workout === 'c' ? 7 : 6);
+    assert.equal(await page.locator('.set-button').count(), workout === 'c' ? 22 : 18);
     const first = page.locator('.exercise-motion').first();
     await page.waitForFunction(() => document.querySelector('.exercise-motion img')?.src.includes('/motion/'));
     const initial = await first.locator('img').getAttribute('src');
@@ -60,7 +76,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await context.setOffline(true);
     await page.reload();
     await page.locator(`.workout-tile[data-workout=${workout}]`).click();
-    await page.getByRole('button', { name: `Ampliar imagem de ${names[5]}`, exact: true }).click();
+    await page.getByRole('button', { name: `Ampliar imagem de ${names.at(-1)}`, exact: true }).click();
     await page.locator('.motion-preview').getByRole('button', { name: 'Pausar movimento', exact: true }).click();
     await page.getByRole('button', { name: 'Ver posição 2', exact: true }).click();
     await page.locator('.motion-preview img').evaluate(img => img.decode());
@@ -74,6 +90,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.getByRole('button', { name: 'Reproduzir movimento', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('.motion-preview')?.dataset.position === '2');
     assert.deepEqual(errors, []);
-    console.log('PASS: six two-frame loops, all 12 assets decode, zoom, pause/manual positions, resume, responsive layout, offline and reduced motion; other workouts unchanged.');
+    console.log('PASS: all workout pose pairs, full blue covers at mobile/desktop widths, zoom, pause/manual positions, resume, offline, reduced motion and unchanged other workouts.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

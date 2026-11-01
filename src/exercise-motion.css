@@ -10,3 +10,6 @@
 .motion-positions { display: flex; gap: 6px; }
 .motion-positions button { width: 40px; height: 40px; border: 1px solid #dbe2ff; border-radius: 12px; background: white; color: #59688d; font: inherit; cursor: pointer; }
 .motion-positions button[aria-pressed=true] { background: #4161f3; border-color: #4161f3; color: white; }
+
+.workout-tile .workout-cover.motion-cover { background: #edf2ff; }
+.workout-cover.motion-cover img { object-fit: cover; mix-blend-mode: normal; display: block; }
