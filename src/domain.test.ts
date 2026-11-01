@@ -54,7 +54,7 @@ describe('workout sessions', () => {
     expect(state.active?.exercises[0]).toMatchObject({ weight: 45, done: [true, false, false, false, false] });
     expect(state.timer).toEqual(previous.timer);
     expect(state.workouts).toEqual(previous.workouts);
-    expect(getProgress(state.active!)).toEqual({ done: 1, total: 15 });
+    expect(getProgress(state.active!)).toEqual({ done: 1, total: 20 });
     expect(validateState(state)).toBe(true);
     expect(parseBackup(createBackup(state))).toEqual(state);
     const finished = finishSession(state, 2000);
@@ -97,10 +97,10 @@ describe('workout sessions', () => {
     const session = createSession(state.workouts[0], { 'bench-press': 42.5 });
     expect(session.exercises[0].weight).toBe(42.5);
     expect(session.exercises[0].done).toEqual([false, false, false]);
-    expect(session.exercises[2].done).toHaveLength(2);
-    expect(getProgress(session)).toEqual({ done: 0, total: 13 });
+    expect(session.exercises[2].done).toHaveLength(3);
+    expect(getProgress(session)).toEqual({ done: 0, total: 18 });
     session.exercises[0].done[1] = true;
-    expect(getProgress(session)).toEqual({ done: 1, total: 13 });
+    expect(getProgress(session)).toEqual({ done: 1, total: 18 });
     expect(session.exercises[1].weight).toBe(0);
   });
   it('finishes a partial session without counting unmarked sets, and keeps a historical snapshot', () => {
@@ -110,7 +110,7 @@ describe('workout sessions', () => {
     const next = finishSession(state, 2000);
     expect(next.active).toBeNull();
     expect(next.history[0].finishedAt).toBe(2000);
-    expect(getProgress(next.history[0])).toEqual({ done: 1, total: 13 });
+    expect(getProgress(next.history[0])).toEqual({ done: 1, total: 18 });
     state.workouts[0].exercises[0].name = 'Changed routine';
     state.weights['bench-press'] = 50;
     expect(next.history[0].exercises[0].name).toBe('Supino reto com barra');

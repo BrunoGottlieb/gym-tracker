@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import Dexie from 'dexie';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TrackerDatabase, loadState, saveState } from './storage';
-import { createInitialState } from './data';
+import { createInitialState, createLegacyState } from './data';
 import { createSession } from './domain';
 
 let db: TrackerDatabase;
@@ -48,15 +48,15 @@ describe('IndexedDB persistence', () => {
   });
   it('updates and persists the existing routine without resetting a remembered load', async () => {
     db = new TrackerDatabase(`test-${crypto.randomUUID()}`);
-    const state = createInitialState();
+    const state = createLegacyState();
     delete state.routineRevision;
     state.workouts[0].exercises[1].name = 'Supino inclinado na máquina';
     state.workouts[0].exercises[1].image = 1;
     state.weights['incline-machine'] = 35;
     await saveState(state, db);
     const next = await loadState(db);
-    expect(next.workouts[0].exercises[1].name).toBe('Supino inclinado com barra');
-    expect(next.workouts[0].exercises[1].image).toBe(30);
+    expect(next.workouts[0].exercises[1].name).toBe('Supino inclinado com halteres');
+    expect(next.workouts[0].exercises[1].image).toBe(21);
     expect(next.weights['incline-machine']).toBe(35);
     expect((await db.state.get('main'))?.value).toEqual(next);
   });

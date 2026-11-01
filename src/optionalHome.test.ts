@@ -10,7 +10,7 @@ describe('optional Saturday at home',()=>{
  it('is a sixth optional workout with timed tuck and controlled hanging raises',()=>{
   const state=createInitialState(),home=state.workouts.find(w=>w.id==='home')!;
   expect(home).toMatchObject({day:6,optional:true});
-  expect(home.exercises.map(e=>[e.id,e.sets,e.kind])).toEqual([['tuck-front-lever',2,'seconds'],['hanging-leg-raise',2,'reps']]);
+  expect(home.exercises.map(e=>[e.id,e.sets,e.kind])).toEqual([['tuck-front-lever',3,'seconds'],['hanging-leg-raise',3,'reps']]);
   expect(parseBackup(createBackup(state))).toEqual(state);
  });
  it('appends once without changing customized weekdays, remembered data, ongoing or recorded sessions',()=>{

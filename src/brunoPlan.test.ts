@@ -9,7 +9,7 @@ import { plannedMuscleCounts } from './trainingStats';
 describe('Bruno balanced plan', () => {
   it('uses the agreed six exercises per day and exact series, without a second leg day', () => {
     const state=createInitialState();
-    expect(state.workouts.slice(0,5).map(w=>w.exercises.map(e=>e.sets))).toEqual([[3,2,2,2,2,2],[3,3,2,2,3,2],[3,3,2,3,3,4],[2,2,2,2,2,2],[2,3,2,2,3,2]]);
+    expect(state.workouts.slice(0,5).map(w=>w.exercises.map(e=>e.sets))).toEqual([[3,3,3,3,3,3],[3,3,3,3,3,3],[3,3,3,3,3,4],[3,3,3,3,3,3],[3,3,3,3,3,3]]);
     expect(state.workouts.filter(w=>w.name==='Pernas')).toHaveLength(1);
     expect(state.workouts.flatMap(w=>w.exercises).filter(e=>e.id==='assisted-pullup')).toHaveLength(2);
     expect(state.workouts.flatMap(w=>w.exercises).some(e=>['lat-pulldown','straight-arm-pulldown','overhead-extension'].includes(e.id))).toBe(false);

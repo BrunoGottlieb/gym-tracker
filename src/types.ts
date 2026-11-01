@@ -65,5 +65,6 @@ export interface AppState {
   brunoFridayRevision?: 1;
   brunoPlanRevision?: 1;
   brunoHomeRevision?: 1;
+  brunoSeriesRevision?: 1;
   exerciseNotes?: Record<string, string>;
 }

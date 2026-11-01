@@ -215,5 +215,20 @@ export function migrateState(original: AppState): AppState {
     for (const plan of plans) if (!plan.some(workout => workout.id === optionalHomeWorkout.id)) plan.push(structuredClone(optionalHomeWorkout));
     state.brunoHomeRevision = 1;
   }
+  if (state.brunoSeriesRevision !== 1) {
+    for (const plan of [...((state.selectedPlan ?? 'original') === 'original' ? [state.workouts] : []), ...(state.planSnapshots?.original ? [state.planSnapshots.original] : [])]) {
+      for (const workout of plan) {
+        workout.exercises = workout.exercises.map(exercise => {
+          const next = { ...exercise, sets: Math.max(3, exercise.sets) };
+          if (next.id === 'incline-machine') {
+            next.id = 'incline-dumbbell'; next.name = 'Supino inclinado com halteres'; next.image = 21;
+          }
+          return next;
+        }).filter((exercise, index, entries) => entries.findIndex(e => e.id === exercise.id) === index);
+        if (workout.image === 30) workout.image = 21;
+      }
+    }
+    state.brunoSeriesRevision = 1;
+  }
   return state;
 }
