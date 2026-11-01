@@ -20,10 +20,10 @@ describe('IndexedDB persistence', () => {
     expect((await db.sync.get('streak-room'))?.value).toEqual({code:'test-room-secret'});
     expect(JSON.stringify(await loadState(db))).not.toContain('test-room-secret');
   });
-  it('seeds a fresh installation with all five editable routines', async () => {
+  it('seeds a fresh installation with five gym routines and the optional home routine', async () => {
     db = new TrackerDatabase(`test-${crypto.randomUUID()}`);
     const state = await loadState(db);
-    expect(state.workouts).toHaveLength(5);
+    expect(state.workouts).toHaveLength(6);
     expect(state.history).toEqual([]);
     expect(state.active).toBeNull();
   });

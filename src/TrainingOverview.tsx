@@ -13,7 +13,7 @@ export function WeeklyMuscleSummary({ workouts, onSelect }: { workouts: Workout[
   const groups = muscleOrder.filter(group => group !== 'other' || counts.other > 0);
   return <section className="weekly-muscle-summary" aria-label="Exercícios por grupo muscular na semana">
     <h2>Sua semana por grupo muscular</h2>
-    <p className="subtle">Quantidade de exercícios na ficha atual, contando cada vez que aparecem em um treino. Considera o grupo muscular principal.</p>
+    <p className="subtle">Quantidade de exercícios na ficha atual, contando cada vez que aparecem em um treino. Considera o grupo muscular principal.{workouts.some(workout => workout.optional) && ' Inclui os treinos opcionais.'}</p>
     <div className="weekly-muscle-grid">{groups.map(group => <button type="button" onClick={() => onSelect(group)} key={group} className="weekly-muscle-item" data-muscle={group} aria-label={`${muscleLabels[group]}: ${counts[group]} ${counts[group] === 1 ? 'exercício' : 'exercícios'} na semana`}>
       <span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={26} /></span>
       <span><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>

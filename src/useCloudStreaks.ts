@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
-import { completionEvents, defaultTrainingDays, eventSignature, isSnapshot, sharedStreak, streakDate, type CloudSnapshot, type CompletionEvent } from './streaks';
+import { completionEvents, defaultTrainingDays, eventSignature, isSnapshot, scheduledTrainingDays, sharedStreak, streakDate, type CloudSnapshot, type CompletionEvent } from './streaks';
 import type { AppState } from './types';
 
 export const STREAK_API = 'https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/streaks';
@@ -60,7 +60,7 @@ export function useCloudStreaks(state: AppState | null) {
       const events = completionEvents(current);
       const pending = events.filter(event => next.acknowledgements[event.id] !== eventSignature(event));
       const person = current.selectedPlan ?? 'original';
-      const trainingDays = [...new Set(current.workouts.map(workout => workout.day))].sort();
+      const trainingDays = scheduledTrainingDays(current.workouts);
       const profileSignature = `${person}|${trainingDays.join(',')}`;
       for (let offset = 0; offset < Math.max(1, pending.length); offset += 30) {
         const batch = pending.slice(offset, offset + 30);
@@ -107,7 +107,7 @@ export function useCloudStreaks(state: AppState | null) {
   const today = streakDate();
   const group = useMemo(() => {
     const schedules = { ...(settings.cache?.trainingDays ?? defaultTrainingDays) };
-    if (state) schedules[state.selectedPlan ?? 'original'] = [...new Set(state.workouts.map(workout => workout.day))];
+    if (state) schedules[state.selectedPlan ?? 'original'] = scheduledTrainingDays(state.workouts);
     return sharedStreak([...(settings.cache?.dates ?? []), ...localEvents.filter(event => event.completed)], schedules, today);
   }, [settings.cache, localEvents, state?.selectedPlan, state?.workouts, today]);
   return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, checkToday, group, loaded };

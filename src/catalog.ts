@@ -8,7 +8,7 @@ export const muscleLabels: Record<MuscleGroup, string> = {
 };
 const groups: Record<MuscleGroup, string[]> = {
   chest: ['bench-press', 'incline-machine', 'articulated-chest-press', 'pec-deck', 'incline-dumbbell', 'crossover'],
-  back: ['assisted-pullup', 'pullup', 'cable-row', 'chest-supported-row', 'straight-arm-pulldown', 'front-lever', 'lat-pulldown', 'supported-row'],
+  back: ['tuck-front-lever', 'assisted-pullup', 'pullup', 'cable-row', 'chest-supported-row', 'straight-arm-pulldown', 'front-lever', 'lat-pulldown', 'supported-row'],
   biceps: ['preacher-curl', 'hammer-curl', 'rope-curl', 'incline-curl', 'cable-curl'],
   triceps: ['rope-pushdown', 'overhead-extension', 'bar-pushdown', 'parallel-bar-dips'],
   shoulders: ['face-pull', 'shoulder-press', 'lateral-raise', 'reverse-fly'],

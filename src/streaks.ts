@@ -1,4 +1,4 @@
-import type { AppState, RoutinePlan, Session } from './types';
+import type { AppState, RoutinePlan, Session, Workout } from './types';
 
 export const streakPeople: RoutinePlan[] = ['original', 'sheet', 'ivan'];
 export const defaultTrainingDays: Record<RoutinePlan, number[]> = { original: [1, 2, 3, 4, 5], sheet: [1, 2, 3, 4, 5], ivan: [1, 2, 3, 5, 6] };
@@ -56,3 +56,5 @@ export function sharedStreak(days: StreakDay[], schedules: Record<RoutinePlan, n
   const peopleToday = streakPeople.filter(person => days.some(day => day.person === person && day.date === today));
   return { ...streakSummary(dates, trainingDays, today), dates, trainingDays, peopleToday, today };
 }
+
+export const scheduledTrainingDays = (workouts: Workout[]) => [...new Set(workouts.filter(workout => !workout.optional).map(workout => workout.day))].sort();

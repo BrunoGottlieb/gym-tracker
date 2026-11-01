@@ -55,6 +55,13 @@ export const legacyWorkouts: Workout[] = [
   ] },
 ];
 
+export const optionalHomeWorkout: Workout = {
+  id: 'home', name: 'Em casa', day: 6, image: 24, optional: true, exercises: [
+    {...exercise('tuck-front-lever','Tuck front lever',2,'5–10',24,'seconds'),muscle:'back',instructions:'Prática técnica: joelhos recolhidos, posição controlada e sem ir até perder a postura. Opcional; ajuste conforme a recuperação das costas.'},
+    {...exercise('hanging-leg-raise','Elevação de pernas na barra fixa',2,'6–12',49),muscle:'abs',instructions:'Sem balanço. Se necessário, faça com os joelhos flexionados.'},
+  ],
+};
+
 export const initialWorkouts: Workout[] = [
   { id: 'a', name: 'Peito + tríceps', day: 1, image: 0, exercises: [
     exercise('bench-press','Supino reto com barra',3,'6–10',0),
@@ -96,15 +103,16 @@ export const initialWorkouts: Workout[] = [
     {...exercise('cable-lateral-raise','Elevação lateral unilateral na polia',3,'12–20',59),muscle:'shoulders'},
     exercise('face-pull','Face-pull na polia com corda',2,'12–20',67),
   ] },
+  optionalHomeWorkout,
 ];
 
 export function createLegacyState(): AppState {
-  return { ...createInitialState(), brunoPlanRevision: undefined, workouts: structuredClone(legacyWorkouts) };
+  return { ...createInitialState(), brunoPlanRevision: undefined, brunoHomeRevision: undefined, workouts: structuredClone(legacyWorkouts) };
 }
 
 export function createInitialState(): AppState {
   return {
-    version: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };

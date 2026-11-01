@@ -12,6 +12,7 @@ export interface Exercise {
   instructions?: string;
 }
 export interface Workout {
+  optional?: boolean;
   id: string;
   name: string;
   day: number;
@@ -63,5 +64,6 @@ export interface AppState {
   routineRevision?: number;
   brunoFridayRevision?: 1;
   brunoPlanRevision?: 1;
+  brunoHomeRevision?: 1;
   exerciseNotes?: Record<string, string>;
 }

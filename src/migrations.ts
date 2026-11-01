@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -209,6 +209,11 @@ export function migrateState(original: AppState): AppState {
     if ((state.selectedPlan ?? 'original') === 'original') state.workouts = structuredClone(initialWorkouts);
     if (state.planSnapshots?.original) state.planSnapshots.original = structuredClone(initialWorkouts);
     state.brunoPlanRevision = 1;
+  }
+  if (state.brunoHomeRevision !== 1) {
+    const plans = [...((state.selectedPlan ?? 'original') === 'original' ? [state.workouts] : []), ...(state.planSnapshots?.original ? [state.planSnapshots.original] : [])];
+    for (const plan of plans) if (!plan.some(workout => workout.id === optionalHomeWorkout.id)) plan.push(structuredClone(optionalHomeWorkout));
+    state.brunoHomeRevision = 1;
   }
   return state;
 }

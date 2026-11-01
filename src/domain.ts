@@ -76,7 +76,7 @@ function validWorkouts(workouts: unknown): workouts is Workout[] {
   if (!Array.isArray(workouts) || !workouts.length || workouts.length > 30) return false;
   const workoutIds = new Set<string>();
   for (const w of workouts) {
-    if (!object(w) || !text(w.id) || workoutIds.has(w.id) || !text(w.name) || !integer(w.day, 6) || !integer(w.image, LAST_IMAGE_INDEX) || !Array.isArray(w.exercises) || w.exercises.length < 1 || w.exercises.length > 100) return false;
+    if (!object(w) || (w.optional !== undefined && typeof w.optional !== 'boolean') || !text(w.id) || workoutIds.has(w.id) || !text(w.name) || !integer(w.day, 6) || !integer(w.image, LAST_IMAGE_INDEX) || !Array.isArray(w.exercises) || w.exercises.length < 1 || w.exercises.length > 100) return false;
     workoutIds.add(w.id);
     const ids = new Set<string>();
     for (const e of w.exercises) {
@@ -102,6 +102,7 @@ export function validateState(value: unknown): value is AppState {
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
+  if (value.brunoHomeRevision !== undefined && value.brunoHomeRevision !== 1) return false;
   if (value.brunoPlanRevision !== undefined && value.brunoPlanRevision !== 1) return false;
   if (value.brunoFridayRevision !== undefined && value.brunoFridayRevision !== 1) return false;
   if (value.routineRevision !== undefined && !integer(value.routineRevision, 12)) return false;
