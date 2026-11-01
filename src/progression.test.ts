@@ -36,20 +36,20 @@ describe('load progression', () => {
     expect(exerciseEntries(state).find(e => e.id === 'bench-press')?.archived).toBe(true);
     expect(loadPoints(state, 'bench-press')).toHaveLength(1);
   });
-  it('shares remembered pulley loads across days and deduplicates the exercise selector', () => {
+  it('shares remembered assistance loads across days and deduplicates the exercise selector', () => {
     const state = createInitialState();
-    state.weights['lat-pulldown'] = 50;
+    state.weights['assisted-pullup'] = 50;
     const tuesday = createSession(state.workouts[1], state.weights);
     const friday = createSession(state.workouts[4], state.weights);
-    expect(tuesday.exercises.find(e => e.exerciseId === 'lat-pulldown')?.weight).toBe(50);
-    expect(friday.exercises.find(e => e.exerciseId === 'lat-pulldown')?.weight).toBe(50);
-    expect(exerciseEntries(state).filter(e => e.id === 'lat-pulldown')).toHaveLength(1);
+    expect(tuesday.exercises.find(e => e.exerciseId === 'assisted-pullup')?.weight).toBe(50);
+    expect(friday.exercises.find(e => e.exerciseId === 'assisted-pullup')?.weight).toBe(50);
+    expect(exerciseEntries(state).filter(e => e.id === 'assisted-pullup')).toHaveLength(1);
   });
   it('shares Hammer row loads across days and includes the previous identifier in progression', () => {
     let state = createInitialState();
     state.weights['chest-supported-row'] = 35;
-    expect(createSession(state.workouts[4], state.weights).exercises.find(e => e.exerciseId === 'chest-supported-row')?.weight).toBe(35);
-    state.active = createSession(state.workouts[4], state.weights, 1000);
+    expect(createSession(state.workouts[1], state.weights).exercises.find(e => e.exerciseId === 'chest-supported-row')?.weight).toBe(35);
+    state.active = createSession(state.workouts[1], state.weights, 1000);
     const log = state.active.exercises.find(e => e.exerciseId === 'chest-supported-row')!;
     log.exerciseId = 'supported-row';
     log.done[0] = true;

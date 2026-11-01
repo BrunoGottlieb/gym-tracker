@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createInitialState, declineSitup, militarySitup } from './data';
+import { createInitialState, createLegacyState, declineSitup, militarySitup } from './data';
 import { createSession, editHistorySession, createBackup, parseBackup, validateState } from './domain';
-import { migrateState } from './migrations';
+import { migrateLegacyState as migrateState } from './migrations';
 import { loadPoints } from './progression';
 import { sessionsOnDate } from './calendar';
 import { selectRoutinePlan } from './routinePlans';
@@ -67,7 +67,7 @@ describe('historical workout editing', () => {
 
 describe('Bruno Wednesday leg routine upgrade', () => {
   it('replaces only the two abdominals, including inactive saved Bruno routines, preserving snapshots and old loads', () => {
-    const state = createInitialState();
+    const state = createLegacyState();
     state.workouts[2].name = 'Pernas + abdômen';
     state.workouts[2].exercises.splice(4, 2, { ...declineSitup }, { ...militarySitup });
     state.weights['decline-situp'] = 10;

@@ -1,6 +1,6 @@
 import type { Exercise, MuscleGroup } from './types';
 
-export const LAST_IMAGE_INDEX = 66;
+export const LAST_IMAGE_INDEX = 68;
 export const canonicalExerciseId = (id: string): string => id === 'supported-row' ? 'chest-supported-row' : id;
 export const muscleLabels: Record<MuscleGroup, string> = {
   chest: 'Peito', back: 'Costas', biceps: 'Bíceps', triceps: 'Tríceps',
@@ -8,10 +8,10 @@ export const muscleLabels: Record<MuscleGroup, string> = {
 };
 const groups: Record<MuscleGroup, string[]> = {
   chest: ['bench-press', 'incline-machine', 'articulated-chest-press', 'pec-deck', 'incline-dumbbell', 'crossover'],
-  back: ['pullup', 'cable-row', 'chest-supported-row', 'straight-arm-pulldown', 'front-lever', 'lat-pulldown', 'supported-row'],
+  back: ['assisted-pullup', 'pullup', 'cable-row', 'chest-supported-row', 'straight-arm-pulldown', 'front-lever', 'lat-pulldown', 'supported-row'],
   biceps: ['preacher-curl', 'hammer-curl', 'rope-curl', 'incline-curl', 'cable-curl'],
   triceps: ['rope-pushdown', 'overhead-extension', 'bar-pushdown', 'parallel-bar-dips'],
-  shoulders: ['shoulder-press', 'lateral-raise', 'reverse-fly'],
+  shoulders: ['face-pull', 'shoulder-press', 'lateral-raise', 'reverse-fly'],
   legs: ['horizontal-leg-press', 'lever-squat', 'leg-press', 'leg-extension', 'leg-curl', 'romanian-deadlift', 'calf-raise'],
   abs: ['hanging-knee-raise', 'decline-situp', 'military-situp', 'l-sit'], other: [],
 };
@@ -21,6 +21,7 @@ export function getMuscle(exercise: { id?: string; exerciseId?: string; muscle?:
   return (Object.keys(groups) as MuscleGroup[]).find(group => id && groups[group].includes(id)) ?? 'other';
 }
 export const imageNames: Record<number, string> = {
+  67: 'Face-pull', 68: 'Barra fixa assistida',
   0: 'Supino reto', 1: 'Supino na máquina (anterior)', 2: 'Peck deck', 3: 'Tríceps corda',
   4: 'Tríceps francês na polia', 5: 'Halter / personalizado', 6: 'Barra fixa (anterior)',
   7: 'Remada baixa', 8: 'Remada articulada (anterior)', 9: 'Pulldown', 10: 'Rosca Scott',

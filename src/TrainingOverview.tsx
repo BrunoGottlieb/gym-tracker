@@ -1,24 +1,33 @@
 import { useMemo, useState } from 'react';
 import { MuscleIcon } from './components';
-import { muscleLabels } from './catalog';
+import { getMuscle, muscleLabels } from './catalog';
 import { completedWeekdayAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
-import type { Session, Workout } from './types';
+import type { ExerciseLog, MuscleGroup, Session, Workout } from './types';
 
 const shortDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const fullDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
-export function WeeklyMuscleSummary({ workouts }: { workouts: Workout[] }) {
+export function WeeklyMuscleSummary({ workouts, onSelect }: { workouts: Workout[]; onSelect: (group: MuscleGroup) => void }) {
   const counts = useMemo(() => plannedMuscleCounts(workouts), [workouts]);
   const groups = muscleOrder.filter(group => group !== 'other' || counts.other > 0);
   return <section className="weekly-muscle-summary" aria-label="Exercícios por grupo muscular na semana">
     <h2>Sua semana por grupo muscular</h2>
     <p className="subtle">Quantidade de exercícios na ficha atual, contando cada vez que aparecem em um treino. Considera o grupo muscular principal.</p>
-    <div className="weekly-muscle-grid">{groups.map(group => <div key={group} className="weekly-muscle-item" data-muscle={group} aria-label={`${muscleLabels[group]}: ${counts[group]} ${counts[group] === 1 ? 'exercício' : 'exercícios'} na semana`}>
+    <div className="weekly-muscle-grid">{groups.map(group => <button type="button" onClick={() => onSelect(group)} key={group} className="weekly-muscle-item" data-muscle={group} aria-label={`${muscleLabels[group]}: ${counts[group]} ${counts[group] === 1 ? 'exercício' : 'exercícios'} na semana`}>
       <span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={26} /></span>
       <span><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>
-    </div>)}</div>
+    </button>)}</div>
   </section>;
+}
+
+export function WorkoutMuscleSummary({ exercises }: { exercises: ExerciseLog[] }) {
+  const counts = useMemo(() => {
+    const result = Object.fromEntries(muscleOrder.map(group => [group, 0])) as Record<MuscleGroup, number>;
+    for (const exercise of exercises) result[getMuscle(exercise)]++;
+    return result;
+  }, [exercises]);
+  return <div className="workout-muscle-summary" aria-label="Composição do treino por grupo muscular">{muscleOrder.filter(group => counts[group] > 0).map(group => <span key={group} data-muscle={group} title={`${muscleLabels[group]}: ${counts[group]} exercícios`} aria-label={`${muscleLabels[group]}: ${counts[group]} ${counts[group] === 1 ? 'exercício' : 'exercícios'}`} style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}12` }}><MuscleIcon muscle={group} size={20} /><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>)}</div>;
 }
 
 export function WeeklyCompletedChart({ history }: { history: Session[] }) {

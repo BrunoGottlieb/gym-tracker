@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createInitialState } from './data';
+import { createLegacyState, initialWorkouts } from './data';
 import { createSession, createBackup, parseBackup } from './domain';
-import { migrateState } from './migrations';
+import { migrateLegacyState as migrateState } from './migrations';
 import { exerciseLibrary, copyPreset } from './exerciseLibrary';
 import { selectRoutinePlan } from './routinePlans';
 
 function oldFriday() {
-  const state = createInitialState();
+  const state = createLegacyState();
   delete state.brunoFridayRevision;
   const friday = state.workouts[4];
   friday.image = 36;
@@ -30,7 +30,7 @@ describe('Bruno Friday Scott update', () => {
     expect(next.active).toEqual(state.active);
     expect(next.history).toEqual(state.history);
     expect(next.workouts.slice(0, 4)).toEqual(state.workouts.slice(0, 4));
-    expect(parseBackup(createBackup(next))).toEqual(next);
+    expect(parseBackup(createBackup(next))).toMatchObject({workouts: initialWorkouts, active: next.active, history: next.history, weights: next.weights});
   });
   it('updates an inactive saved Bruno routine while preserving Nick and allows later custom covers', () => {
     const state = selectRoutinePlan(oldFriday(), 'sheet');

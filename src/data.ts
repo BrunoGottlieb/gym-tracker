@@ -12,7 +12,7 @@ export const preacherCurl = exercise('preacher-curl', 'Rosca Scott', 3, '8–12'
 export const horizontalLegPress = exercise('horizontal-leg-press', 'Leg press horizontal com banco móvel', 3, '8–12', 65);
 export const leverSquat = exercise('lever-squat', 'Agachamento no squat articulado', 3, '8–12', 66);
 
-export const initialWorkouts: Workout[] = [
+export const legacyWorkouts: Workout[] = [
   { id: 'a', name: 'Peito + tríceps', day: 1, image: 0, exercises: [
     exercise('bench-press', 'Supino reto com barra', 3, '6–10', 0),
     exercise('incline-machine', 'Supino inclinado com barra', 3, '8–12', 30),
@@ -55,9 +55,56 @@ export const initialWorkouts: Workout[] = [
   ] },
 ];
 
+export const initialWorkouts: Workout[] = [
+  { id: 'a', name: 'Peito + tríceps', day: 1, image: 0, exercises: [
+    exercise('bench-press','Supino reto com barra',3,'6–10',0),
+    exercise('incline-machine','Supino inclinado com barra',2,'8–12',30),
+    exercise('pec-deck','Peck deck (voador)',2,'10–15',2),
+    {...parallelBarDips,sets:2,target:'6–12'},
+    exercise('rope-pushdown','Tríceps na polia com corda',2,'10–15',3),
+    exercise('bar-pushdown','Tríceps na polia com barra',2,'10–15',23),
+  ] },
+  { id: 'b', name: 'Costas, bíceps + ombros', day: 2, image: 68, exercises: [
+    {...exercise('assisted-pullup','Barra fixa assistida',3,'6–10',68),instructions:'Registre o contrapeso de assistência. Menos kg de assistência = maior dificuldade.'},
+    exercise('chest-supported-row','Remada Hammer com apoio para peito',3,'8–12',31),
+    {...preacherCurl,sets:2},
+    exercise('rope-curl','Rosca corda no crossover',2,'10–15',32),
+    exercise('lateral-raise','Elevação lateral com halteres',3,'12–20',19),
+    exercise('face-pull','Face-pull na polia com corda',2,'12–20',67),
+  ] },
+  { id: 'c', name: 'Pernas', day: 3, image: 66, exercises: [
+    {...leverSquat,sets:3,target:'8–12'},
+    exercise('leg-press','Leg press 45°',3,'10–15',12),
+    exercise('leg-extension','Cadeira extensora',2,'10–15',13),
+    exercise('leg-curl','Cadeira flexora sentada',3,'10–15',14),
+    {...exercise('lying-leg-curl','Mesa flexora deitada',3,'10–15',56),muscle:'legs'},
+    exercise('calf-raise','Panturrilha na máquina',4,'10–20',16),
+  ] },
+  { id: 'd', name: 'Peito, tríceps + abdômen', day: 4, image: 30, exercises: [
+    exercise('incline-machine','Supino inclinado com barra',2,'8–12',30),
+    exercise('crossover','Crucifixo no crossover',2,'10–15',22),
+    {...parallelBarDips,sets:2,target:'6–12'},
+    exercise('rope-pushdown','Tríceps na polia com corda',2,'10–15',3),
+    {...militarySitup,sets:2,target:'10–20'},
+    {...exercise('front-plank','Prancha frontal',2,'30–60',54,'seconds'),muscle:'abs'},
+  ] },
+  { id: 'e', name: 'Costas, bíceps + ombros', day: 5, image: 10, exercises: [
+    {...exercise('assisted-pullup','Barra fixa assistida',2,'6–10',68),instructions:'Registre o contrapeso de assistência. Menos kg de assistência = maior dificuldade.'},
+    exercise('cable-row','Remada baixa na polia',3,'8–12',7),
+    {...preacherCurl,sets:2},
+    exercise('cable-curl','Rosca bíceps na polia com barra',2,'10–15',29),
+    {...exercise('cable-lateral-raise','Elevação lateral unilateral na polia',3,'12–20',59),muscle:'shoulders'},
+    exercise('face-pull','Face-pull na polia com corda',2,'12–20',67),
+  ] },
+];
+
+export function createLegacyState(): AppState {
+  return { ...createInitialState(), brunoPlanRevision: undefined, workouts: structuredClone(legacyWorkouts) };
+}
+
 export function createInitialState(): AppState {
   return {
-    version: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };

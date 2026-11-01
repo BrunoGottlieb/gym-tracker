@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -12,7 +12,7 @@ const replacements: Record<string, { previous: string[]; patch: Partial<Exercise
 };
 
 /** Upgrade only known seed entries; custom names, stored loads and history remain intact. */
-export function migrateState(original: AppState): AppState {
+export function migrateLegacyState(original: AppState): AppState {
   const state = structuredClone(original);
   // Correct only Ivan's identifiable provisional default, including saved inactive plans.
   const provisional = 'Meta provisória de 30 segundos, editável nos ajustes da ficha.';
@@ -175,6 +175,7 @@ export function migrateState(original: AppState): AppState {
   if ((state.routineRevision ?? 0) < 11) state.routineRevision = 11;
   if ((state.routineRevision ?? 0) < 12) state.routineRevision = 12;
   // Apply the requested Bruno-only replacements without rewriting session snapshots.
+  if (state.brunoPlanRevision !== 1) {
   for (const workout of [...((state.selectedPlan ?? 'original') === 'original' ? state.workouts : []), ...(state.planSnapshots?.original ?? [])]) {
     if (workout.id !== 'c' || workout.day !== 3) continue;
     const replacements = new Map([['decline-situp', horizontalLegPress], ['military-situp', leverSquat]]);
@@ -186,6 +187,7 @@ export function migrateState(original: AppState): AppState {
     });
     if (hadAbdominals && workout.name === 'Pernas + abdômen') workout.name = 'Pernas';
   }
+  }
   if (state.brunoFridayRevision !== 1) {
     for (const workout of [...((state.selectedPlan ?? 'original') === 'original' ? state.workouts : []), ...(state.planSnapshots?.original ?? [])]) {
       if (workout.id !== 'e' || workout.day !== 5) continue;
@@ -196,6 +198,17 @@ export function migrateState(original: AppState): AppState {
       if (workout.exercises.some(exercise => exercise.id === preacherCurl.id)) workout.image = preacherCurl.image;
     }
     state.brunoFridayRevision = 1;
+  }
+  return state;
+}
+
+/** Apply Bruno's explicitly requested new plan once, without rewriting recorded sessions. */
+export function migrateState(original: AppState): AppState {
+  const state = migrateLegacyState(original);
+  if (state.brunoPlanRevision !== 1) {
+    if ((state.selectedPlan ?? 'original') === 'original') state.workouts = structuredClone(initialWorkouts);
+    if (state.planSnapshots?.original) state.planSnapshots.original = structuredClone(initialWorkouts);
+    state.brunoPlanRevision = 1;
   }
   return state;
 }

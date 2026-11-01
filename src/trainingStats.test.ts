@@ -13,7 +13,7 @@ describe('weekly planned muscle counts', () => {
   it('counts occurrences by primary muscle, including repeated exercises across workouts', () => {
     const state = createInitialState();
     const counts = plannedMuscleCounts(state.workouts);
-    expect(counts).toEqual({ chest: 5, back: 8, legs: 6, shoulders: 2, biceps: 4, triceps: 5, abs: 0, other: 0 });
+    expect(counts).toEqual({ chest: 5, back: 4, legs: 6, shoulders: 4, biceps: 4, triceps: 5, abs: 2, other: 0 });
     expect(Object.values(counts).reduce((sum, count) => sum + count, 0)).toBe(30);
     state.workouts[4].exercises = [];
     expect(plannedMuscleCounts(state.workouts).biceps).toBe(2);

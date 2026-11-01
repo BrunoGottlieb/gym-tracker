@@ -62,5 +62,6 @@ export interface AppState {
   preferences: Preferences;
   routineRevision?: number;
   brunoFridayRevision?: 1;
+  brunoPlanRevision?: 1;
   exerciseNotes?: Record<string, string>;
 }

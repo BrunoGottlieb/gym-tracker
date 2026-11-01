@@ -1,4 +1,4 @@
-import { articulatedChestPress, declineSitup, militarySitup, initialWorkouts } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, initialWorkouts, legacyWorkouts } from './data';
 import { canonicalExerciseId, muscleLabels } from './catalog';
 import type { Exercise, MuscleGroup } from './types';
 
@@ -54,9 +54,9 @@ const aliases: Record<string, string[]> = {
   'overhead-extension': ['Tríceps francês com corda', 'Tríceps acima da cabeça'],
 };
 const byId = new Map<string, ExercisePreset>();
-for (const exercise of [...initialWorkouts.flatMap(workout => workout.exercises), ...additions]) {
+for (const exercise of [...legacyWorkouts.flatMap(workout => workout.exercises), ...initialWorkouts.flatMap(workout => workout.exercises), ...additions]) {
   const id = canonicalExerciseId(exercise.id);
-  byId.set(id, { ...exercise, id, aliases: [...(aliases[id] ?? []), ...((exercise as ExercisePreset).aliases ?? [])] });
+  byId.set(id, { ...exercise, id, sets: 3, aliases: [...(aliases[id] ?? []), ...((exercise as ExercisePreset).aliases ?? [])] });
 }
 export const exerciseLibrary = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');

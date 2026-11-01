@@ -54,7 +54,7 @@ describe('workout sessions', () => {
     expect(state.active?.exercises[0]).toMatchObject({ weight: 45, done: [true, false, false, false, false] });
     expect(state.timer).toEqual(previous.timer);
     expect(state.workouts).toEqual(previous.workouts);
-    expect(getProgress(state.active!)).toEqual({ done: 1, total: 20 });
+    expect(getProgress(state.active!)).toEqual({ done: 1, total: 15 });
     expect(validateState(state)).toBe(true);
     expect(parseBackup(createBackup(state))).toEqual(state);
     const finished = finishSession(state, 2000);
@@ -70,13 +70,13 @@ describe('workout sessions', () => {
   });
   it('starts on the selected series with remembered load and automatic rest', () => {
     const state = createInitialState();
-    state.weights['lat-pulldown'] = 30;
+    state.weights['assisted-pullup'] = 30;
     state.preferences.autoRest = true;
-    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 1 }, 1000);
+    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'assisted-pullup', index: 1 }, 1000);
     expect(state.active).toBeNull();
     expect(next.active?.exercises[0]).toMatchObject({ weight: 30, done: [true, true, false] });
     expect(next.active?.startedAt).toBe(1000);
-    expect(next.timer).toMatchObject({ endAt: 91000, started: true, exercise: 'Puxada alta (pulley)' });
+    expect(next.timer).toMatchObject({ endAt: 91000, started: true, exercise: 'Barra fixa assistida' });
   });
   it('replaces a session only when explicitly called without mutating its original state or history', () => {
     const state = createInitialState();
@@ -84,7 +84,7 @@ describe('workout sessions', () => {
     state.active = createSession(state.workouts[0], state.weights, 1000);
     state.active.exercises[0].done[0] = true;
     const original = structuredClone(state);
-    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'lat-pulldown', index: 2 }, 2000);
+    const next = beginWorkout(state, state.workouts[1], { exerciseId: 'assisted-pullup', index: 2 }, 2000);
     expect(state).toEqual(original);
     expect(next.active?.workoutId).toBe('b');
     expect(next.active?.exercises[0].done).toEqual([true, true, true]);
@@ -97,10 +97,10 @@ describe('workout sessions', () => {
     const session = createSession(state.workouts[0], { 'bench-press': 42.5 });
     expect(session.exercises[0].weight).toBe(42.5);
     expect(session.exercises[0].done).toEqual([false, false, false]);
-    expect(session.exercises[2].done).toHaveLength(3);
-    expect(getProgress(session)).toEqual({ done: 0, total: 18 });
+    expect(session.exercises[2].done).toHaveLength(2);
+    expect(getProgress(session)).toEqual({ done: 0, total: 13 });
     session.exercises[0].done[1] = true;
-    expect(getProgress(session)).toEqual({ done: 1, total: 18 });
+    expect(getProgress(session)).toEqual({ done: 1, total: 13 });
     expect(session.exercises[1].weight).toBe(0);
   });
   it('finishes a partial session without counting unmarked sets, and keeps a historical snapshot', () => {
@@ -110,7 +110,7 @@ describe('workout sessions', () => {
     const next = finishSession(state, 2000);
     expect(next.active).toBeNull();
     expect(next.history[0].finishedAt).toBe(2000);
-    expect(getProgress(next.history[0])).toEqual({ done: 1, total: 18 });
+    expect(getProgress(next.history[0])).toEqual({ done: 1, total: 13 });
     state.workouts[0].exercises[0].name = 'Changed routine';
     state.weights['bench-press'] = 50;
     expect(next.history[0].exercises[0].name).toBe('Supino reto com barra');

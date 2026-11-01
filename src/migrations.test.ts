@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { articulatedChestPress, createInitialState } from './data';
+import { articulatedChestPress, createLegacyState } from './data';
 import { createBackup, createSession, parseBackup, validateState } from './domain';
-import { migrateState } from './migrations';
+import { migrateLegacyState as migrateState } from './migrations';
 
 function legacyState() {
-  const state = createInitialState();
+  const state = createLegacyState();
   delete state.routineRevision;
   delete state.exerciseNotes;
   state.workouts[0].exercises = state.workouts[0].exercises.filter(e => e.id !== 'articulated-chest-press');
@@ -97,7 +97,7 @@ describe('existing installation upgrades', () => {
     expect(validateState(next)).toBe(true);
   });
   it.each([false, true])('replaces the chest machine with shared dips while preserving performed machine sets (%s)', performed => {
-    const old = createInitialState();
+    const old = createLegacyState();
     old.routineRevision = 9;
     const workout = old.workouts[0];
     workout.exercises = workout.exercises.filter(e => e.id !== 'parallel-bar-dips');
@@ -120,7 +120,7 @@ describe('existing installation upgrades', () => {
     expect(migrateState(next)).toEqual(next);
   });
   it('preserves a custom overhead-extension name', () => {
-    const old = createInitialState();
+    const old = createLegacyState();
     old.routineRevision = 9;
     old.workouts[0].exercises.find(e => e.id === 'overhead-extension')!.name = 'Meu francês personalizado';
     expect(migrateState(old).workouts[0].exercises.find(e => e.id === 'overhead-extension')?.name).toBe('Meu francês personalizado');
@@ -144,7 +144,7 @@ describe('existing installation upgrades', () => {
     expect(validateState(next)).toBe(true);
   });
   it('replaces the machine shoulder press with triceps dips without reusing the machine load', () => {
-    const old = createInitialState();
+    const old = createLegacyState();
     old.routineRevision = 6;
     old.workouts[3].image = 18;
     old.workouts[3].exercises = [{ id: 'shoulder-press', name: 'Desenvolvimento de ombros na máquina', image: 18, sets: 3, target: '6–10', kind: 'reps', rest: 90, muscle: 'shoulders' }, ...old.workouts[3].exercises.filter(e => e.id !== 'parallel-bar-dips')];
@@ -158,7 +158,7 @@ describe('existing installation upgrades', () => {
     expect(validateState(next)).toBe(true);
   });
   it('uses the requested Friday cover and groups the two triceps exercises while retaining active completion and loads', () => {
-    const old = createInitialState();
+    const old = createLegacyState();
     old.routineRevision = 8;
     old.workouts[4].image = 31;
     const workout = old.workouts[3];
@@ -181,7 +181,7 @@ describe('existing installation upgrades', () => {
     expect(migrateState(next)).toEqual(next);
   });
   it('moves Friday to gym back exercises and shares current loads without deleting past calisthenics records', () => {
-    const old = createInitialState();
+    const old = createLegacyState();
     old.routineRevision = 7;
     const friday = old.workouts[4];
     friday.name = 'Costas, bíceps + calistenia';
