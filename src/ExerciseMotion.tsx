@@ -9,6 +9,10 @@ const motionImages: Record<string, Record<string, number>> = {
     'rope-curl': 32, 'lateral-raise': 19, 'face-pull': 67 },
   c: { 'lever-squat': 66, 'leg-press': 12, 'leg-extension': 13,
     'leg-curl': 14, 'lying-leg-curl': 56, 'hip-abduction': 64, 'calf-raise': 16 },
+  d: { 'incline-dumbbell': 21, 'crossover': 22, 'parallel-bar-dips': 36,
+    'rope-pushdown': 3, 'military-situp': 35, 'decline-situp': 34, 'front-plank': 54 },
+  e: { 'assisted-pullup': 68, 'cable-row': 7, 'preacher-curl': 10,
+    'cable-curl': 29, 'rope-curl': 32, 'cable-lateral-raise': 59, 'face-pull': 67 },
 };
 
 // Enable only the illustrated workouts in Bruno's plan; custom artwork keeps its own image.
@@ -18,7 +22,8 @@ export function exerciseMotionId(plan: string | undefined, workout: string, id: 
 
 export function workoutCoverUrl(plan: string | undefined, workout: string, image: number) {
   const base = `${import.meta.env.BASE_URL}images/`;
-  const cover = workout === 'a' ? 'bench-press' : workout === 'b' ? 'assisted-pullup' : workout === 'c' ? 'lever-squat' : '';
+  const covers: Record<string, string> = { a: 'bench-press', b: 'assisted-pullup', c: 'lever-squat', d: 'incline-dumbbell', e: 'preacher-curl' };
+  const cover = covers[workout];
   return cover && exerciseMotionId(plan, workout, cover, image)
     ? `${base}motion/covers/${cover}.webp`
     : `${base}exercise-${image}.webp`;
