@@ -11,6 +11,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const home = () => page.getByRole('button', { name: 'Treinos', exact: true }).click();
   try {
     await page.goto(process.env.APP_URL || 'http://127.0.0.1:4174/gym-tracker/');
+    await page.locator('.workout-tile[data-workout=a]').waitFor();
+    assert.match(await page.locator('.workout-tile[data-workout=a] img').getAttribute('src'), /motion\/bench-press-1\.webp$/);
     await page.locator('.workout-tile[data-workout=a]').click();
     assert.equal(await page.locator('.exercise-motion').count(), 6);
     assert.equal(await page.locator('.set-button').count(), 18);

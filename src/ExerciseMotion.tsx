@@ -12,6 +12,13 @@ export function mondayMotionId(plan: string | undefined, workout: string, id: st
   return (!plan || plan === 'original') && workout === 'a' && mondayImages[id] === image ? id : undefined;
 }
 
+export function workoutCoverUrl(plan: string | undefined, workout: string, image: number) {
+  const base = `${import.meta.env.BASE_URL}images/`;
+  return mondayMotionId(plan, workout, 'bench-press', image)
+    ? `${base}motion/bench-press-1.webp`
+    : `${base}exercise-${image}.webp`;
+}
+
 export function ExerciseMotion({ id, image, title, controls = false }: { id: string; image: number; title: string; controls?: boolean }) {
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
