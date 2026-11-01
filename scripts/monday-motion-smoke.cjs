@@ -9,8 +9,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const workout = process.env.MOTION_WORKOUT || 'a';
-  const cover = {a:'bench-press', b:'assisted-pullup', c:'lever-squat', d:'incline-dumbbell', e:'preacher-curl'}[workout];
-  const folder = {a:'monday-motion', b:'tuesday-motion', c:'wednesday-motion', d:'thursday-motion', e:'friday-motion'}[workout];
+  const cover = {a:'bench-press', b:'assisted-pullup', c:'lever-squat', d:'incline-dumbbell', e:'preacher-curl', home:'tuck-front-lever'}[workout];
+  const folder = {a:'monday-motion', b:'tuesday-motion', c:'wednesday-motion', d:'thursday-motion', e:'friday-motion', home:'home-motion'}[workout];
   const home = () => page.getByRole('button', { name: 'Treinos', exact: true }).click();
   try {
     await page.goto(process.env.APP_URL || 'http://127.0.0.1:4174/gym-tracker/');
@@ -18,7 +18,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     assert.match(await page.locator(`.workout-tile[data-workout=${workout}] img`).getAttribute('src'), new RegExp(`motion/covers/${cover}\\.webp$`));
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
-      for (const id of ['a', 'b', 'c', 'd', 'e']) {
+      for (const id of ['a', 'b', 'c', 'd', 'e', 'home']) {
         const coverImage = page.locator(`.workout-tile[data-workout=${id}] .motion-cover img`);
         await coverImage.evaluate(img => img.decode());
         const layout = await coverImage.evaluate(img => {
@@ -33,8 +33,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     fs.mkdirSync(`artifacts/${folder}`, { recursive: true });
     await page.screenshot({ path: `artifacts/${folder}/home.png`, fullPage: true });
     await page.locator(`.workout-tile[data-workout=${workout}]`).click();
-    assert.equal(await page.locator('.exercise-motion').count(), ['c','d','e'].includes(workout) ? 7 : 6);
-    assert.equal(await page.locator('.set-button').count(), workout === 'c' ? 22 : ['d','e'].includes(workout) ? 21 : 18);
+    assert.equal(await page.locator('.exercise-motion').count(), workout === 'home' ? 2 : ['c','d','e'].includes(workout) ? 7 : 6);
+    assert.equal(await page.locator('.set-button').count(), workout === 'home' ? 6 : workout === 'c' ? 22 : ['d','e'].includes(workout) ? 21 : 18);
     const first = page.locator('.exercise-motion').first();
     await page.waitForFunction(() => document.querySelector('.exercise-motion img')?.src.includes('/motion/'));
     const initial = await first.locator('img').getAttribute('src');
@@ -66,9 +66,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.screenshot({ path: `artifacts/${folder}/preview.png` });
     await page.getByRole('button', { name: 'Fechar', exact: true }).click();
     await page.screenshot({ path: `artifacts/${folder}/workout.png`, fullPage: true });
-    await home();
-    await page.locator('.workout-tile[data-workout=home]').click();
-    assert.equal(await page.locator('.exercise-motion').count(), 0, 'Optional Saturday keeps static illustrations');
     await home();
     await page.evaluate(() => navigator.serviceWorker.ready);
     await page.reload();

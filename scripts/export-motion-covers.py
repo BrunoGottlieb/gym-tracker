@@ -9,7 +9,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent / 'public' / 'images' / 'motion'
 OUT = ROOT / 'covers'
 OUT.mkdir(exist_ok=True)
-for name in ('bench-press', 'assisted-pullup', 'lever-squat', 'incline-dumbbell', 'preacher-curl'):
+for name in ('bench-press', 'assisted-pullup', 'lever-squat', 'incline-dumbbell', 'preacher-curl', 'tuck-front-lever'):
     frame = Image.open(ROOT / f'{name}-1.webp').convert('RGB')
     cover = Image.new('RGB', (1440, 800))
     cover.paste(frame.crop((0, 0, 1, 800)).resize((320, 800)), (0, 0))
