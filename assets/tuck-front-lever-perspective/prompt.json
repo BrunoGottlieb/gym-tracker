@@ -1,0 +1,18 @@
+{
+  "mode": "built-in imagegen",
+  "prompt": "Draw one clean flat-colored instructional gym illustration of a basic TUCK FRONT LEVER in a genuinely three-dimensional, FORESHORTENED THREE-QUARTER VIEW. Reproduce the athlete's POSITION from Image 1 (real tuck front lever, top-left photo of collage) but use a normal overhead MULTI-GRIP PULLUP BAR with two HORIZONTAL parallel handles like Image 2 (real pullup hardware). Image 3 provides our fictional character/style only (green clothes); preserve that character, not the old pose or camera. \nMost important: CAMERA near the athlete's FEET, looking diagonally along his horizontal body toward his head and toward the pullup station. His tucked knees and shoes are the closest foreground objects, with his head farther away. This must NOT be a side-profile view. His torso must show obvious foreshortening, with one shoulder/arm nearer and the other receding in depth. In the PICTURE, the main pullup crossbar goes mostly LEFT TO RIGHT along the TOP, while the man's head-to-hips body axis goes diagonally DOWN TOWARD THE VIEWER, visually almost PERPENDICULAR to the crossbar. Do not draw the man's length extending left-right parallel under the bar like hanging beneath a branch.\nPose is horizontal suspended back/torso facing upward, both elbows completely straight and arms angled forward toward his knees and up toward handles, hips level with shoulders, knees folded TIGHT to CHEST, heels tucked close to buttocks. Compact round tucked silhouette, not a stretched-out chair pose. No foot contacts any post. Body is FREE IN SPACE with plenty of visible empty space around his floating legs.\nApparatus: ordinary pull-up rack in the background; main CROSSBAR overhead, two short parallel horizontal black grip bars stick toward the viewer (like Image 2), each held in one hand with palms inward neutral grip. NOT vertically dangling pegs, not hanging by fingers on a branch, not rings, no cable attachment. Frame supports stay behind/to sides, far from shoes.\nShort dark-haired adult man wearing sage green tank, dark green shorts, white sneakers. Anatomically clean outlines, restrained flat shading, warm ivory empty background, no text/no arrows/no watermark. One complete athlete, wide 3:2 landscape, generous margins, no cropping of hands or head. Clearly show body and apparatus occupy DIFFERENT axes in perspective.",
+  "references": [
+    {
+      "role": "real basic tuck pose, top-left of progression image",
+      "page": "https://calisteniapp.com/articles/front-lever-calisthenics"
+    },
+    {
+      "role": "real neutral-grip pullup station hardware",
+      "page": "https://www.exercises.com.au/neutral-grip-pull-up/"
+    },
+    {
+      "role": "additional real perspective reference inspected",
+      "page": "https://www.workedoutfitness.com/search/article/front-lever-progression"
+    }
+  ]
+}

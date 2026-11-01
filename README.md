@@ -305,3 +305,8 @@ Bruno adds **Cadeira abdutora** on Wednesday, **Abdominal no banco declinado** o
 After the user confirmed **tuck front lever on the bar**, image 24 is replaced by a clearer built-in imagegen illustration: horizontal suspended torso, straight arms, a matched pronated grip like a normal pull-up, tucked knees and feet visibly clear of the support posts. The existing image index is retained so the home cover, catalog and exercise zoom use it consistently offline. Source PNG and exact prompt are in `assets/tuck-front-lever-v2/`.
 
 `src/brunoAdditions.test.ts` covers additive/idempotent migration, manual duplicates, stored rope loads, session-only six-set dips, archived history and other profiles. The routine browser check verifies updated quantities, muscle drilldowns, images, backup upgrade preservation and offline access.
+
+
+## Tuck front lever perspective revision
+
+Image 24 is recomposed in an oblique three-quarter view with foreshortened knees/shoes in the foreground, torso suspended behind them, straight arms and horizontal parallel neutral-grip handles on an ordinary pullup rack. This replaces the earlier flat side view; the user explicitly permitted neutral grip to clarify the posture. No routine, load, series or session data changes. Built-in imagegen source and exact prompt/reference URLs are in `assets/tuck-front-lever-perspective/`. Real-photo references were inspected from Calisteniapp (basic tuck pose), Worked Out Fitness (suspension perspective) and Exercises.com.au (neutral-grip hardware). Reference photos remain in ignored local artifacts and are not distributed with the app. The existing image index keeps exercise zoom, Saturday cover and offline asset mapping intact.
