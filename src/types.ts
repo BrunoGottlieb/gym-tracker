@@ -27,6 +27,9 @@ export interface ExerciseLog {
   kind: 'reps' | 'seconds';
   weight: number;
   done: boolean[];
+  seconds?: (number | null)[];
+  holdStartedAt?: number;
+  swappedFrom?: string;
   muscle?: MuscleGroup;
   instructions?: string;
 }

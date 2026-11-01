@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const prep=require('node:child_process').spawnSync(process.execPath,['scripts/prepare-bruno-fixture.mjs'],{encoding:'utf8'});if(prep.status!==0)throw Error(prep.stderr||'Legacy fixture failed');
- const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});await c.route('**/api/streaks',r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});await c.route('**/api/{streaks,backups}**',r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.addLocatorHandler(p.locator('.streak-celebration'),async()=>p.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click());
  const out=path.resolve('artifacts/bruno-plan');fs.mkdirSync(out,{recursive:true});
  const home=()=>p.getByRole('button',{name:'Treinos',exact:true}).click(),settings=()=>p.getByRole('button',{name:'Abrir ajustes',exact:true}).click();

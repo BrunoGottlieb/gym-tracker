@@ -1,4 +1,4 @@
-import type { AppState, RestTimer, Session, Workout } from './types';
+import type { AppState, Exercise, RestTimer, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, LAST_IMAGE_INDEX, muscleLabels } from './catalog';
 import { migrateState } from './migrations';
 
@@ -15,14 +15,14 @@ export function removeSessionSet(state: AppState, exerciseId: string): AppState 
   if (!log || log.done.length <= 1) return state;
   const index = log.done.lastIndexOf(false);
   if (index < 0) return state;
-  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: e.done.filter((_, i) => i !== index) } : e) } };
+  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: e.done.filter((_, i) => i !== index), ...(e.seconds ? { seconds: e.seconds.filter((_, i) => i !== index) } : {}) } : e) } };
 }
 
 export function addSessionSet(state: AppState, exerciseId: string): AppState {
   if (!state.active) return state;
   const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
   if (!log || log.done.length >= MAX_SESSION_SETS) return state;
-  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: [...e.done, false] } : e) } };
+  return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e.exerciseId === exerciseId ? { ...e, done: [...e.done, false], ...(e.seconds ? { seconds: [...e.seconds, null] } : {}) } : e) } };
 }
 
 export function createSession(workout: Workout, weights: Record<string, number>, now = Date.now()): Session {
@@ -70,7 +70,7 @@ const text = (value: unknown, max = 160): value is string => typeof value === 's
 const number = (value: unknown, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
 const integer = (value: unknown, max: number): value is number => number(value, max) && Number.isInteger(value);
 function validSession(value: unknown): value is Session {
-  return object(value) && (value.person === undefined || ['original', 'sheet', 'ivan'].includes(String(value.person))) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
+  return object(value) && (value.person === undefined || ['original', 'sheet', 'ivan'].includes(String(value.person))) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && (e.holdStartedAt === undefined || (e.kind === 'seconds' && number(e.holdStartedAt))) && (e.swappedFrom === undefined || text(e.swappedFrom)) && (e.seconds === undefined || (e.kind === 'seconds' && Array.isArray(e.seconds) && Array.isArray(e.done) && e.seconds.length === e.done.length && e.seconds.every(v => v === null || integer(v,86400)))) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
 }
 function validWorkouts(workouts: unknown): workouts is Workout[] {
   if (!Array.isArray(workouts) || !workouts.length || workouts.length > 30) return false;
@@ -120,4 +120,20 @@ export function parseBackup(content: string): AppState {
 }
 export function createBackup(state: AppState): string {
   return JSON.stringify({ format: 'gym-tracker', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
+}
+
+export function recordHold(state: AppState, id: string, index: number, seconds: number): AppState {
+  if (!Number.isInteger(seconds) || seconds < 1 || seconds > 86400) return state;
+  return { ...state, active: state.active ? { ...state.active, exercises: state.active.exercises.map(e => {
+    if (e.exerciseId !== id || e.kind !== 'seconds' || index < 0 || index >= e.done.length) return e;
+    const values = e.seconds ? [...e.seconds] : e.done.map(() => null);
+    values[index] = seconds;
+    return { ...e, holdStartedAt: undefined, seconds: values, done: e.done.map((done,i) => i === index || done) };
+  }) } : null };
+}
+export function swapSessionExercise(state: AppState, id: string, replacement: Exercise): AppState {
+  const session = state.active, old = session?.exercises.find(e => e.exerciseId === id);
+  if (!session || !old || old.done.some(Boolean) || old.holdStartedAt || session.exercises.some(e => e.exerciseId !== id && canonicalExerciseId(e.exerciseId) === canonicalExerciseId(replacement.id))) return state;
+  const log = createSession({ id:'temporary', name:'temporary', day:0, image:0, exercises:[{...replacement,sets:old.done.length}] }, state.weights).exercises[0];
+  return { ...state, active: { ...session, exercises: session.exercises.map(e => e.exerciseId === id ? {...log,swappedFrom:old.swappedFrom ?? old.name} : e) } };
 }
