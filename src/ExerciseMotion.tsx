@@ -2,20 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import './exercise-motion.css';
 
-const mondayImages: Record<string, number> = {
-  'bench-press': 0, 'incline-dumbbell': 21, 'pec-deck': 2,
-  'parallel-bar-dips': 36, 'rope-pushdown': 3, 'bar-pushdown': 23,
+const motionImages: Record<string, Record<string, number>> = {
+  a: { 'bench-press': 0, 'incline-dumbbell': 21, 'pec-deck': 2,
+    'parallel-bar-dips': 36, 'rope-pushdown': 3, 'bar-pushdown': 23 },
+  b: { 'assisted-pullup': 68, 'chest-supported-row': 31, 'preacher-curl': 10,
+    'rope-curl': 32, 'lateral-raise': 19, 'face-pull': 67 },
 };
 
-// This pilot belongs to Bruno's Monday workout. Custom artwork keeps its own image.
-export function mondayMotionId(plan: string | undefined, workout: string, id: string, image: number) {
-  return (!plan || plan === 'original') && workout === 'a' && mondayImages[id] === image ? id : undefined;
+// Enable only the illustrated workouts in Bruno's plan; custom artwork keeps its own image.
+export function exerciseMotionId(plan: string | undefined, workout: string, id: string, image: number) {
+  return (!plan || plan === 'original') && motionImages[workout]?.[id] === image ? id : undefined;
 }
 
 export function workoutCoverUrl(plan: string | undefined, workout: string, image: number) {
   const base = `${import.meta.env.BASE_URL}images/`;
-  return mondayMotionId(plan, workout, 'bench-press', image)
-    ? `${base}motion/bench-press-1.webp`
+  const cover = workout === 'a' ? 'bench-press' : workout === 'b' ? 'assisted-pullup' : '';
+  return cover && exerciseMotionId(plan, workout, cover, image)
+    ? `${base}motion/${cover}-1.webp`
     : `${base}exercise-${image}.webp`;
 }
 
