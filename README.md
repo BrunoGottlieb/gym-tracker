@@ -294,3 +294,14 @@ The cloud schedule and local group calculation both use `scheduledTrainingDays`,
 A follow-up request changes every planned Bruno exercise, including optional Saturday, to **at least three sets** and replaces barbell incline press with **Supino inclinado com halteres** (existing image 21). Gym series totals are now 18/18/19/18/18, with six optional sets at home. The four calf sets remain four. Bruno's editor enforces a three-set minimum; Nick/Ivan retain their own prescribed set counts. Session-only series removal still works independently of the planned prescription.
 
 `brunoSeriesRevision: 1` applies the update once to active/inactive Bruno plans without changing current-session/finished snapshots, notes or remembered loads. Dumbbell incline uses `incline-dumbbell`, never copies the barbell load, and reuses its own saved load if present. Existing exercises with four or more sets are preserved. Unit coverage in `src/brunoMinSeries.test.ts` checks both load identities, snapshots, higher-set customizations and other profiles; browser checks verify the dumbbell image/name, all new totals and the editor minimum.
+
+
+## Requested Wednesday/Thursday/Friday additions and clearer tuck image
+
+Bruno adds **Cadeira abdutora** on Wednesday, **Abdominal no banco declinado** on Thursday and **Rosca corda no crossover** on Friday, three planned series each. Friday's biceps exercises are contiguous. Monday and Tuesday are unchanged; Monday dips remain three planned series, with +1 available for additional sets during a session. No Monday crossover or Tuesday low row is added by this request.
+
+`brunoAdditionsRevision: 1` inserts each exercise once in the current/saved Bruno routine without replacing customizations, remembered loads, current/finished snapshots or Nick/Ivan plans. Existing manually added matching exercises retain their series and are not duplicated. Rope curls share their existing load identity across Tuesday/Friday. The gym exercise counts are 6/6/7/7/7 and planned series 18/18/22/21/21; optional Saturday remains two exercises, six series.
+
+After the user confirmed **tuck front lever on the bar**, image 24 is replaced by a clearer built-in imagegen illustration: horizontal suspended torso, straight arms, a matched pronated grip like a normal pull-up, tucked knees and feet visibly clear of the support posts. The existing image index is retained so the home cover, catalog and exercise zoom use it consistently offline. Source PNG and exact prompt are in `assets/tuck-front-lever-v2/`.
+
+`src/brunoAdditions.test.ts` covers additive/idempotent migration, manual duplicates, stored rope loads, session-only six-set dips, archived history and other profiles. The routine browser check verifies updated quantities, muscle drilldowns, images, backup upgrade preservation and offline access.

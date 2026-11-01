@@ -7,6 +7,9 @@ export const declineSitup = exercise('decline-situp', 'Abdominal no banco declin
 export const militarySitup = exercise('military-situp', 'Abdominal militar (TAF)', 3, '10–15', 35);
 export const parallelBarDips = exercise('parallel-bar-dips', 'Dips livres nas paralelas', 3, '6–10', 36);
 
+export const hipAbduction = { ...exercise('hip-abduction', 'Cadeira abdutora', 3, '12–20', 64), muscle: 'legs' as const };
+export const ropeCurl = exercise('rope-curl', 'Rosca corda no crossover', 3, '10–15', 32);
+
 export const preacherCurl = exercise('preacher-curl', 'Rosca Scott', 3, '8–12', 10);
 
 export const horizontalLegPress = exercise('horizontal-leg-press', 'Leg press horizontal com banco móvel', 3, '8–12', 65);
@@ -85,6 +88,7 @@ export const initialWorkouts: Workout[] = [
     exercise('leg-extension','Cadeira extensora',3,'10–15',13),
     exercise('leg-curl','Cadeira flexora sentada',3,'10–15',14),
     {...exercise('lying-leg-curl','Mesa flexora deitada',3,'10–15',56),muscle:'legs'},
+    {...hipAbduction},
     exercise('calf-raise','Panturrilha na máquina',4,'10–20',16),
   ] },
   { id: 'd', name: 'Peito, tríceps + abdômen', day: 4, image: 21, exercises: [
@@ -93,6 +97,7 @@ export const initialWorkouts: Workout[] = [
     {...parallelBarDips,sets:3,target:'6–12'},
     exercise('rope-pushdown','Tríceps na polia com corda',3,'10–15',3),
     {...militarySitup,sets:3,target:'10–20'},
+    {...declineSitup},
     {...exercise('front-plank','Prancha frontal',3,'30–60',54,'seconds'),muscle:'abs'},
   ] },
   { id: 'e', name: 'Costas, bíceps + ombros', day: 5, image: 10, exercises: [
@@ -100,6 +105,7 @@ export const initialWorkouts: Workout[] = [
     exercise('cable-row','Remada baixa na polia',3,'8–12',7),
     {...preacherCurl,sets:3},
     exercise('cable-curl','Rosca bíceps na polia com barra',3,'10–15',29),
+    {...ropeCurl},
     {...exercise('cable-lateral-raise','Elevação lateral unilateral na polia',3,'12–20',59),muscle:'shoulders'},
     exercise('face-pull','Face-pull na polia com corda',3,'12–20',67),
   ] },
@@ -107,12 +113,12 @@ export const initialWorkouts: Workout[] = [
 ];
 
 export function createLegacyState(): AppState {
-  return { ...createInitialState(), brunoPlanRevision: undefined, brunoHomeRevision: undefined, brunoSeriesRevision: undefined, workouts: structuredClone(legacyWorkouts) };
+  return { ...createInitialState(), brunoPlanRevision: undefined, brunoHomeRevision: undefined, brunoSeriesRevision: undefined, brunoAdditionsRevision: undefined, workouts: structuredClone(legacyWorkouts) };
 }
 
 export function createInitialState(): AppState {
   return {
-    version: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };

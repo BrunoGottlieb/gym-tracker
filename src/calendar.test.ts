@@ -29,13 +29,13 @@ describe('actual training calendar', () => {
   it('uses finished-session snapshots after a plan has been edited, and excludes unfinished sessions', () => {
     const state = createInitialState();
     const session = createSession(state.workouts[3], {});
-    expect(workoutFocus(session)).toBe('chest');
+    expect(workoutFocus(session)).toBe('abs');
     const date = localDateKey(Date.now());
     expect(sessionsOnDate([session], date)).toEqual([]);
     session.finishedAt = Date.now();
     state.workouts[3].exercises = [];
     state.workouts[3].name = 'Treino alterado';
-    expect(workoutFocus(session)).toBe('chest');
+    expect(workoutFocus(session)).toBe('abs');
     expect(sessionsOnDate([session], date)[0].workoutName).toBe('Peito, tríceps + abdômen');
   });
 });

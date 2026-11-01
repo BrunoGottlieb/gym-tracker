@@ -34,7 +34,7 @@ describe('predefined exercise catalog', () => {
     expect(selected.name).toBe('Agachamento búlgaro');
     expect(copy).not.toHaveProperty('aliases');
     expect(createInitialState().workouts).toEqual(original);
-    expect(createInitialState().workouts.map(w => w.exercises.length)).toEqual([6, 6, 6, 6, 6, 2]);
+    expect(createInitialState().workouts.map(w => w.exercises.length)).toEqual([6, 6, 7, 7, 7, 2]);
   });
   it('keeps loads distinct for new variants and accepts them in backups', () => {
     const state = createInitialState();

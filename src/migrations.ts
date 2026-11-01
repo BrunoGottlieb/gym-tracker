@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -229,6 +229,17 @@ export function migrateState(original: AppState): AppState {
       }
     }
     state.brunoSeriesRevision = 1;
+  }
+  if (state.brunoAdditionsRevision !== 1) {
+    for (const plan of [...((state.selectedPlan ?? 'original') === 'original' ? [state.workouts] : []), ...(state.planSnapshots?.original ? [state.planSnapshots.original] : [])]) {
+      for (const [workoutId, exercise, beforeId] of [['c', hipAbduction, 'calf-raise'], ['d', declineSitup, 'front-plank'], ['e', ropeCurl, 'cable-lateral-raise']] as const) {
+        const workout = plan.find(w => w.id === workoutId);
+        if (!workout || workout.exercises.some(e => e.id === exercise.id)) continue;
+        const index = workout.exercises.findIndex(e => e.id === beforeId);
+        workout.exercises.splice(index < 0 ? workout.exercises.length : index, 0, structuredClone(exercise));
+      }
+    }
+    state.brunoAdditionsRevision = 1;
   }
   return state;
 }
