@@ -53,7 +53,7 @@ describe('local routine choice', () => {
     createSheetWorkouts();
     expect(state).toEqual(before);
     expect(selectRoutinePlan(state, 'original')).toBe(state);
-    expect(state.workouts.map(w => w.exercises.length)).toEqual([6, 6, 7, 7, 7, 2]);
+    expect(state.workouts.map(w => w.exercises.length)).toEqual([7, 6, 7, 6, 7, 2]);
   });
   it('transcribes all five sheet routines, series, targets, rest and combinations', () => {
     const workouts = createSheetWorkouts();

@@ -14,7 +14,7 @@ function previous() {
 describe('three requested Bruno additions',()=>{
  it('adds exactly one exercise on Wednesday, Thursday and Friday, leaving Monday and Tuesday untouched',()=>{
   const state=previous(),next=migrateState(state);
-  expect(next.workouts.map(w=>w.exercises.length)).toEqual([6,6,7,7,7,2]);
+  expect(next.workouts.map(w=>w.exercises.length)).toEqual([7,6,7,6,7,2]);
   expect(next.workouts.slice(0,2)).toEqual(state.workouts.slice(0,2));
   expect(next.workouts[0].exercises.find(e=>e.id==='parallel-bar-dips')?.sets).toBe(3);
   expect(next.workouts[2].exercises.find(e=>e.id==='hip-abduction')).toMatchObject({sets:3,image:64});

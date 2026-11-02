@@ -102,6 +102,7 @@ export function validateState(value: unknown): value is AppState {
   }
   if (!Array.isArray(value.history) || value.history.length > 10000 || !value.history.every(s => validSession(s) && number(s.finishedAt))) return false;
   const p = value.preferences, t = value.timer;
+  if (value.brunoPlankRevision !== undefined && value.brunoPlankRevision !== 1) return false;
   if (value.brunoAdditionsRevision !== undefined && value.brunoAdditionsRevision !== 1) return false;
   if (value.brunoSeriesRevision !== undefined && value.brunoSeriesRevision !== 1) return false;
   if (value.brunoHomeRevision !== undefined && value.brunoHomeRevision !== 1) return false;

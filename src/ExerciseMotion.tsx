@@ -4,13 +4,13 @@ import './exercise-motion.css';
 
 const motionImages: Record<string, Record<string, number>> = {
   a: { 'bench-press': 0, 'incline-dumbbell': 21, 'pec-deck': 2,
-    'parallel-bar-dips': 36, 'rope-pushdown': 3, 'bar-pushdown': 23 },
+    'parallel-bar-dips': 36, 'rope-pushdown': 3, 'bar-pushdown': 23, 'front-plank':54 },
   b: { 'assisted-pullup': 68, 'chest-supported-row': 31, 'preacher-curl': 10,
     'rope-curl': 32, 'lateral-raise': 19, 'face-pull': 67 },
   c: { 'lever-squat': 66, 'leg-press': 12, 'leg-extension': 13,
     'leg-curl': 14, 'lying-leg-curl': 56, 'hip-abduction': 64, 'calf-raise': 16 },
   d: { 'incline-dumbbell': 21, 'crossover': 22, 'parallel-bar-dips': 36,
-    'rope-pushdown': 3, 'military-situp': 35, 'decline-situp': 34, 'front-plank': 54 },
+    'rope-pushdown': 3, 'military-situp': 35, 'decline-situp': 34 },
   e: { 'assisted-pullup': 68, 'cable-row': 7, 'preacher-curl': 10,
     'cable-curl': 29, 'rope-curl': 32, 'cable-lateral-raise': 59, 'face-pull': 67 },
   home: { 'tuck-front-lever': 24, 'hanging-leg-raise': 49 },

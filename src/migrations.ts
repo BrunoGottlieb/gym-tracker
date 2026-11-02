@@ -241,5 +241,16 @@ export function migrateState(original: AppState): AppState {
     }
     state.brunoAdditionsRevision = 1;
   }
+  if (state.brunoPlankRevision !== 1) {
+    for (const plan of [...((state.selectedPlan ?? 'original') === 'original' ? [state.workouts] : []), ...(state.planSnapshots?.original ? [state.planSnapshots.original] : [])]) {
+      const monday=plan.find(w=>w.id==='a'), thursday=plan.find(w=>w.id==='d');
+      const plank=thursday?.exercises.find(e=>e.id==='front-plank');
+      if(monday && thursday && plank){
+        if(!monday.exercises.some(e=>e.id==='front-plank'))monday.exercises.push(structuredClone(plank));
+        thursday.exercises=thursday.exercises.filter(e=>e.id!=='front-plank');
+      }
+    }
+    state.brunoPlankRevision=1;
+  }
   return state;
 }

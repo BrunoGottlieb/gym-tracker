@@ -73,6 +73,7 @@ export const initialWorkouts: Workout[] = [
     {...parallelBarDips,sets:3,target:'6–12'},
     exercise('rope-pushdown','Tríceps na polia com corda',3,'10–15',3),
     exercise('bar-pushdown','Tríceps na polia com barra',3,'10–15',23),
+    {...exercise('front-plank','Prancha frontal',3,'30–60',54,'seconds'),muscle:'abs'},
   ] },
   { id: 'b', name: 'Costas, bíceps + ombros', day: 2, image: 68, exercises: [
     {...exercise('assisted-pullup','Barra fixa assistida',3,'6–10',68),instructions:'Registre o contrapeso de assistência. Menos kg de assistência = maior dificuldade.'},
@@ -98,7 +99,6 @@ export const initialWorkouts: Workout[] = [
     exercise('rope-pushdown','Tríceps na polia com corda',3,'10–15',3),
     {...militarySitup,sets:3,target:'10–20'},
     {...declineSitup},
-    {...exercise('front-plank','Prancha frontal',3,'30–60',54,'seconds'),muscle:'abs'},
   ] },
   { id: 'e', name: 'Costas, bíceps + ombros', day: 5, image: 10, exercises: [
     {...exercise('assisted-pullup','Barra fixa assistida',3,'6–10',68),instructions:'Registre o contrapeso de assistência. Menos kg de assistência = maior dificuldade.'},
@@ -118,7 +118,7 @@ export function createLegacyState(): AppState {
 
 export function createInitialState(): AppState {
   return {
-    version: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, brunoPlankRevision: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };
