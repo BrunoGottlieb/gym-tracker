@@ -1,6 +1,6 @@
 import { getMuscle } from './catalog';
 import { localDateKey } from './calendar';
-import type { MuscleGroup, Session, Workout } from './types';
+import type { MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
 export const muscleOrder: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'biceps', 'triceps', 'abs', 'other'];
 export const muscleColors: Record<MuscleGroup, string> = {
@@ -45,4 +45,29 @@ export function completedWeekdayAverages(history: Session[]): WeekdayAverage[] {
     row.total = muscleOrder.reduce((sum, group) => sum + row.totals[group], 0) / row.days;
   }
   return weekdays;
+}
+
+export interface WorkoutAverage {
+  workoutId: string; name: string; label: string; sessions: number;
+  totals: Record<MuscleGroup,number>; averages: Record<MuscleGroup,number>; total: number;
+}
+/** Average actual completed sets per execution of each workout, regardless of date. */
+export function completedWorkoutAverages(history:Session[],workouts:Workout[],person:RoutinePlan='original'):WorkoutAverage[] {
+  const rows=new Map<string,WorkoutAverage>();
+  const ensure=(id:string,name:string)=>{
+    let row=rows.get(id);
+    if(!row){row={workoutId:id,name,label:id==='home'?'CASA':/^[a-z]$/i.test(id)?id.toUpperCase():name,sessions:0,totals:emptyCounts(),averages:emptyCounts(),total:0};rows.set(id,row);}
+    return row;
+  };
+  for(const workout of workouts)ensure(workout.id,workout.name);
+  for(const session of history){
+    if(session.finishedAt===undefined || (session.person??'original')!==person)continue;
+    const row=ensure(session.workoutId,session.workoutName);row.sessions++;
+    for(const log of session.exercises)row.totals[getMuscle(log)]+=log.done.filter(Boolean).length;
+  }
+  for(const row of rows.values())if(row.sessions){
+    for(const muscle of muscleOrder)row.averages[muscle]=row.totals[muscle]/row.sessions;
+    row.total=Object.values(row.totals).reduce((a,b)=>a+b,0)/row.sessions;
+  }
+  return [...rows.values()].sort((a,b)=>a.workoutId==='home'?1:b.workoutId==='home'?-1:a.label.localeCompare(b.label,'pt-BR'));
 }

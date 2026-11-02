@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import { completedWorkoutAverages, completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
 import { createInitialState } from './data';
 import { createSession, editHistorySession } from './domain';
 import type { MuscleGroup, Session } from './types';
@@ -9,6 +9,26 @@ function record(day: number, groups: { muscle: MuscleGroup; done: boolean[] }[],
   return { id: crypto.randomUUID(), workoutId: 'test', workoutName: 'Sessão registrada', startedAt: finishedAt - 60000, finishedAt,
     exercises: groups.map((group, index) => ({ exerciseId: `test-${index}`, name: 'Exercício', image: 0, target: '12', kind: 'reps', weight: 10, ...group })) };
 }
+
+describe('actual sets by workout type',()=>{
+ it('groups the same workout across different weekdays, with actual sets and a shared session denominator',()=>{
+  const a={...record(19,[{muscle:'chest',done:[true,true,false]}]),workoutId:'a'};
+  const a2={...record(21,[{muscle:'chest',done:[true,true,true,true]},{muscle:'abs',done:[true,true]}]),workoutId:'a'};
+  const b={...record(19,[{muscle:'back',done:[true]}]),workoutId:'b'};
+  const rows=completedWorkoutAverages([a,a2,b],createInitialState().workouts);
+  expect(rows.map(r=>r.label)).toEqual(['A','B','C','D','E','CASA']);
+  expect(rows[0]).toMatchObject({sessions:2,total:4,averages:{chest:3,abs:1}});
+  expect(rows[1]).toMatchObject({sessions:1,total:1});expect(rows[2].sessions).toBe(0);
+ });
+ it('separates profiles with identical workout IDs, excludes unfinished sessions and retains archived workouts',()=>{
+  const a={...record(20,[{muscle:'legs',done:[true,true]}]),workoutId:'a',person:'ivan' as const};
+  const old={...record(21,[{muscle:'abs',done:[true]}]),workoutId:'retired',workoutName:'Treino antigo'};
+  const active={...old,finishedAt:undefined};const history=[a,old,active],before=structuredClone(history);
+  expect(completedWorkoutAverages(history,createInitialState().workouts)[0].total).toBe(0);
+  expect(completedWorkoutAverages(history,[], 'ivan')[0]).toMatchObject({workoutId:'a',total:2});
+  expect(completedWorkoutAverages(history,[])[0]).toMatchObject({workoutId:'retired',total:1,sessions:1});expect(history).toEqual(before);
+ });
+});
 describe('weekly planned muscle counts', () => {
   it('counts occurrences by primary muscle, including repeated exercises across workouts', () => {
     const state = createInitialState();

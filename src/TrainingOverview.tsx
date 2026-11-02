@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react';
 import { MuscleIcon } from './components';
 import { getMuscle, muscleLabels } from './catalog';
-import { completedWeekdayAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
-import type { ExerciseLog, MuscleGroup, Session, Workout } from './types';
+import { completedWorkoutAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import type { ExerciseLog, MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
-const shortDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-const fullDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
 export function WeeklyMuscleSummary({ workouts, onSelect }: { workouts: Workout[]; onSelect: (group: MuscleGroup) => void }) {
@@ -30,28 +28,28 @@ export function WorkoutMuscleSummary({ exercises }: { exercises: ExerciseLog[] }
   return <div className="workout-muscle-summary" aria-label="Composição do treino por grupo muscular">{muscleOrder.filter(group => counts[group] > 0).map(group => <span key={group} data-muscle={group} title={`${muscleLabels[group]}: ${counts[group]} exercícios`} aria-label={`${muscleLabels[group]}: ${counts[group]} ${counts[group] === 1 ? 'exercício' : 'exercícios'}`} style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}12` }}><MuscleIcon muscle={group} size={20} /><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>)}</div>;
 }
 
-export function WeeklyCompletedChart({ history }: { history: Session[] }) {
-  const rows = useMemo(() => completedWeekdayAverages(history), [history]);
-  const [selected, setSelected] = useState<number | null>(null);
+export function WeeklyCompletedChart({ history,workouts,person }: { history: Session[];workouts:Workout[];person:RoutinePlan }) {
+  const rows = useMemo(() => completedWorkoutAverages(history,workouts,person), [history,workouts,person]);
+  const [selected, setSelected] = useState<string | null>(null);
   const groups = muscleOrder.filter(group => rows.some(row => row.totals[group] > 0));
   const maximum = Math.max(5, Math.ceil(Math.max(...rows.map(row => row.total)) / 5) * 5);
-  const detail = selected === null ? undefined : rows[selected];
-  return <section className="weekly-completed-chart" aria-label="Média de séries realizadas por dia da semana">
-    <h2>Séries realizadas por dia da semana</h2>
-    <p className="subtle">Todo o histórico · média por dia com treino registrado. As cores mostram o grupo muscular principal de cada série.</p>
+  const detail = selected === null ? undefined : rows.find(row=>row.workoutId===selected);
+  return <section className="weekly-completed-chart" aria-label="Média de séries realizadas por tipo de treino">
+    <h2>Séries realizadas por treino</h2>
+    <p className="subtle">Todo o histórico deste perfil · média por execução de cada treino, independentemente do dia da semana. As cores mostram o grupo muscular principal de cada série.</p>
     {!groups.length && <p className="stats-chart-empty">Registre séries realizadas para começar a ver suas médias aqui.</p>}
     <div className="weekday-chart-layout">
       <div className="weekday-y-axis" aria-hidden="true"><span>{number(maximum)}</span><span>{number(maximum / 2)}</span><span>0</span></div>
       <div className="weekday-plot"><div className="weekday-grid-lines" aria-hidden="true"><i /><i /><i /></div>
-        <div className="weekday-bars">{rows.map(row => <button key={row.weekday} type="button" className={`weekday-bar-button ${selected === row.weekday ? 'selected' : ''}`} disabled={!row.days} aria-pressed={selected === row.weekday} data-weekday={row.weekday} aria-label={`${fullDays[row.weekday]}: ${row.days ? `${number(row.total)} séries em média, ${row.days} ${row.days === 1 ? 'dia registrado' : 'dias registrados'}` : 'sem registros'}`} onClick={() => setSelected(row.weekday)}>
-          <span className="weekday-bar-value">{row.days ? number(row.total) : '—'}</span>
+        <div className="weekday-bars" style={{gridTemplateColumns:`repeat(${rows.length},minmax(0,1fr))`}}>{rows.map(row => <button key={row.workoutId} type="button" className={`weekday-bar-button ${selected === row.workoutId ? 'selected' : ''}`} disabled={!row.sessions} aria-pressed={selected === row.workoutId} data-workout={row.workoutId} aria-label={`${`${row.label} · ${row.name}`}: ${row.sessions ? `${number(row.total)} séries em média, ${row.sessions} ${row.sessions === 1 ? 'treino registrado' : 'treinos registrados'}` : 'sem registros'}`} onClick={() => setSelected(row.workoutId)}>
+          <span className="weekday-bar-value">{row.sessions ? number(row.total) : '—'}</span>
           <span className="weekday-bar-stack" style={{ height: `${row.total / maximum * 180}px` }}>{groups.map(group => row.averages[group] > 0 && <span key={group} data-muscle={group} data-average={row.averages[group]} style={{ height: `${row.averages[group] / row.total * 100}%`, backgroundColor: muscleColors[group] }}><span className="sr-only">{muscleLabels[group]}: {number(row.averages[group])} séries</span></span>)}</span>
-          <span className="weekday-bar-label">{shortDays[row.weekday]}</span>
+          <span className="weekday-bar-label">{row.label}</span>
         </button>)}</div>
       </div>
     </div>
     {!!groups.length && <div className="stats-chart-legend">{groups.map(group => <span key={group}><i style={{ backgroundColor: muscleColors[group] }} /><MuscleIcon muscle={group} size={17} />{muscleLabels[group]}</span>)}</div>}
-    {detail && <div className="weekday-chart-detail" aria-live="polite"><strong>{fullDays[detail.weekday]} · {number(detail.total)} séries em média</strong><p>{detail.days} {detail.days === 1 ? 'dia registrado' : 'dias registrados'}</p><div>{muscleOrder.filter(group => detail.totals[group] > 0).map(group => <span key={group}><i style={{ backgroundColor: muscleColors[group] }} />{muscleLabels[group]}<b>{number(detail.averages[group])}</b></span>)}</div></div>}
-    <p className="stats-method">Conta somente séries marcadas como feitas, incluindo treinos parciais. Soma sessões da mesma data antes da média. Dias sem registro ficam fora do cálculo. Toque em uma barra para ver os detalhes.</p>
+    {detail && <div className="weekday-chart-detail" aria-live="polite"><strong>{`${detail.label} · ${detail.name}`} · {number(detail.total)} séries em média</strong><p>{detail.sessions} {detail.sessions === 1 ? 'treino registrado' : 'treinos registrados'}</p><div>{muscleOrder.filter(group => detail.totals[group] > 0).map(group => <span key={group}><i style={{ backgroundColor: muscleColors[group] }} />{muscleLabels[group]}<b>{number(detail.averages[group])}</b></span>)}</div></div>}
+    <p className="stats-method">Conta somente séries marcadas como feitas, incluindo treinos parciais. Cada sessão finalizada conta uma execução do respectivo treino. Treinos sem registro aparecem sem média. Toque em uma barra para ver os detalhes.</p>
   </section>;
 }
