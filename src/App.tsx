@@ -169,7 +169,7 @@ export default function App() {
     if (!session || finishLock.current) return;
     finishLock.current = true; setFinishing(true);
     try {
-      const complete = getProgress(session).total > 0 && getProgress(session).done === getProgress(session).total;
+      const complete = getProgress(session).done > 0;
       // Check the cloud immediately before saving, instead of trusting an old cached day.
       const latest = complete ? await cloudStreak.checkToday() : null;
       if (stateRef.current?.active?.id !== session.id) return;

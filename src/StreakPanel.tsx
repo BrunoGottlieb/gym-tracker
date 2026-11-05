@@ -29,7 +29,7 @@ export function StreakSettings({ cloud, onPreview }: { cloud: CloudStreakControl
     <button className="secondary" disabled={cloud.status === 'syncing'} onClick={() => { void cloud.synchronize(); }}><RefreshCw size={15} />Sincronizar agora</button>
     <button className="text-button shared-streak-preview" onClick={onPreview}><Play size={13} />Ver animação da chama</button>
     {cloud.error && <p className="streak-error" role="status">{cloud.error}</p>}
-    <p className="subtle">A nuvem recebe pessoa, data e identificador técnico dos treinos. Cargas e detalhes dos exercícios ficam no aparelho. Treinos antigos sem identificação de pessoa não são enviados.</p>
+    <p className="subtle">A nuvem recebe pessoa, data e identificador técnico dos treinos. Treinos finalizados com ao menos uma série feita mantêm a chama. O backup automático também guarda cargas e histórico na nuvem. Treinos antigos sem identificação de pessoa não são enviados.</p>
     <p className="subtle">As sequências são compartilhadas entre quem usa este app. Sem contas individuais, elas não são registros privados nem verificação de identidade.</p>
   </section>;
 }

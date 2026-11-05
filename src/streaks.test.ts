@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { beginWorkout, finishSession, validateState } from './domain';
-import { completionEvents, sessionEvent, streakDate, streakSummary, sharedStreak, isDate, isSnapshot, defaultTrainingDays } from './streaks';
+import { pendingCompletionEvents, eventSignature, completionEvents, sessionEvent, streakDate, streakSummary, sharedStreak, isDate, isSnapshot, defaultTrainingDays } from './streaks';
 
 describe('shared streaks', () => {
   it('shares one sequence across alternating people and counts multiple members on a date only once', () => {
@@ -32,7 +32,7 @@ describe('shared streaks', () => {
     expect(streakDate(Date.parse('2026-10-31T03:00:00Z'))).toBe('2026-10-31');
     expect(isDate('2026-02-30')).toBe(false);
   });
-  it('tags new sessions and uploads only identified, saved sessions; partials revoke completion', () => {
+  it('tags new sessions and uploads only identified, saved sessions; partial saved workouts count; empty sessions revoke completion', () => {
     let state = createInitialState();
     state = beginWorkout(state, state.workouts[0]);
     expect(state.active?.person).toBe('original');
@@ -41,7 +41,7 @@ describe('shared streaks', () => {
     state = finishSession(state);
     expect(completionEvents(state)).toHaveLength(1);
     expect(sessionEvent(state.history[0])?.completed).toBe(true);
-    state.history[0].exercises[0].done[0]=false;
+    state.history[0].exercises.forEach(log=>log.done.fill(false));
     expect(sessionEvent(state.history[0])?.completed).toBe(false);
     delete state.history[0].person;
     expect(completionEvents(state)).toEqual([]);
@@ -53,4 +53,18 @@ describe('shared streaks', () => {
     expect(isSnapshot({...snapshot,dates:[{person:'unknown',date:'2026-10-30'}]})).toBe(false);
     expect(isSnapshot({...snapshot,trainingDays:{...defaultTrainingDays,ivan:[7]}})).toBe(false);
   });
+});
+
+it('counts partial finalized workouts, but never an unfinished or empty session',()=>{
+ let s=createInitialState();s=beginWorkout(s,s.workouts[0]);s.active!.exercises[0].done[0]=true;
+ expect(sessionEvent(s.active!)).toBeNull();s=finishSession(s);expect(sessionEvent(s.history[0])?.completed).toBe(true);
+ s.history[0].exercises[0].done[0]=false;expect(sessionEvent(s.history[0])?.completed).toBe(false);
+});
+it('resends a completed date missing from the cloud even if locally acknowledged',()=>{
+ const event={id:'already-sent',person:'original' as const,date:'2026-11-05',completed:true};
+ const snapshot={version:1 as const,today:'2026-11-05',dates:[],trainingDays:defaultTrainingDays};
+ const ack={[event.id]:eventSignature(event)};
+ expect(pendingCompletionEvents([event],ack,snapshot)).toEqual([event]);
+ expect(pendingCompletionEvents([event],ack,{...snapshot,dates:[{person:'original',date:event.date}]})).toEqual([]);
+ expect(pendingCompletionEvents([event],ack,{...snapshot,dates:[{person:'sheet',date:event.date}]})).toEqual([event]);
 });

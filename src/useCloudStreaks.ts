@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
-import { completionEvents, defaultTrainingDays, eventSignature, isSnapshot, scheduledTrainingDays, sharedStreak, streakDate, type CloudSnapshot, type CompletionEvent } from './streaks';
+import { pendingCompletionEvents, completionEvents, defaultTrainingDays, eventSignature, isSnapshot, scheduledTrainingDays, sharedStreak, streakDate, type CloudSnapshot, type CompletionEvent } from './streaks';
 import type { AppState } from './types';
 
 export const STREAK_API = 'https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/streaks';
@@ -23,6 +23,7 @@ export function useCloudStreaks(state: AppState | null) {
   const stateRef = useRef(state); stateRef.current = state;
   const settingsRef = useRef(settings); settingsRef.current = settings;
   const busy = useRef(false);
+  const rerun = useRef(false);
   const generation = useRef(0);
   const persistQueue = useRef(Promise.resolve());
   const persist = useCallback(async (next: SyncSettings) => {
@@ -35,8 +36,9 @@ export function useCloudStreaks(state: AppState | null) {
     if (!alive) return; const next = savedSettings(record?.value); settingsRef.current = next; setSettings(next); setStatus(next.code ? 'offline' : 'disconnected'); setLoaded(true);
   }).catch(() => { if (alive) { setError('Não foi possível abrir a configuração de sincronização.'); setStatus('error'); setLoaded(true); } }); return () => { alive = false; generation.current++; }; }, []);
 
-  const synchronize = useCallback(async () => {
-    if (busy.current || !stateRef.current || !settingsRef.current.code) return;
+  const synchronize = useCallback(async (): Promise<void> => {
+    if (busy.current) { rerun.current = true; return; }
+    if (!stateRef.current || !settingsRef.current.code) return;
     if (!navigator.onLine) { setStatus('offline'); return; }
     busy.current = true;
     const run = generation.current, code = settingsRef.current.code;
@@ -58,7 +60,7 @@ export function useCloudStreaks(state: AppState | null) {
       let next = { ...settingsRef.current, acknowledgements: { ...settingsRef.current.acknowledgements } };
       if (run !== generation.current || next.code !== code) return;
       const events = completionEvents(current);
-      const pending = events.filter(event => next.acknowledgements[event.id] !== eventSignature(event));
+      const pending = pendingCompletionEvents(events,next.acknowledgements,initial);
       const person = current.selectedPlan ?? 'original';
       const trainingDays = scheduledTrainingDays(current.workouts);
       const profileSignature = `${person}|${trainingDays.join(',')}`;
@@ -80,7 +82,7 @@ export function useCloudStreaks(state: AppState | null) {
       await persist(next); setStatus('synced');
     } catch (failure) {
       if (run === generation.current) { setError(failure instanceof Error ? failure.message : 'Não foi possível sincronizar.'); setStatus(navigator.onLine ? 'error' : 'offline'); }
-    } finally { busy.current = false; }
+    } finally { busy.current = false; if (rerun.current) { rerun.current = false; if (run === generation.current) setTimeout(() => { void synchronize(); }, 100); } }
   }, [persist]);
   useEffect(() => { if (!loaded || !settings.code || !state) return; const timer = setTimeout(() => { void synchronize(); }, 350); return () => clearTimeout(timer); }, [loaded, settings.code, state?.history, state?.workouts, state?.selectedPlan, synchronize]);
   useEffect(() => {

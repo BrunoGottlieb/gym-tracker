@@ -22,7 +22,7 @@ export interface CompletionEvent extends StreakDay { id: string; completed: bool
 export function sessionEvent(session: Session): CompletionEvent | null {
   if (!validPerson(session.person) || session.finishedAt === undefined) return null;
   const done = session.exercises.flatMap(log => log.done);
-  return { id: session.id, person: session.person, date: streakDate(session.finishedAt), completed: done.length > 0 && done.every(Boolean) };
+  return { id: session.id, person: session.person, date: streakDate(session.finishedAt), completed: done.some(Boolean) };
 }
 export const eventSignature = (event: CompletionEvent) => `${event.person}|${event.date}|${event.completed}`;
 export function completionEvents(state: AppState): CompletionEvent[] {
@@ -58,3 +58,8 @@ export function sharedStreak(days: StreakDay[], schedules: Record<RoutinePlan, n
 }
 
 export const scheduledTrainingDays = (workouts: Workout[]) => [...new Set(workouts.filter(workout => !workout.optional).map(workout => workout.day))].sort();
+
+/** Reconcile acknowledged completions against the server: local receipts alone do not prove a cloud date still exists. */
+export function pendingCompletionEvents(events:CompletionEvent[], acknowledgements:Record<string,string>, snapshot:CloudSnapshot) {
+  return events.filter(event=>acknowledgements[event.id]!==eventSignature(event) || (event.completed && !snapshot.dates.some(day=>day.person===event.person && day.date===event.date)));
+}
