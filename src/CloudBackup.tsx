@@ -9,7 +9,7 @@ import type { AppState } from './types';
 
 export function profileBackup(state:AppState) {
   const person=state.selectedPlan??'original';
-  const history=state.history.filter(s=>(s.person??'original')===person);
+  const history=state.history.filter(s=>(s.person??'original')===person).map(s=>({...s,person:s.person??'original'}));
   const ids=new Set([...state.workouts.flatMap(w=>w.exercises.map(e=>canonicalExerciseId(e.id))),...history.flatMap(s=>s.exercises.map(e=>canonicalExerciseId(e.exerciseId)))]);
   return createBackup({...state,weights:Object.fromEntries(Object.entries(state.weights).filter(([id])=>ids.has(id))),exerciseNotes:Object.fromEntries(Object.entries(state.exerciseNotes??{}).filter(([id])=>ids.has(id))),planSnapshots:undefined,history,timer:{...state.timer,endAt:null,started:false,remaining:state.timer.duration}});
 }
@@ -19,6 +19,11 @@ export function restoreProfile(current:AppState,payload:string):AppState {
   const restored=parseBackup(payload),person=current.selectedPlan??'original';
   if((restored.selectedPlan??'original')!==person)throw Error('O backup pertence a outro perfil.');
   return {...current,...restored,weights:{...current.weights,...restored.weights},exerciseNotes:{...current.exerciseNotes,...restored.exerciseNotes},active:restored.active?{...restored.active,exercises:restored.active.exercises.map(e=>({...e,holdStartedAt:undefined}))}:null,planSnapshots:{...current.planSnapshots,[person]:restored.workouts},history:[...current.history.filter(s=>(s.person??'original')!==person),...restored.history].sort((a,b)=>b.finishedAt!-a.finishedAt!)};
+}
+/** Only an untouched empty cloud seed can be filled automatically by an existing phone. */
+export function canReplaceEmptyCloudSeed(remotePayload:string,localPayload:string):boolean {
+  const remote=parseBackup(remotePayload),local=parseBackup(localPayload);
+  return (remote.selectedPlan??'original')===(local.selectedPlan??'original') && remote.history.length===0 && Object.keys(remote.weights).length===0 && Object.values(remote.exerciseNotes??{}).every(note=>!note.trim()) && !remote.active?.exercises.some(e=>e.done.some(Boolean) || e.holdStartedAt || e.weight>0 || e.seconds?.some(v=>v!==null)) && (local.history.length>0 || Object.keys(local.weights).length>0 || !!local.active?.exercises.some(e=>e.done.some(Boolean)));
 }
 const api='https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups';
 async function request(person:string,body?:unknown) {
@@ -48,8 +53,8 @@ export function CloudBackupPanel({state,onRestore,visible}:{state:AppState;onRes
         if(data?.revision && typeof data.payload==='string'){parseBackup(data.payload);setRemote(data);}else if(data?.revision===null)setRemote(null);else throw Error('Resposta de backup inválida.');
         const local=(await database.sync.get(`backup-${person}`))?.value as {revision?:string;signature?:string}|undefined;
         if(!alive)return;
-        if(data.revision && local?.revision!==data.revision && fingerprint(data.payload)!==latest.current.signature){setStatus('Há um backup na nuvem. Escolha restaurar ou guardar os dados deste aparelho.');return;}
-        known.current={revision:data.revision,signature:data.revision?fingerprint(data.payload):''};setReady(true);setStatus(data.updatedAt?`Último backup: ${new Date(data.updatedAt).toLocaleString('pt-BR')}`:'Preparando primeiro backup…');
+        if(data.revision && local?.revision!==data.revision && fingerprint(data.payload)!==latest.current.signature && !canReplaceEmptyCloudSeed(data.payload,latest.current.payload)){setStatus('Há um backup na nuvem. Escolha restaurar ou guardar os dados deste aparelho.');return;}
+        known.current={revision:data.revision,signature:data.revision?fingerprint(data.payload):''};setReady(true);setStatus(data.updatedAt && fingerprint(data.payload)===latest.current.signature?`Último backup: ${new Date(data.updatedAt).toLocaleString('pt-BR')}`:'Alterações locais aguardando backup…');
       }catch(error){if(alive)setStatus(error instanceof Error?error.message:'Backup pendente.');}
     })();return()=>{alive=false;if(generation.current===run)generation.current++;};
   },[person,tick]);

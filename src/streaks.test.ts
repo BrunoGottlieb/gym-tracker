@@ -32,7 +32,7 @@ describe('shared streaks', () => {
     expect(streakDate(Date.parse('2026-10-31T03:00:00Z'))).toBe('2026-10-31');
     expect(isDate('2026-02-30')).toBe(false);
   });
-  it('tags new sessions and uploads only identified, saved sessions; partial saved workouts count; empty sessions revoke completion', () => {
+  it('tags new sessions and recovers original legacy sessions; partial saved workouts count; empty sessions revoke completion', () => {
     let state = createInitialState();
     state = beginWorkout(state, state.workouts[0]);
     expect(state.active?.person).toBe('original');
@@ -44,7 +44,8 @@ describe('shared streaks', () => {
     state.history[0].exercises.forEach(log=>log.done.fill(false));
     expect(sessionEvent(state.history[0])?.completed).toBe(false);
     delete state.history[0].person;
-    expect(completionEvents(state)).toEqual([]);
+    expect(completionEvents(state)).toHaveLength(1);
+    expect(completionEvents(state)[0]).toMatchObject({person:'original',completed:false});
     expect(validateState(state)).toBe(true);
   });
   it('rejects malformed cloud schedules and dates', () => {
@@ -67,4 +68,8 @@ it('resends a completed date missing from the cloud even if locally acknowledged
  expect(pendingCompletionEvents([event],ack,snapshot)).toEqual([event]);
  expect(pendingCompletionEvents([event],ack,{...snapshot,dates:[{person:'original',date:event.date}]})).toEqual([]);
  expect(pendingCompletionEvents([event],ack,{...snapshot,dates:[{person:'sheet',date:event.date}]})).toEqual([event]);
+});
+
+it('recovers pre-profile Bruno sessions without attributing them to the selected Nick or Ivan profile',()=>{
+ let s=createInitialState();s=beginWorkout(s,s.workouts[0]);s.active!.exercises[0].done[0]=true;s=finishSession(s);delete s.history[0].person;s.selectedPlan='sheet';expect(completionEvents(s)[0]).toMatchObject({person:'original',completed:true});
 });

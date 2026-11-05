@@ -20,9 +20,11 @@ export interface StreakDay { person: RoutinePlan; date: string }
 export interface CloudSnapshot { version: 1; today: string; dates: StreakDay[]; trainingDays: Record<RoutinePlan, number[]> }
 export interface CompletionEvent extends StreakDay { id: string; completed: boolean }
 export function sessionEvent(session: Session): CompletionEvent | null {
-  if (!validPerson(session.person) || session.finishedAt === undefined) return null;
+  // Records created before profiles existed belong to the original Bruno plan.
+  const person = session.person ?? 'original';
+  if (!validPerson(person) || session.finishedAt === undefined) return null;
   const done = session.exercises.flatMap(log => log.done);
-  return { id: session.id, person: session.person, date: streakDate(session.finishedAt), completed: done.some(Boolean) };
+  return { id: session.id, person, date: streakDate(session.finishedAt), completed: done.some(Boolean) };
 }
 export const eventSignature = (event: CompletionEvent) => `${event.person}|${event.date}|${event.completed}`;
 export function completionEvents(state: AppState): CompletionEvent[] {

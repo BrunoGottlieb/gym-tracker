@@ -78,6 +78,8 @@ export function useCloudStreaks(state: AppState | null) {
       const cache = await request('GET');
       if (!isSnapshot(cache)) throw new Error('A nuvem retornou dados inválidos.');
       if (run !== generation.current || settingsRef.current.code !== code) return;
+      const unconfirmed = completionEvents(stateRef.current!).filter(event => event.completed && !cache.dates.some(day => day.person===event.person && day.date===event.date));
+      if (unconfirmed.length) throw new Error(`${unconfirmed.length} treino(s) do aparelho ainda sem confirmação na nuvem. Tente sincronizar novamente.`);
       next = { ...next, cache, lastSync: Date.now() };
       await persist(next); setStatus('synced');
     } catch (failure) {

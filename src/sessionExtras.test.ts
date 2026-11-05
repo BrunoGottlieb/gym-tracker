@@ -1,7 +1,7 @@
 import { describe,it,expect } from 'vitest';
 import { createInitialState } from './data';
 import { beginWorkout,recordHold,swapSessionExercise,finishSession,validateState,addSessionSet,removeSessionSet,createBackup,parseBackup } from './domain';
-import { profileBackup,restoreProfile } from './CloudBackup';
+import { canReplaceEmptyCloudSeed,profileBackup,restoreProfile } from './CloudBackup';
 describe('Sustentação, trocas e backup',()=>{
  it('registra segundos reais, mantém alinhamento das séries e sobrevive ao backup',()=>{
   let s=createInitialState();s=beginWorkout(s,s.workouts.find(w=>w.id==='home')!);
@@ -25,4 +25,17 @@ describe('Sustentação, trocas e backup',()=>{
   const restored=restoreProfile(s,payload);expect(restored.history).toContainEqual(other);
   expect(()=>restoreProfile({...s,selectedPlan:'ivan'},payload)).toThrow();
  });
+});
+
+it('only fills empty cloud seeds automatically; protects existing history and loads',()=>{
+ const seed=createInitialState(),phone=createInitialState();phone.weights['bench-press']=35;
+ expect(canReplaceEmptyCloudSeed(createBackup(seed),profileBackup(phone))).toBe(true);
+ seed.weights['bench-press']=10;expect(canReplaceEmptyCloudSeed(createBackup(seed),profileBackup(phone))).toBe(false);
+ expect(canReplaceEmptyCloudSeed(createBackup(createInitialState()),createBackup({...phone,selectedPlan:'ivan'}))).toBe(false);
+});
+
+it.each(['sheet','ivan'] as const)('allows %s phone progress to replace its own empty seed, without crossing profiles',person=>{
+ const seed={...createInitialState(),selectedPlan:person},phone={...createInitialState(),selectedPlan:person};phone.weights['bench-press']=15;
+ expect(canReplaceEmptyCloudSeed(createBackup(seed),profileBackup(phone))).toBe(true);
+ expect(canReplaceEmptyCloudSeed(createBackup({...seed,selectedPlan:'original'}),profileBackup(phone))).toBe(false);
 });

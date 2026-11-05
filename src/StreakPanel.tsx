@@ -23,13 +23,17 @@ export function StreakDetails({ cloud }: { cloud: CloudStreakController }) {
 }
 
 export function StreakSettings({ cloud, onPreview }: { cloud: CloudStreakController; onPreview: () => void }) {
+  const completed=cloud.localEvents.filter(e=>e.completed);
+  const days=[...new Set(completed.map(e=>`${e.person}|${e.date}`))];
+  const confirmed=days.filter(key=>cloud.snapshot?.dates.some(d=>`${d.person}|${d.date}`===key)).length;
   return <section className="settings-section streak-settings"><h2><Flame size={19} />Sequência compartilhada</h2>
     <p className="subtle">A sequência é do grupo: basta Bruno, Nick ou Ivan concluir um treino no dia. A sincronização é automática, sem login.</p>
     <p className="subtle" role="status">{statusLabel(cloud)}{cloud.pending ? ` · ${cloud.pending} alterações pendentes` : ''}</p>
+    <p className="subtle">{completed.length} treinos finalizados neste aparelho · {confirmed}/{days.length} dias confirmados na nuvem.</p>
     <button className="secondary" disabled={cloud.status === 'syncing'} onClick={() => { void cloud.synchronize(); }}><RefreshCw size={15} />Sincronizar agora</button>
     <button className="text-button shared-streak-preview" onClick={onPreview}><Play size={13} />Ver animação da chama</button>
     {cloud.error && <p className="streak-error" role="status">{cloud.error}</p>}
-    <p className="subtle">A nuvem recebe pessoa, data e identificador técnico dos treinos. Treinos finalizados com ao menos uma série feita mantêm a chama. O backup automático também guarda cargas e histórico na nuvem. Treinos antigos sem identificação de pessoa não são enviados.</p>
+    <p className="subtle">A nuvem recebe pessoa, data e identificador técnico dos treinos. Treinos finalizados com ao menos uma série feita mantêm a chama. O backup automático também guarda cargas e histórico na nuvem. Registros antigos anteriores aos perfis são associados ao Bruno.</p>
     <p className="subtle">As sequências são compartilhadas entre quem usa este app. Sem contas individuais, elas não são registros privados nem verificação de identidade.</p>
   </section>;
 }
