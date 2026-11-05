@@ -1,4 +1,5 @@
 import type { AppState, RoutinePlan, Session, Workout } from './types';
+import { holidayName } from './holidays';
 
 export const streakPeople: RoutinePlan[] = ['original', 'sheet', 'ivan'];
 export const defaultTrainingDays: Record<RoutinePlan, number[]> = { original: [1, 2, 3, 4, 5], sheet: [1, 2, 3, 4, 5], ivan: [1, 2, 3, 5, 6] };
@@ -36,13 +37,13 @@ export function streakSummary(dates: string[], trainingDays: number[], today = s
   const required = new Set(trainingDays);
   const first = [...completed].sort()[0];
   let current = 0, best = 0;
-  // Rest days preserve the count; only days actually trained increment it.
+  // Rest days and national holidays preserve the count; only training increments it.
   if (first) for (let date = first; date <= today; date = shiftDate(date, 1)) {
     if (completed.has(date)) current++;
-    else if (date !== today && required.has(dateWeekday(date))) current = 0;
+    else if (date !== today && required.has(dateWeekday(date)) && !holidayName(date)) current = 0;
     best = Math.max(best, current);
   }
-  return { current, best, completedToday: completed.has(today), restToday: !required.has(dateWeekday(today)), totalDays: completed.size };
+  return { current, best, completedToday: completed.has(today), restToday: !required.has(dateWeekday(today)) || !!holidayName(today), totalDays: completed.size };
 }
 export function isSnapshot(value: unknown): value is CloudSnapshot {
   if (!value || typeof value !== 'object') return false;

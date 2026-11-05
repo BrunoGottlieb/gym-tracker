@@ -28,6 +28,7 @@ export function StreakSettings({ cloud, onPreview }: { cloud: CloudStreakControl
   const confirmed=days.filter(key=>cloud.snapshot?.dates.some(d=>`${d.person}|${d.date}`===key)).length;
   return <section className="settings-section streak-settings"><h2><Flame size={19} />Sequência compartilhada</h2>
     <p className="subtle">A sequência é do grupo: basta Bruno, Nick ou Ivan concluir um treino no dia. A sincronização é automática, sem login.</p>
+    <p className="subtle">Feriados nacionais e dias em que todos descansam preservam a chama. O contador aumenta apenas nos dias com treino realizado.</p>
     <p className="subtle" role="status">{statusLabel(cloud)}{cloud.pending ? ` · ${cloud.pending} alterações pendentes` : ''}</p>
     <p className="subtle">{completed.length} treinos finalizados neste aparelho · {confirmed}/{days.length} dias confirmados na nuvem.</p>
     <button className="secondary" disabled={cloud.status === 'syncing'} onClick={() => { void cloud.synchronize(); }}><RefreshCw size={15} />Sincronizar agora</button>
