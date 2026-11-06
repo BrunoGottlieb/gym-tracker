@@ -3,6 +3,16 @@ import { createInitialState } from './data';
 import { beginWorkout,recordHold,swapSessionExercise,finishSession,validateState,addSessionSet,removeSessionSet,createBackup,parseBackup } from './domain';
 import { canReplaceEmptyCloudSeed,profileBackup,restoreProfile } from './CloudBackup';
 describe('Sustentação, trocas e backup',()=>{
+ it('inicia descanso ao concluir sustentação, mas não ao corrigir uma série já feita',()=>{
+  let s=createInitialState();s.preferences.autoRest=true;s=beginWorkout(s,s.workouts.find(w=>w.id==='home')!);
+  s.active!.exercises[0].holdStartedAt=1000;
+  s=recordHold(s,'tuck-front-lever',0,12,120,13000);
+  expect(s.timer).toEqual({duration:120,remaining:120,endAt:133000,exercise:'Tuck front lever',started:true});
+  expect(s.active!.exercises[0].holdStartedAt).toBeUndefined();
+  const timer=s.timer;s=recordHold(s,'tuck-front-lever',0,15,120,15000);expect(s.timer).toBe(timer);
+  s.preferences.autoRest=false;s=recordHold(s,'tuck-front-lever',1,10,120,20000);expect(s.timer).toBe(timer);
+  expect(s.active!.exercises[0].done).toEqual([true,true,false]);
+ });
  it('registra segundos reais, mantém alinhamento das séries e sobrevive ao backup',()=>{
   let s=createInitialState();s=beginWorkout(s,s.workouts.find(w=>w.id==='home')!);
   s=recordHold(s,'tuck-front-lever',0,12);s=addSessionSet(s,'tuck-front-lever');s=removeSessionSet(s,'tuck-front-lever');

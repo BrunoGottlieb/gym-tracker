@@ -123,9 +123,14 @@ export function createBackup(state: AppState): string {
   return JSON.stringify({ format: 'gym-tracker', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
 }
 
-export function recordHold(state: AppState, id: string, index: number, seconds: number): AppState {
-  if (!Number.isInteger(seconds) || seconds < 1 || seconds > 86400) return state;
-  return { ...state, active: state.active ? { ...state.active, exercises: state.active.exercises.map(e => {
+export function recordHold(state: AppState, id: string, index: number, seconds: number, rest = state.preferences.restDuration, now = Date.now()): AppState {
+  if (!Number.isInteger(seconds) || seconds < 1 || seconds > 86400 || !Number.isInteger(index)) return state;
+  const log = state.active?.exercises.find(e => e.exerciseId === id);
+  if (!log || log.kind !== 'seconds' || index < 0 || index >= log.done.length) return state;
+  const timer = !log.done[index] && state.preferences.autoRest
+    ? { duration: rest, remaining: rest, endAt: now + rest * 1000, exercise: log.name, started: true }
+    : state.timer;
+  return { ...state, timer, active: state.active ? { ...state.active, exercises: state.active.exercises.map(e => {
     if (e.exerciseId !== id || e.kind !== 'seconds' || index < 0 || index >= e.done.length) return e;
     const values = e.seconds ? [...e.seconds] : e.done.map(() => null);
     values[index] = seconds;
