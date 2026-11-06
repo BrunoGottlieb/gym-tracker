@@ -22,6 +22,12 @@ export const firstBrunoAssessment: BodyAssessment = {
   references:'Limites exibidos no relatório: massa gorda 11 / 14 / 21 / 24%; IMC 17 / 18,5 / 25 / 30 / 35 / 40; IAC 8 / 21 / 26%; RCQ 0,83 / 0,89 / 0,95.',
   notes:'Transcrita das três imagens da primeira avaliação. Os valores 0 constam assim no relatório; não confirmam ausência de tecido ou medida corporal.',
 };
+export const secondBrunoAssessment: BodyAssessment = {
+  ...structuredClone(firstBrunoAssessment),
+  id:'bruno-assessment-2026-09-28',date:'2026-09-28',validUntil:'2026-12-27',title:'Avaliação #2',
+  values:{weight:70.6,fatPercent:15.2,fatKg:10.7,leanPercent:84.8,leanKg:59.9,bmi:21.8,bai:19,whr:0.86,armRelaxedLeft:29,armRelaxedRight:29,armFlexedLeft:33,armFlexedRight:33,forearmLeft:0,forearmRight:0,thighLeft:52,thighRight:52,calfLeft:34,calfRight:34,chestRelaxed:95,chestInspired:97,waist:77,abdomen:81,hip:90,neck:0,shoulder:0,subscapular:16,triceps:8.5,biceps:0,thorax:0,midaxillary:0,suprailiac:11,abdominal:26,medialThigh:0,medialCalf:0},
+  notes:'Transcrita das três imagens da segunda avaliação. IAC (19%) e RCQ (0,86) foram mantidos conforme o relatório. Os valores 0 constam assim na origem.',
+};
 export function validAssessment(value: unknown): value is BodyAssessment {
   if (!value || typeof value !== 'object') return false;
   const a = value as BodyAssessment;

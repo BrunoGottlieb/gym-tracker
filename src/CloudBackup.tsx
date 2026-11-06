@@ -6,7 +6,7 @@ import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
 import { planLabels } from './routinePlans';
 import type { AppState } from './types';
-import { firstBrunoAssessment } from './assessments';
+import { firstBrunoAssessment, secondBrunoAssessment } from './assessments';
 
 export function profileBackup(state:AppState) {
   const person=state.selectedPlan??'original';
@@ -24,7 +24,7 @@ export function restoreProfile(current:AppState,payload:string):AppState {
 /** Only an untouched empty cloud seed can be filled automatically by an existing phone. */
 export function canReplaceEmptyCloudSeed(remotePayload:string,localPayload:string):boolean {
   const remote=parseBackup(remotePayload),local=parseBackup(localPayload);
-  return (remote.selectedPlan??'original')===(local.selectedPlan??'original') && (remote.assessments??[]).filter(a=>a.person===(remote.selectedPlan??'original')).every(a=>JSON.stringify(a)===JSON.stringify(firstBrunoAssessment)) && remote.history.length===0 && Object.keys(remote.weights).length===0 && Object.values(remote.exerciseNotes??{}).every(note=>!note.trim()) && !remote.active?.exercises.some(e=>e.done.some(Boolean) || e.holdStartedAt || e.weight>0 || e.seconds?.some(v=>v!==null)) && ((local.assessments??[]).some(a=>a.person===(local.selectedPlan??'original') && JSON.stringify(a)!==JSON.stringify(firstBrunoAssessment)) || local.history.length>0 || Object.keys(local.weights).length>0 || !!local.active?.exercises.some(e=>e.done.some(Boolean)));
+  return (remote.selectedPlan??'original')===(local.selectedPlan??'original') && (remote.assessments??[]).filter(a=>a.person===(remote.selectedPlan??'original')).every(a=>[firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) && remote.history.length===0 && Object.keys(remote.weights).length===0 && Object.values(remote.exerciseNotes??{}).every(note=>!note.trim()) && !remote.active?.exercises.some(e=>e.done.some(Boolean) || e.holdStartedAt || e.weight>0 || e.seconds?.some(v=>v!==null)) && ((local.assessments??[]).some(a=>a.person===(local.selectedPlan??'original') && ![firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) || local.history.length>0 || Object.keys(local.weights).length>0 || !!local.active?.exercises.some(e=>e.done.some(Boolean)));
 }
 const api='https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups';
 async function request(person:string,body?:unknown) {

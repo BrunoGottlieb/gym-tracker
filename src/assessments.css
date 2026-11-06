@@ -29,6 +29,34 @@
 .assessment-timeline .selected b { background:#4161f3; }
 .assessment-timeline strong { text-align:right; }
 .assessment-editor { scroll-margin-top:20px; }
+.composition-card { display:flex;align-items:center;justify-content:space-between;gap:24px; }
+.composition-card h2 { margin-bottom:8px; }
+.composition-legend { display:grid;gap:16px;margin-top:22px; }
+.composition-legend>div { display:flex;gap:10px;align-items:center;font-size:14px; }
+.composition-legend i { width:10px;height:10px;flex-shrink:0;border-radius:50%; }
+.composition-legend .fat { background:#ed8a36; }.composition-legend .lean { background:#39a779; }
+.composition-legend small { display:block;color:#7885a0;margin-top:3px; }
+.composition-donut { width:150px;aspect-ratio:1;border-radius:50%;padding:19px;flex-shrink:0; }
+.composition-donut>div { background:white;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column; }
+.composition-donut strong { font-size:25px;color:#26395d; }.composition-donut span { font-size:12px;color:#7885a0; }
+.assessment-gauges { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px; }
+.assessment-gauges .assessment-card { margin:0; }
+.gauge-heading { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap; }
+.gauge-heading h2 { margin:0 0 5px; }.gauge-heading p { font-size:11px;color:#7885a0;margin:0; }
+.gauge-classification { background:#f3f5fa;padding:7px 10px;border-radius:16px;display:flex;align-items:center;gap:6px;font-size:11px;color:#354665; }
+.gauge-classification i { display:block;width:8px;height:8px;border-radius:50%; }
+.gauge-value { margin:22px 0 18px;display:flex;align-items:baseline;justify-content:space-between;gap:8px; }
+.gauge-value strong { font-size:23px;color:#26395d; }.gauge-value small { font-size:11px;color:#7885a0; }
+.gauge-track { display:flex;height:13px;position:relative;margin:0 4px; }
+.gauge-track>span { flex:1; }.gauge-track>span:first-child { border-radius:7px 0 0 7px; }.gauge-track>span:last-of-type { border-radius:0 7px 7px 0; }
+.gauge-pointer { position:absolute;top:-7px;bottom:-5px;width:3px;background:#24334d;transform:translateX(-50%);border-radius:3px;z-index:2; }
+.gauge-pointer:before { content:'';position:absolute;top:-2px;left:-3px;border-top:5px solid #24334d;border-left:4px solid transparent;border-right:4px solid transparent; }
+.gauge-previous { position:absolute;top:0;height:13px;width:7px;border:2px solid #4161f3;box-shadow:0 0 0 1px #fff;background:#ffffffa0;transform:translateX(-50%);border-radius:3px; }
+.gauge-ticks { position:relative;height:29px;margin:0 4px; }
+.gauge-ticks span { position:absolute;top:9px;transform:translateX(-50%);font-size:10px;color:#7885a0; }
+.gauge-explanation { margin-top:14px; }
+@media(max-width:600px) { .assessment-gauges { grid-template-columns:minmax(0,1fr);gap:12px; }.composition-card { gap:14px; }.composition-donut { width:100px;padding:13px; }.composition-donut strong { font-size:20px; }.composition-legend>div { font-size:12px; }.composition-card h2 { font-size:15px; }.composition-card .subtle { font-size:11px; } }
+@media(max-width:350px) { .composition-card { flex-direction:column;align-items:flex-start; }.composition-donut { align-self:center;width:120px; } }
 .assessment-editor fieldset { border:0;border-top:1px solid #e5eaf5;padding:20px 0;margin:24px 0 0; }
 .assessment-editor legend { padding-right:12px;font-size:14px;font-weight:600; }
 .assessment-editor textarea { width:100%;border:1px solid #dfe5f1;border-radius:10px;padding:12px;resize:vertical;font:inherit;background:#fff;color:#26395d; }

@@ -1,5 +1,5 @@
 import { getMuscle } from './catalog';
-import { firstBrunoAssessment } from './assessments';
+import { firstBrunoAssessment, secondBrunoAssessment } from './assessments';
 import type { AppState, Exercise, ExerciseLog } from './types';
 import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl } from './data';
 
@@ -201,6 +201,10 @@ export function migrateLegacyState(original: AppState): AppState {
     state.brunoFridayRevision = 1;
   }
   state.assessments ??= [structuredClone(firstBrunoAssessment)];
+  if (state.secondAssessmentRevision !== 1) {
+    if (!state.assessments.some(a=>a.id===secondBrunoAssessment.id || a.person==='original' && a.date===secondBrunoAssessment.date)) state.assessments.push(structuredClone(secondBrunoAssessment));
+    state.secondAssessmentRevision = 1;
+  }
   return state;
 }
 
