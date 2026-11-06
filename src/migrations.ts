@@ -1,4 +1,5 @@
 import { getMuscle } from './catalog';
+import { firstBrunoAssessment } from './assessments';
 import type { AppState, Exercise, ExerciseLog } from './types';
 import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl } from './data';
 
@@ -199,6 +200,7 @@ export function migrateLegacyState(original: AppState): AppState {
     }
     state.brunoFridayRevision = 1;
   }
+  state.assessments ??= [structuredClone(firstBrunoAssessment)];
   return state;
 }
 

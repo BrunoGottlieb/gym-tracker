@@ -1,3 +1,4 @@
+import { firstBrunoAssessment } from './assessments';
 import type { AppState, Exercise, Workout } from './types';
 import { getMuscle } from './catalog';
 
@@ -118,7 +119,7 @@ export function createLegacyState(): AppState {
 
 export function createInitialState(): AppState {
   return {
-    version: 1, brunoPlankRevision: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    version: 1, assessments: [structuredClone(firstBrunoAssessment)], brunoPlankRevision: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };

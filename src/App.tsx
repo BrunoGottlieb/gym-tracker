@@ -7,6 +7,7 @@ import type { AppState, Exercise, ExerciseLog, MuscleGroup, RoutinePlan, Session
 import { canonicalExerciseId, getMuscle, imageNames, muscleLabels, snapshotExercise } from './catalog';
 import { planLabels, selectRoutinePlan } from './routinePlans';
 import { copyPreset } from './exerciseLibrary';
+import { BodyAssessments } from './BodyAssessments';
 import { HoldRecorder } from './HoldRecorder';
 import { CloudBackupPanel } from './CloudBackup';
 import { ExercisePicker } from './ExercisePicker';
@@ -118,6 +119,7 @@ export default function App() {
   const revision = useRef(0);
   const [view, setView] = useState<View>('home');
   const [viewedWorkoutId, setViewedWorkoutId] = useState<string | null>(null);
+  const [progressTab,setProgressTab] = useState<'loads'|'body'>('loads');
   const [progressExercise, setProgressExercise] = useState('bench-press');
   const [preview, setPreview] = useState<{ image: number; title: string; exerciseId?: string; motion?: string } | null>(null);
   const [swapTarget,setSwapTarget] = useState<string | null>(null);
@@ -184,7 +186,7 @@ export default function App() {
   }
 
   function navigate(next: View) { setView(next); setDialog(null); window.scrollTo({ top: 0, behavior: 'instant' }); }
-  function openProgress(exerciseId: string) { setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
+  function openProgress(exerciseId: string) { setProgressTab('loads'); setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
   function openWorkout(workout: Workout) {
     setViewedWorkoutId(workout.id);
     navigate('workout');
@@ -298,7 +300,7 @@ export default function App() {
         <p className="workout-hint">{displayedProgress.done ? 'Pode sair e voltar. Seu treino fica salvo.' : 'Toque no número de uma série para marcar como concluída.'}</p>
       </>}
       {view === 'workout' && !selectedWorkout && <div className="empty-state"><Dumbbell size={42} /><h1>Qual vai ser o treino?</h1><p>Escolha um treino para começar.</p><button className="primary" onClick={() => navigate('home')}>Ver meus treinos</button></div>}
-      {view === 'progress' && <Progression state={state} exerciseId={progressExercise} onSelect={setProgressExercise} onPreview={(image, title, exerciseId) => setPreview({ image, title, exerciseId })} onOpenSession={id => { const session = state.history.find(s => s.id === id); if (session) setDialog({ type: 'detail', session }); }} />}
+      {view === 'progress' && <><div className="evolution-tabs" role="group" aria-label="Tipo de evolução"><button aria-pressed={progressTab==='loads'} onClick={()=>setProgressTab('loads')}>Cargas</button><button aria-pressed={progressTab==='body'} onClick={()=>setProgressTab('body')}>Avaliações</button></div>{progressTab==='body' ? <BodyAssessments state={state} onChange={assessments=>commit(s=>({...s,assessments}))}/> : <Progression state={state} exerciseId={progressExercise} onSelect={setProgressExercise} onPreview={(image, title, exerciseId) => setPreview({ image, title, exerciseId })} onOpenSession={id => { const session = state.history.find(s => s.id === id); if (session) setDialog({ type: 'detail', session }); }} />}</>}
       {view === 'history' && <>
         <div className="page-heading"><div><span className="eyebrow">UM PASSO DE CADA VEZ</span><h1>Seu histórico<span className="accent">.</span></h1><p className="subtitle">Cada treino conta. Aqui ficam os seus.</p></div><History className="heading-decoration" size={38} strokeWidth={1.4} /></div>
         <TrainingCalendar history={state.history} now={now} onDate={date => setDialog({ type: 'day', date })} />

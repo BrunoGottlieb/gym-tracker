@@ -1,6 +1,7 @@
 import type { AppState, Exercise, RestTimer, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, LAST_IMAGE_INDEX, muscleLabels } from './catalog';
 import { migrateState } from './migrations';
+import { validAssessment } from './assessments';
 
 export const MAX_SESSION_SETS = 100;
 
@@ -88,6 +89,7 @@ function validWorkouts(workouts: unknown): workouts is Workout[] {
 }
 export function validateState(value: unknown): value is AppState {
   if (!object(value) || value.version !== 1 || !validWorkouts(value.workouts)) return false;
+  if (value.assessments !== undefined && (!Array.isArray(value.assessments) || value.assessments.length > 1000 || !value.assessments.every(validAssessment) || new Set(value.assessments.map(a=>a.id)).size !== value.assessments.length)) return false;
   if (value.selectedPlan !== undefined && !['original', 'sheet', 'ivan'].includes(String(value.selectedPlan))) return false;
   if (value.planSnapshots !== undefined && (!object(value.planSnapshots) || !Object.entries(value.planSnapshots).every(([key, workouts]) => ['original', 'sheet', 'ivan'].includes(key) && validWorkouts(workouts) && (key !== 'original' || value.brunoPlanRevision === 1 || workouts.every(w => w.exercises.every(e => e.sets === 3)))))) return false;
   if (!object(value.weights) || !Object.values(value.weights).every(v => number(v, 5000)) || (value.active !== null && !validSession(value.active))) return false;

@@ -55,6 +55,7 @@ export interface Preferences {
   restDuration: number;
 }
 export interface AppState {
+  assessments?: import('./assessments').BodyAssessment[];
   version: 1;
   selectedPlan?: RoutinePlan;
   planSnapshots?: Partial<Record<RoutinePlan, Workout[]>>;
