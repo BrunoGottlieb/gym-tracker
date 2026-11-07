@@ -1,7 +1,7 @@
 import { getMuscle } from './catalog';
 import { firstBrunoAssessment, secondBrunoAssessment } from './assessments';
 import type { AppState, Exercise, ExerciseLog } from './types';
-import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl } from './data';
+import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl, machineShoulderPress } from './data';
 
 const replacements: Record<string, { previous: string[]; patch: Partial<Exercise> }> = {
   'incline-machine': { previous: ['Supino inclinado na máquina'], patch: { name: 'Supino inclinado com barra', image: 30 } },
@@ -257,6 +257,24 @@ export function migrateState(original: AppState): AppState {
       }
     }
     state.brunoPlankRevision=1;
+  }
+  if (state.brunoShoulderPressRevision !== 1) {
+    const brunoPlans = [
+      ...((state.selectedPlan ?? 'original') === 'original' ? [state.workouts] : []),
+      ...(state.planSnapshots?.original ? [state.planSnapshots.original] : []),
+    ];
+    for (const plan of brunoPlans) {
+      const friday = plan.find(workout => workout.id === 'e');
+      const lateral = friday?.exercises.findIndex(exercise => exercise.id === 'cable-lateral-raise') ?? -1;
+      if (!friday || lateral < 0) continue;
+      if (friday.exercises.some(exercise => exercise.id === machineShoulderPress.id)) {
+        friday.exercises.splice(lateral, 1);
+      } else {
+        const { sets, rest } = friday.exercises[lateral];
+        friday.exercises[lateral] = { ...machineShoulderPress, sets, rest };
+      }
+    }
+    state.brunoShoulderPressRevision = 1;
   }
   return state;
 }

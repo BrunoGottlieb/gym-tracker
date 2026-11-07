@@ -1,4 +1,4 @@
-import { articulatedChestPress, declineSitup, militarySitup, initialWorkouts, legacyWorkouts } from './data';
+import { articulatedChestPress, declineSitup, machineShoulderPress, militarySitup, initialWorkouts, legacyWorkouts } from './data';
 import { canonicalExerciseId, muscleLabels } from './catalog';
 import type { Exercise, MuscleGroup } from './types';
 
@@ -10,7 +10,7 @@ const additions: ExercisePreset[] = [
   { ...declineSitup }, { ...militarySitup },
   preset('machine-chest-press', 'Supino na máquina', 1, 'chest'),
   preset('machine-row', 'Remada na máquina', 8, 'back'),
-  preset('shoulder-press', 'Desenvolvimento de ombros na máquina', 18, 'shoulders'),
+  { ...machineShoulderPress },
   preset('hammer-curl', 'Rosca martelo com halteres', 11, 'biceps'),
   preset('romanian-deadlift', 'Stiff', 15, 'legs'),
   preset('machine-triceps', 'Tríceps na máquina', 58, 'triceps'),

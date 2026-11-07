@@ -6,6 +6,11 @@ import { selectRoutinePlan } from './routinePlans';
 
 function previous() {
  const state=createInitialState();delete state.brunoAdditionsRevision;
+ delete state.brunoShoulderPressRevision;
+ const friday = state.workouts.find(w => w.id === 'e')!;
+ friday.exercises = friday.exercises.map(e => e.id === 'shoulder-press'
+  ? { ...e, id:'cable-lateral-raise', name:'Elevação lateral unilateral na polia', target:'12–20', image:59 }
+  : e);
  for(const [id,exercise]of [['c','hip-abduction'],['d','decline-situp'],['e','rope-curl']]){
   const w=state.workouts.find(w=>w.id===id)!;w.exercises=w.exercises.filter(e=>e.id!==exercise);
  }
@@ -19,7 +24,7 @@ describe('three requested Bruno additions',()=>{
   expect(next.workouts[0].exercises.find(e=>e.id==='parallel-bar-dips')?.sets).toBe(3);
   expect(next.workouts[2].exercises.find(e=>e.id==='hip-abduction')).toMatchObject({sets:3,image:64});
   expect(next.workouts[3].exercises.find(e=>e.id==='decline-situp')).toMatchObject({sets:3,image:34});
-  expect(next.workouts[4].exercises.map(e=>e.id)).toEqual(['assisted-pullup','cable-row','preacher-curl','cable-curl','rope-curl','cable-lateral-raise','face-pull']);
+  expect(next.workouts[4].exercises.map(e=>e.id)).toEqual(['assisted-pullup','cable-row','preacher-curl','cable-curl','rope-curl','shoulder-press','face-pull']);
   expect(migrateState(next)).toEqual(next);expect(parseBackup(createBackup(next))).toEqual(next);
  });
  it('keeps existing rope-curl load, session-only extra dips, history and customizations',()=>{
@@ -36,5 +41,17 @@ describe('three requested Bruno additions',()=>{
  it('does not duplicate a manually added exercise or overwrite its series',()=>{
   const state=previous();state.workouts[4].exercises.push({...createInitialState().workouts[4].exercises.find(e=>e.id==='rope-curl')!,sets:4});
   const next=migrateState(state);expect(next.workouts[4].exercises.filter(e=>e.id==='rope-curl')).toHaveLength(1);expect(next.workouts[4].exercises.find(e=>e.id==='rope-curl')?.sets).toBe(4);
+ });
+ it('keeps the previous Friday session and loads when replacing the exercise in a saved routine',()=>{
+  const state=previous();
+  state.weights['cable-lateral-raise']=12;
+  state.weights['shoulder-press']=30;
+  state.active=createSession(state.workouts[4],state.weights);
+  const next=parseBackup(createBackup(state));
+  expect(next.active).toEqual(state.active);
+  expect(next.weights).toEqual(state.weights);
+  const nextFriday=createSession(next.workouts[4],next.weights);
+  expect(nextFriday.exercises.find(e=>e.exerciseId==='shoulder-press')).toMatchObject({weight:30,done:[false,false,false]});
+  expect(nextFriday.exercises.some(e=>e.exerciseId==='cable-lateral-raise')).toBe(false);
  });
 });

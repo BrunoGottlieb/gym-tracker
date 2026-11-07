@@ -10,6 +10,7 @@ export const parallelBarDips = exercise('parallel-bar-dips', 'Dips livres nas pa
 
 export const hipAbduction = { ...exercise('hip-abduction', 'Cadeira abdutora', 3, '12–20', 64), muscle: 'legs' as const };
 export const ropeCurl = exercise('rope-curl', 'Rosca corda no crossover', 3, '10–15', 32);
+export const machineShoulderPress = exercise('shoulder-press', 'Desenvolvimento de ombros na máquina', 3, '8–12', 18);
 
 export const preacherCurl = exercise('preacher-curl', 'Rosca Scott', 3, '8–12', 10);
 
@@ -107,7 +108,7 @@ export const initialWorkouts: Workout[] = [
     {...preacherCurl,sets:3},
     exercise('cable-curl','Rosca bíceps na polia com barra',3,'10–15',29),
     {...ropeCurl},
-    {...exercise('cable-lateral-raise','Elevação lateral unilateral na polia',3,'12–20',59),muscle:'shoulders'},
+    {...machineShoulderPress},
     exercise('face-pull','Face-pull na polia com corda',3,'12–20',67),
   ] },
   optionalHomeWorkout,
@@ -120,6 +121,7 @@ export function createLegacyState(): AppState {
 export function createInitialState(): AppState {
   return {
     version: 1, secondAssessmentRevision: 1, assessments: [structuredClone(firstBrunoAssessment),structuredClone(secondBrunoAssessment)], brunoPlankRevision: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
+    brunoShoulderPressRevision: 1,
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },
     preferences: { autoRest: false, sound: false, restDuration: 90 },
   };
