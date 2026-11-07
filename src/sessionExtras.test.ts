@@ -1,8 +1,39 @@
 import { describe,it,expect } from 'vitest';
 import { createInitialState } from './data';
-import { beginWorkout,recordHold,swapSessionExercise,finishSession,validateState,addSessionSet,removeSessionSet,createBackup,parseBackup } from './domain';
+import { addSessionExercise,beginWorkout,recordHold,swapSessionExercise,finishSession,validateState,addSessionSet,removeSessionSet,createBackup,parseBackup } from './domain';
 import { canReplaceEmptyCloudSeed,profileBackup,restoreProfile } from './CloudBackup';
+import { selectRoutinePlan } from './routinePlans';
+import { copyPreset, exerciseLibrary } from './exerciseLibrary';
 describe('Sustentação, trocas e backup',()=>{
+ it('registra os lados da prancha separadamente e só inicia o descanso ao completar os dois',()=>{
+  const nick=selectRoutinePlan(createInitialState(),'sheet');
+  let state=beginWorkout(nick,nick.workouts.find(workout=>workout.id==='e')!);
+  state.preferences.autoRest=true;
+  state=recordHold(state,'side-plank',0,20,45,1000,'left');
+  expect(state.timer.started).toBe(false);
+  expect(state.active!.exercises.find(e=>e.exerciseId==='side-plank')!.done[0]).toBe(false);
+  state=recordHold(state,'side-plank',0,24,45,2000,'right');
+  expect(state.timer.endAt).toBe(47000);
+  state=addSessionSet(state,'side-plank');state=removeSessionSet(state,'side-plank');
+  const history=parseBackup(createBackup(finishSession(state))).history[0];
+  expect(history.exercises.find(e=>e.exerciseId==='side-plank')).toMatchObject({
+   done:[true,false,false],secondsBySide:{left:[20,null,null],right:[24,null,null]},
+  });
+ });
+ it('guarda um exercício extra na sessão e no histórico, com a própria carga',()=>{
+  const state=createInitialState(), workout=state.workouts[0];
+  const extra=copyPreset(exerciseLibrary.find(e=>e.id==='cable-row')!);
+  state.weights[extra.id]=35;
+  const next=addSessionExercise(state,workout,extra);
+  expect(next.workouts).toEqual(state.workouts);
+  expect(next.active?.exercises.at(-1)).toMatchObject({exerciseId:extra.id,weight:35,extra:true});
+  expect(addSessionExercise(next,workout,extra)).toBe(next);
+  expect(addSessionExercise(next,state.workouts[1],extra)).toBe(next);
+  next.active!.exercises.at(-1)!.done[0]=true;
+  const restored=parseBackup(createBackup(finishSession(next)));
+  expect(restored.history[0].exercises.at(-1)).toMatchObject({exerciseId:extra.id,extra:true});
+  expect(beginWorkout(restored,workout).active!.exercises.some(e=>e.exerciseId===extra.id)).toBe(false);
+ });
  it('inicia descanso ao concluir sustentação, mas não ao corrigir uma série já feita',()=>{
   let s=createInitialState();s.preferences.autoRest=true;s=beginWorkout(s,s.workouts.find(w=>w.id==='home')!);
   s.active!.exercises[0].holdStartedAt=1000;

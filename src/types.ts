@@ -1,5 +1,6 @@
 export type MuscleGroup = 'chest' | 'back' | 'biceps' | 'triceps' | 'shoulders' | 'legs' | 'abs' | 'other';
 export type RoutinePlan = 'original' | 'sheet' | 'ivan';
+export type HoldSide = 'left' | 'right';
 export interface Exercise {
   id: string;
   name: string;
@@ -28,7 +29,10 @@ export interface ExerciseLog {
   weight: number;
   done: boolean[];
   seconds?: (number | null)[];
+  secondsBySide?: Record<HoldSide, (number | null)[]>;
   holdStartedAt?: number;
+  holdSide?: HoldSide;
+  extra?: true;
   swappedFrom?: string;
   muscle?: MuscleGroup;
   instructions?: string;

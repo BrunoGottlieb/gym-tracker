@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
-import { createBackup, parseBackup } from './domain';
+import { createBackup, hasRecordedHold, parseBackup } from './domain';
 import { canonicalExerciseId } from './catalog';
 import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
@@ -19,12 +19,12 @@ const fingerprint=(payload:string)=>JSON.stringify(JSON.parse(payload).data);
 export function restoreProfile(current:AppState,payload:string):AppState {
   const restored=parseBackup(payload),person=current.selectedPlan??'original';
   if((restored.selectedPlan??'original')!==person)throw Error('O backup pertence a outro perfil.');
-  return {...current,...restored,assessments:[...(current.assessments??[]).filter(a=>a.person!==person),...(restored.assessments??[]).filter(a=>a.person===person)],weights:{...current.weights,...restored.weights},exerciseNotes:{...current.exerciseNotes,...restored.exerciseNotes},active:restored.active?{...restored.active,exercises:restored.active.exercises.map(e=>({...e,holdStartedAt:undefined}))}:null,planSnapshots:{...current.planSnapshots,[person]:restored.workouts},history:[...current.history.filter(s=>(s.person??'original')!==person),...restored.history].sort((a,b)=>b.finishedAt!-a.finishedAt!)};
+  return {...current,...restored,assessments:[...(current.assessments??[]).filter(a=>a.person!==person),...(restored.assessments??[]).filter(a=>a.person===person)],weights:{...current.weights,...restored.weights},exerciseNotes:{...current.exerciseNotes,...restored.exerciseNotes},active:restored.active?{...restored.active,exercises:restored.active.exercises.map(e=>({...e,holdStartedAt:undefined,holdSide:undefined}))}:null,planSnapshots:{...current.planSnapshots,[person]:restored.workouts},history:[...current.history.filter(s=>(s.person??'original')!==person),...restored.history].sort((a,b)=>b.finishedAt!-a.finishedAt!)};
 }
 /** Only an untouched empty cloud seed can be filled automatically by an existing phone. */
 export function canReplaceEmptyCloudSeed(remotePayload:string,localPayload:string):boolean {
   const remote=parseBackup(remotePayload),local=parseBackup(localPayload);
-  return (remote.selectedPlan??'original')===(local.selectedPlan??'original') && (remote.assessments??[]).filter(a=>a.person===(remote.selectedPlan??'original')).every(a=>[firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) && remote.history.length===0 && Object.keys(remote.weights).length===0 && Object.values(remote.exerciseNotes??{}).every(note=>!note.trim()) && !remote.active?.exercises.some(e=>e.done.some(Boolean) || e.holdStartedAt || e.weight>0 || e.seconds?.some(v=>v!==null)) && ((local.assessments??[]).some(a=>a.person===(local.selectedPlan??'original') && ![firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) || local.history.length>0 || Object.keys(local.weights).length>0 || !!local.active?.exercises.some(e=>e.done.some(Boolean)));
+  return (remote.selectedPlan??'original')===(local.selectedPlan??'original') && (remote.assessments??[]).filter(a=>a.person===(remote.selectedPlan??'original')).every(a=>[firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) && remote.history.length===0 && Object.keys(remote.weights).length===0 && Object.values(remote.exerciseNotes??{}).every(note=>!note.trim()) && !remote.active?.exercises.some(e=>e.done.some(Boolean) || e.holdStartedAt || e.weight>0 || hasRecordedHold(e)) && ((local.assessments??[]).some(a=>a.person===(local.selectedPlan??'original') && ![firstBrunoAssessment,secondBrunoAssessment].some(seed=>JSON.stringify(a)===JSON.stringify(seed))) || local.history.length>0 || Object.keys(local.weights).length>0 || !!local.active?.exercises.some(e=>e.done.some(Boolean) || hasRecordedHold(e)));
 }
 const api='https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups';
 async function request(person:string,body?:unknown) {

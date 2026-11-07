@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { ExerciseLog, Session } from './types';
+import type { ExerciseLog, HoldSide, Session } from './types';
 import { canonicalExerciseId, getMuscle, snapshotExercise } from './catalog';
 import { ExercisePicker } from './ExercisePicker';
-import { toggleSeriesCompletion, MAX_SESSION_SETS } from './domain';
+import { holdSideLabels, holdSides, resizeHoldTimes, toggleSeriesCompletion, usesHoldSides, MAX_SESSION_SETS } from './domain';
 import { MuscleBadge } from './components';
 
 function localInput(timestamp: number): string {
@@ -19,6 +19,25 @@ export function HistoryEditor({ session, onSave, onClose }: { session: Session; 
   const [error, setError] = useState('');
   const [picker, setPicker] = useState<number | 'add' | null>(null);
   const update = (index: number, patch: Partial<ExerciseLog>) => setDraft(value => ({ ...value, exercises: value.exercises.map((log, i) => i === index ? { ...log, ...patch } : log) }));
+  function timeFields(log: ExerciseLog, exerciseIndex: number, side?: HoldSide) {
+    const times = side ? log.secondsBySide?.[side] : log.seconds;
+    const label = side ? holdSideLabels[side] : 'Sustentação';
+    return <div key={label} className="history-hold-side">
+      <span className="field-caption">{label}{!side && usesHoldSides(log) ? ' sem lado registrado' : ''}</span>
+      <div className="hold-values">{log.done.map((_, index) => <label key={index}>S{index + 1}<input
+        type="number" min="0" max="86400" value={times?.[index] ?? ''}
+        aria-label={`Segundos registrados da série ${index + 1} de ${log.name}${side ? ` · lado ${label.toLowerCase()}` : ''}`}
+        onChange={event => {
+          const empty = log.done.map(() => null);
+          const values = [...(times ?? empty)];
+          values[index] = event.target.value === '' ? null : Number(event.target.value);
+          if (side) {
+            const secondsBySide = log.secondsBySide ?? { left: empty, right: empty };
+            update(exerciseIndex, { secondsBySide: { ...secondsBySide, [side]: values } });
+          } else update(exerciseIndex, { seconds: values });
+        }} />s</label>)}</div>
+    </div>;
+  }
   return <form className="history-editor" onSubmit={event => {
     event.preventDefault();
     // Retain original seconds when the user did not edit the minute-level inputs.
@@ -45,8 +64,15 @@ export function HistoryEditor({ session, onSave, onClose }: { session: Session; 
       <button type="button" className="text-button choose-preset" onClick={() => setPicker(index)}>Substituir exercício registrado</button>
       <div className="form-grid"><label className="form-field">Carga registrada (kg)<input required type="number" inputMode="decimal" min={0} max={5000} step="any" value={log.weight} onChange={e => update(index, { weight: Number(e.target.value) })} /></label><label className="form-field">Meta registrada<input required maxLength={30} value={log.target} onChange={e => update(index, { target: e.target.value })} /></label></div>
       <div className="history-series"><span className="field-caption">Séries realizadas · {log.done.filter(Boolean).length}/{log.done.length}</span><div className="set-buttons">{log.done.map((done, i) => <button type="button" key={i} className={`set-button ${done ? 'is-done' : ''}`} aria-pressed={done} aria-label={`${done ? 'Desmarcar' : 'Concluir'} série registrada ${i + 1} de ${log.name}`} onClick={() => update(index, { done: toggleSeriesCompletion(log.done, i) })}>{i + 1}{done && ' ✓'}</button>)}</div></div>
-      {log.kind === 'seconds' && <div className="hold-values">{log.done.map((_,i)=><label key={i}>S{i+1}<input type="number" min="0" max="86400" value={log.seconds?.[i] ?? ''} aria-label={`Segundos registrados da série ${i+1} de ${log.name}`} onChange={e=>{const seconds=log.seconds?[...log.seconds]:log.done.map(()=>null);seconds[i]=e.target.value===''?null:Number(e.target.value);update(index,{seconds});}}/>s</label>)}</div>}
-      <div className="editor-actions"><button type="button" className="secondary" disabled={log.done.length <= 1} onClick={() => update(index, { done: log.done.slice(0, -1), ...(log.seconds ? {seconds:log.seconds.slice(0,-1)}:{}) })} aria-label={`Remover última série registrada de ${log.name}`}>−1 série</button><button type="button" className="secondary" disabled={log.done.length >= MAX_SESSION_SETS} onClick={() => update(index, { done: [...log.done, false], ...(log.seconds?{seconds:[...log.seconds,null]}:{}) })} aria-label={`Adicionar série registrada de ${log.name}`}>+1 série</button><button type="button" className="text-button danger" disabled={draft.exercises.length <= 1} onClick={() => { setPicker(null); setDraft({ ...draft, exercises: draft.exercises.filter((_, i) => i !== index) }); }}><Trash2 size={15} />Remover exercício</button></div>
+      {log.kind === 'seconds' && (!usesHoldSides(log) || log.seconds?.some(value => value !== null)) && timeFields(log, index)}
+      {usesHoldSides(log) && holdSides.map(side => timeFields(log, index, side))}
+      <div className="editor-actions"><button type="button" className="secondary" disabled={log.done.length <= 1} onClick={() => {
+        const done = log.done.slice(0, -1);
+        update(index, { done, ...resizeHoldTimes(log, done.map((_, i) => i)) });
+      }} aria-label={`Remover última série registrada de ${log.name}`}>−1 série</button><button type="button" className="secondary" disabled={log.done.length >= MAX_SESSION_SETS} onClick={() => {
+        const done = [...log.done, false];
+        update(index, { done, ...resizeHoldTimes(log, done.map((_, i) => i)) });
+      }} aria-label={`Adicionar série registrada de ${log.name}`}>+1 série</button><button type="button" className="text-button danger" disabled={draft.exercises.length <= 1} onClick={() => { setPicker(null); setDraft({ ...draft, exercises: draft.exercises.filter((_, i) => i !== index) }); }}><Trash2 size={15} />Remover exercício</button></div>
     </fieldset>)}
     <button type="button" className="secondary full-width" disabled={draft.exercises.length >= 100} onClick={() => setPicker('add')}><Plus size={17} />Adicionar exercício ao registro</button>
     <p className="subtle">A edição vale para este registro. Sua ficha de treino e as cargas atuais lembradas pelo app são mantidas.</p>
