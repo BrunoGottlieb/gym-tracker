@@ -1,9 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { createSession } from './domain';
-import { localDateKey, sessionsOnDate, workoutFocus } from './calendar';
+import { localDateKey, sessionsOnDate, sessionsThisWeek, workoutFocus } from './calendar';
 
 describe('actual training calendar', () => {
+  it('uses the local Sunday boundary and only records workouts from the selected profile', () => {
+    const workout = createInitialState().workouts[0];
+    const completed = (date: Date) => {
+      const session = createSession(workout, {}, date.getTime() - 3600000);
+      session.exercises[0].done[0] = true;
+      return { ...session, finishedAt: date.getTime() };
+    };
+    const saturday = completed(new Date(2026, 10, 7, 23, 59));
+    const sunday = completed(new Date(2026, 10, 8, 0));
+    const nick = { ...completed(new Date(2026, 10, 9, 19)), person: 'sheet' as const };
+    const now = new Date(2026, 10, 10, 10).getTime();
+    expect(sessionsThisWeek([saturday, sunday, nick], now, 'original')).toEqual([sunday]);
+    expect(sessionsThisWeek([saturday, sunday, nick], now, 'sheet')).toEqual([nick]);
+  });
   it('records the actual finish date regardless of the planned weekday', () => {
     const state = createInitialState();
     const wednesday = new Date(2026, 9, 21, 18, 30).getTime();

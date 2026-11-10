@@ -13,6 +13,7 @@ import { CloudBackupPanel } from './CloudBackup';
 import { ExercisePicker } from './ExercisePicker';
 import { ExerciseMotion, exerciseMotionId, sharedExerciseMotionId, workoutCoverUrl } from './ExerciseMotion';
 import { HistoryEditor } from './HistoryEditor';
+import { FinishWorkoutForm } from './FinishWorkoutForm';
 import { MuscleBadge } from './components';
 import { Progression } from './ProgressionView';
 import { loadPoints } from './progression';
@@ -22,7 +23,7 @@ import { useCloudStreaks } from './useCloudStreaks';
 import { WeeklyMuscleSummary, WeeklyCompletedChart, WorkoutMuscleSummary } from './TrainingOverview';
 import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
 import { streakDate } from './streaks';
-import { localDateKey, sessionsOnDate } from './calendar';
+import { localDateKey, sessionsOnDate, sessionsThisWeek } from './calendar';
 import { holidayName } from './holidays';
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -168,20 +169,20 @@ export default function App() {
     commit(s => ({ ...s, timer: { ...s.timer, remaining: 0, endAt: null } }));
   }, [remaining, state?.timer.endAt, state?.preferences.sound, commit]);
 
-  async function saveFinishedWorkout() {
+  async function saveFinishedWorkout(startedAt: number, finishedAt: number) {
     const session = stateRef.current?.active;
     if (!session || finishLock.current) return;
     finishLock.current = true; setFinishing(true);
     try {
-      const complete = getProgress(session).done > 0;
-      // Check the cloud immediately before saving, instead of trusting an old cached day.
-      const latest = complete ? await cloudStreak.checkToday() : null;
+      const date = streakDate(finishedAt);
+      const latest = date === streakDate() ? await cloudStreak.checkToday() : null;
       if (stateRef.current?.active?.id !== session.id) return;
       const today = streakDate();
-      const first = complete && !!latest && latest.today === today && !latest.dates.some(day => day.date === today) && !cloudStreak.localEvents.some(event => event.completed && event.date === today);
-      commit(s => finishSession(s));
+      const first = date === today && !!latest && latest.today === today && !latest.dates.some(day => day.date === today) && !cloudStreak.localEvents.some(event => event.completed && event.date === today);
+      commit(s => finishSession(s, finishedAt, startedAt));
       if (first) setSelfCompletion(session.id);
-      navigate('history'); setNotice('Treino registrado. Mais um passo dado!');
+      navigate('history');
+      setNotice(`Treino registrado em ${new Date(finishedAt).toLocaleDateString('pt-BR')}.`);
     } finally { finishLock.current = false; setFinishing(false); }
   }
 
@@ -251,13 +252,13 @@ export default function App() {
   const date = new Date(now);
   const day = date.getDay();
   const workoutToday = state.workouts.find(w => w.day === day);
-  const completedWorkoutIds = new Set(state.history.filter(s => { const p = getProgress(s); return p.done === p.total && new Date(s.finishedAt!).toDateString() === date.toDateString(); }).map(s => s.workoutId));
-  const weekStart = new Date(date);
-  weekStart.setHours(0, 0, 0, 0);
-  weekStart.setDate(weekStart.getDate() - day);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-  const weeklyCompleted = state.history.filter(session => { const p = getProgress(session); return session.finishedAt! >= weekStart.getTime() && session.finishedAt! < weekEnd.getTime() && p.done === p.total; }).length;
+  const weeklyRecords = sessionsThisWeek(state.history, now, state.selectedPlan ?? 'original');
+  const completedWorkoutIds = new Set(weeklyRecords.filter(session => {
+    const { done, total } = getProgress(session);
+    return done === total;
+  }).map(session => session.workoutId));
+  const recordedWorkoutIds = new Set(weeklyRecords.map(session => session.workoutId));
+  const weeklyCards = state.workouts.filter(workout => recordedWorkoutIds.has(workout.id)).length;
   const isRunning = state.timer.endAt !== null && remaining > 0;
   const isFinished = state.timer.started && remaining === 0;
 
@@ -275,11 +276,37 @@ export default function App() {
       {active && !(view === 'workout' && viewingActive) && <button className="resume-banner ongoing-workout-banner" onClick={returnToActive} aria-label={`Retornar ao treino em andamento: ${active.workoutName}`}><span className="resume-icon"><Play size={18} fill="currentColor" /></span><span><strong>Treino em andamento</strong><span>{active.workoutName} · {progress.done}/{progress.total} séries</span><span className="resume-action">Retornar ao treino</span></span><ArrowRight size={20} /></button>}
       {view === 'home' && <>
         <div className="page-heading"><div><span className="eyebrow">NO TEU RITMO</span><h1>Vamos treinar<span className="accent">?</span></h1><p className="subtitle capitalize">{date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p></div><span className="heading-decoration" aria-hidden="true"><Dumbbell size={42} strokeWidth={1.3} /></span></div>
-        <section className="week-summary" aria-label="Resumo da semana"><div className="week-heading"><div><h2>Tua semana</h2><p className="week-total">{weeklyCompleted} treino{weeklyCompleted !== 1 ? 's' : ''} concluído{weeklyCompleted !== 1 ? 's' : ''}</p></div><button className="week-calendar" aria-label="Calendário" onClick={() => navigate('history')}><CalendarDays size={20} /></button></div>
+        <section className="week-summary" aria-label="Resumo da semana"><div className="week-heading"><div><h2>Tua semana</h2><p className="week-total">{weeklyRecords.length} treino{weeklyRecords.length !== 1 ? 's' : ''} registrado{weeklyRecords.length !== 1 ? 's' : ''}</p></div><button className="week-calendar" aria-label="Calendário" onClick={() => navigate('history')}><CalendarDays size={20} /></button></div>
         <div className="week-strip" aria-label="Sua semana">{Array.from({ length: 7 }, (_, i) => { const current = new Date(date); const offset = day; current.setDate(date.getDate() - offset + i); const weekday = current.getDay(), key = localDateKey(current); const today = key === localDateKey(date); const holiday = holidayName(key); const records = sessionsOnDate(state.history, key); const label = `${days[weekday]}, ${current.getDate()}${today ? ', hoje' : ''}${holiday ? ', ' + holiday : ''}${records.length ? ': ' + records.map(s => s.workoutName).join('; ') : ', sem treino registrado'}`; return <button key={i} data-date={key} className={`week-day ${today ? 'today' : ''} ${records.length ? 'trained' : ''} ${holiday ? 'holiday' : ''}`} aria-label={label} title={label} onClick={() => setDialog({ type: 'day', date: key })}><span>{['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][weekday]}</span><strong>{current.getDate()}</strong>{records.length ? <DayMarkers sessions={records} /> : <span className="week-marker"><span /></span>}</button>; })}</div>
         </section>
-        <div className="section-heading"><h2>Seus treinos</h2><span>{completedWorkoutIds.size ? `${completedWorkoutIds.size} treino${completedWorkoutIds.size > 1 ? 's' : ''} concluído${completedWorkoutIds.size > 1 ? 's' : ''} hoje` : workoutToday ? (workoutToday.optional ? 'Opcional hoje: em casa' : `Sugestão de hoje: ${workoutToday.id.toUpperCase()}`) : 'Você escolhe a ordem'}</span></div>
-        <div className="workout-grid">{state.workouts.map(w => { const coverUrl = workoutCoverUrl(state.selectedPlan, w.id, w.image); const inProgress = active?.workoutId === w.id; const completed = completedWorkoutIds.has(w.id) && !inProgress; const duplicateName = state.workouts.filter(other => other.name === w.name).length > 1; return <button className={`workout-tile ${completed ? 'workout-done' : ''} ${inProgress ? 'workout-in-progress' : ''}`} key={w.id} data-workout={w.id} aria-describedby={inProgress ? `workout-status-${w.id}` : undefined} onClick={() => openWorkout(w)} aria-label={`Abrir treino ${w.name}${duplicateName ? ` (${w.id.toUpperCase()})` : ''}`}><div className={`workout-cover ${coverUrl.includes("/motion/covers/") ? "motion-cover" : ""}`}><img src={coverUrl} alt={`Ilustração do treino ${w.name}`} fetchPriority={w.day === day ? 'high' : 'auto'} />{inProgress ? <span id={`workout-status-${w.id}`} className="today-badge ongoing-badge"><Play size={10} fill="currentColor" />Em andamento</span> : completed ? <span className="completed-badge"><Check size={11} />Concluído</span> : w.day === day && <span className="today-badge">{w.optional ? 'Opcional' : 'Sugerido'}</span>}<span className="cover-arrow"><ArrowRight size={18} /></span></div><div className="workout-caption"><span className="workout-letter">{w.id.length === 1 ? w.id.toUpperCase() : <Dumbbell size={15} />}</span><div><h3>{w.name}</h3><p>{days[w.day]} <span>·</span> {w.optional && <>Opcional <span>·</span> </>}{w.exercises.length} exercícios</p></div><ArrowRight size={17} /></div></button>; })}</div>
+        <div className="section-heading"><h2>Seus treinos</h2><span>{weeklyCards ? `${weeklyCards} de ${state.workouts.length} feitos nesta semana` : workoutToday ? (workoutToday.optional ? 'Opcional hoje: em casa' : `Sugestão de hoje: ${workoutToday.id.toUpperCase()}`) : 'Você escolhe a ordem'}</span></div>
+        <div className="workout-grid">{state.workouts.map(workout => {
+          const coverUrl = workoutCoverUrl(state.selectedPlan, workout.id, workout.image);
+          const inProgress = active?.workoutId === workout.id;
+          const completed = completedWorkoutIds.has(workout.id);
+          const partial = !completed && recordedWorkoutIds.has(workout.id);
+          const duplicateName = state.workouts.some(other => other.id !== workout.id && other.name === workout.name);
+          const statusId = `workout-status-${workout.id}`;
+          return <button
+            className={`workout-tile ${inProgress ? 'workout-in-progress' : completed ? 'workout-done' : partial ? 'workout-partial' : ''}`}
+            key={workout.id} data-workout={workout.id} onClick={() => openWorkout(workout)}
+            aria-describedby={inProgress || completed || partial ? statusId : undefined}
+            aria-label={`Abrir treino ${workout.name}${duplicateName ? ` (${workout.id.toUpperCase()})` : ''}`}>
+            <div className={`workout-cover ${coverUrl.includes('/motion/covers/') ? 'motion-cover' : ''}`}>
+              <img src={coverUrl} alt={`Ilustração do treino ${workout.name}`} fetchPriority={workout.day === day ? 'high' : 'auto'} />
+              {inProgress ? <span id={statusId} className="today-badge ongoing-badge"><Play size={10} fill="currentColor" />Em andamento</span>
+                : completed ? <span id={statusId} className="completed-badge"><Check size={11} />Feito na semana</span>
+                : partial ? <span id={statusId} className="completed-badge partial-badge">Parcial na semana</span>
+                : workout.day === day && <span className="today-badge">{workout.optional ? 'Opcional' : 'Sugerido'}</span>}
+              <span className="cover-arrow"><ArrowRight size={18} /></span>
+            </div>
+            <div className="workout-caption">
+              <span className="workout-letter">{workout.id.length === 1 ? workout.id.toUpperCase() : <Dumbbell size={15} />}</span>
+              <div><h3>{workout.name}</h3><p>{days[workout.day]} <span>·</span> {workout.optional && <>Opcional <span>·</span> </>}{workout.exercises.length} exercícios</p></div>
+              <ArrowRight size={17} />
+            </div>
+          </button>;
+        })}</div>
         <WeeklyMuscleSummary workouts={state.workouts} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
@@ -326,7 +353,9 @@ export default function App() {
     {dialog?.type === 'streak' && <Modal title="Chama do grupo" className="streak-mini-modal" onClose={() => setDialog(null)}><StreakDetails cloud={cloudStreak} /></Modal>}
     {dialog?.type === 'plan' && <Modal title={`Usar ${planLabels[dialog.plan]}?`} onClose={() => setDialog(null)}><p className="subtle">A escolha vale apenas para este aparelho. A configuração da ficha atual ficará guardada para quando você voltar. Suas cargas e seu histórico serão mantidos neste aparelho; eles não são enviados para outro celular.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" disabled={!!active} onClick={() => { const plan = dialog.plan; commit(current => selectRoutinePlan(current, plan)); setViewedWorkoutId(null); navigate('home'); setNotice(`Ficha selecionada: ${planLabels[plan]}.`); }}>Usar esta ficha</button></div></Modal>}
     {dialog?.type === 'timer' && <Modal title="Um respiro entre as séries" onClose={() => setDialog(null)}>{restPanel(true)}<label className="toggle-row"><span><strong>Começar automaticamente</strong><small>Ao marcar uma série como concluída.</small></span><input role="switch" type="checkbox" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label></Modal>}
-    {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar por hoje?'} onClose={() => { if (!finishing) setDialog(null); }}><div className="finish-summary"><CircleCheck size={42} /><strong>{progress.done}<span> de {progress.total} séries</span></strong><p>{active.workoutName}</p></div><p className="subtle">{progress.done === progress.total ? 'Suas cargas e séries serão guardadas no histórico.' : 'As séries concluídas serão guardadas. As restantes ficarão como não realizadas.'}</p><div className="modal-actions"><button className="secondary" disabled={finishing} onClick={() => setDialog(null)}>Continuar treino</button><button className="primary" disabled={finishing} onClick={() => { void saveFinishedWorkout(); }}>{finishing ? 'Finalizando…' : 'Salvar e finalizar'}</button></div></Modal>}
+    {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar treino?'} onClose={() => { if (!finishing) setDialog(null); }}>
+      <FinishWorkoutForm key={active.id} session={active} saving={finishing} onCancel={() => setDialog(null)} onSave={(start, end) => { void saveFinishedWorkout(start, end); }} />
+    </Modal>}
     {dialog?.type === 'discard' && <Modal title="Descartar este treino?" onClose={() => setDialog(null)}><p className="subtle">As séries marcadas nesta sessão serão descartadas. Suas cargas continuarão salvas para o próximo treino.</p><div className="modal-actions"><button className="secondary" disabled={finishing} onClick={() => setDialog(null)}>Continuar treino</button><button className="danger-button" onClick={() => { commit(s => ({ ...s, active: null, timer: { ...s.timer, started: false, endAt: null, remaining: s.timer.duration } })); navigate('home'); }}>Descartar sessão</button></div></Modal>}
     {dialog?.type === 'switch' && <Modal title="Você já começou um treino" onClose={() => setDialog(null)}><p className="subtle">Seu treino “{active?.workoutName}” está em andamento. Você pode consultar “{dialog.workout.name}” sem interromper o treino atual. Para iniciar este outro treino, finalize o atual ou confirme a troca. As séries não finalizadas do treino atual serão descartadas; as cargas continuam salvas.</p><div className="modal-actions"><button className="secondary" onClick={returnToActive}>Continuar o atual</button><button className="danger-button" onClick={() => { const { workout, firstSet, setAdjustment, extraExercise } = dialog; setViewedWorkoutId(workout.id); navigate('workout'); commit(s => { const next = beginWorkout(s, workout, firstSet); if (extraExercise) return addSessionExercise(next, workout, extraExercise); return setAdjustment ? adjustSession(next, setAdjustment) : next; }, true); }}>Descartar e trocar</button></div></Modal>}
     {dialog?.type === 'edit' && <WorkoutEditor minimumSets={(state.selectedPlan ?? 'original') === 'original' ? 3 : 1} flexibleSets={true} workout={dialog.workout} onClose={() => setDialog(null)} onSave={workout => { commit(s => ({ ...s, workouts: s.workouts.map(w => w.id === workout.id ? workout : w) })); setDialog(null); setNotice('Treino atualizado.'); }} />}

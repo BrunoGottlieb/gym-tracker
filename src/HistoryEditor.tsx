@@ -5,12 +5,7 @@ import { canonicalExerciseId, getMuscle, snapshotExercise } from './catalog';
 import { ExercisePicker } from './ExercisePicker';
 import { holdSideLabels, holdSides, resizeHoldTimes, toggleSeriesCompletion, usesHoldSides, MAX_SESSION_SETS } from './domain';
 import { MuscleBadge } from './components';
-
-function localInput(timestamp: number): string {
-  const date = new Date(timestamp);
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
+import { localDateTimeInput as localInput } from './calendar';
 
 export function HistoryEditor({ session, onSave, onClose }: { session: Session; onSave: (session: Session) => void; onClose: () => void }) {
   const [draft, setDraft] = useState(() => structuredClone(session));

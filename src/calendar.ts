@@ -1,5 +1,5 @@
 import { getMuscle } from './catalog';
-import type { MuscleGroup, Session } from './types';
+import type { MuscleGroup, RoutinePlan, Session } from './types';
 
 export function localDateKey(value: number | Date): string {
   const date = value instanceof Date ? value : new Date(value);
@@ -7,6 +7,24 @@ export function localDateKey(value: number | Date): string {
 }
 export function sessionsOnDate(history: Session[], key: string): Session[] {
   return history.filter(s => s.finishedAt !== undefined && localDateKey(s.finishedAt) === key).sort((a, b) => a.finishedAt! - b.finishedAt!);
+}
+
+export function localDateTimeInput(timestamp: number): string {
+  const date = new Date(timestamp);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${localDateKey(date)}T${hours}:${minutes}`;
+}
+
+export function sessionsThisWeek(history: Session[], now: number, person: RoutinePlan): Session[] {
+  const sunday = new Date(now);
+  sunday.setHours(0, 0, 0, 0);
+  sunday.setDate(sunday.getDate() - sunday.getDay());
+  return history.filter(session =>
+    (session.person ?? 'original') === person && session.finishedAt !== undefined &&
+    session.finishedAt >= sunday.getTime() && session.finishedAt <= now &&
+    session.exercises.some(exercise => exercise.done.some(Boolean)),
+  );
 }
 /** Infer from the saved session, never from the suggested weekday or the edited current plan. */
 export function workoutFocus(session: Session): MuscleGroup {

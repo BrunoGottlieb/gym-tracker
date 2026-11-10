@@ -91,9 +91,16 @@ export function timerSeconds(timer: RestTimer, now = Date.now()): number {
 export function formatTime(seconds: number): string {
   return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
 }
-export function finishSession(state: AppState, now = Date.now()): AppState {
-  if (!state.active || !getProgress(state.active).done) return state;
-  return { ...state, history: [{ ...state.active, person: state.active.person ?? state.selectedPlan ?? 'original', finishedAt: now }, ...state.history], active: null, timer: { ...state.timer, started: false, endAt: null, remaining: state.timer.duration } };
+export function finishSession(state: AppState, finishedAt = Date.now(), startedAt = state.active?.startedAt): AppState {
+  const session = state.active;
+  if (!session || !getProgress(session).done || !number(startedAt) || !number(finishedAt) || finishedAt < startedAt) return state;
+  const record = { ...session, person: session.person ?? state.selectedPlan ?? 'original', startedAt, finishedAt };
+  return {
+    ...state,
+    history: [record, ...state.history].sort((a, b) => b.finishedAt! - a.finishedAt!),
+    active: null,
+    timer: { ...state.timer, started: false, endAt: null, remaining: state.timer.duration },
+  };
 }
 
 export function editHistorySession(state: AppState, session: Session): AppState {

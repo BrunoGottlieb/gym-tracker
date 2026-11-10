@@ -77,6 +77,11 @@ h1 { letter-spacing: -1.1px; font-weight: 750; }
 .workout-tile.workout-done { background: var(--completed); border-color: #d5ebdf; }
 .workout-tile.workout-done .workout-cover { background: #e0f1e7; border-radius: 14px; }
 .workout-tile.workout-done .workout-caption { padding: 12px 0 1px; }
+.workout-tile.workout-partial { background: #fff8e8; border-color: #eed9aa; }
+.completed-badge.partial-badge { background: #f9e9bf; color: #765016; }
+.finish-dates { margin: 16px 0; }
+.finish-dates input { min-width: 0; }
+@media (max-width: 520px) { .finish-dates { grid-template-columns: minmax(0, 1fr); } }
 .workout-tile.workout-in-progress { background: #eaf0ff; border-color: #718bff; box-shadow: 0 0 0 1px #718bff, 0 5px 18px #4161f312; }
 .workout-tile.workout-in-progress:hover { background: #e3ebff; border-color: #4161f3; }
 .ongoing-badge { display: inline-flex; align-items: center; gap: 4px; background: #4161f3; }

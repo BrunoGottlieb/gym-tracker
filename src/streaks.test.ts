@@ -4,6 +4,19 @@ import { beginWorkout, finishSession, validateState } from './domain';
 import { pendingCompletionEvents, eventSignature, completionEvents, sessionEvent, streakDate, streakSummary, sharedStreak, isDate, isSnapshot, defaultTrainingDays } from './streaks';
 
 describe('shared streaks', () => {
+  it('credits a late save to the edited finish date and preserves the same session ID', () => {
+    const startedAt = Date.parse('2026-11-09T18:00:00-03:00');
+    const finishedAt = Date.parse('2026-11-09T19:00:00-03:00');
+    const state = createInitialState();
+    const active = beginWorkout(state, state.workouts[0], { exerciseId: state.workouts[0].exercises[0].id, index: 0 }, startedAt + 60000);
+    expect(finishSession(active, startedAt - 1, startedAt)).toBe(active);
+    const saved = finishSession(active, finishedAt, startedAt);
+    const event = sessionEvent(saved.history[0])!;
+    expect(saved.history[0].startedAt).toBe(startedAt);
+    expect(event).toEqual({ id: active.active!.id, person: 'original', date: '2026-11-09', completed: true });
+    expect(sharedStreak([event], defaultTrainingDays, '2026-11-10')).toMatchObject({ current: 1, peopleToday: [] });
+    expect(validateState(saved)).toBe(true);
+  });
   it('shares one sequence across alternating people and counts multiple members on a date only once', () => {
     const result=sharedStreak([{person:'original',date:'2026-10-28'},{person:'sheet',date:'2026-10-29'},{person:'ivan',date:'2026-10-30'},{person:'original',date:'2026-10-30'}],defaultTrainingDays,'2026-10-30');
     expect(result.current).toBe(3);
