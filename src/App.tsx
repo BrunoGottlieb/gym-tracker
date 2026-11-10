@@ -11,7 +11,7 @@ import { BodyAssessments } from './BodyAssessments';
 import { HoldRecorder } from './HoldRecorder';
 import { CloudBackupPanel } from './CloudBackup';
 import { ExercisePicker } from './ExercisePicker';
-import { ExerciseMotion, exerciseMotionId, workoutCoverUrl } from './ExerciseMotion';
+import { ExerciseMotion, exerciseMotionId, sharedExerciseMotionId, workoutCoverUrl } from './ExerciseMotion';
 import { HistoryEditor } from './HistoryEditor';
 import { MuscleBadge } from './components';
 import { Progression } from './ProgressionView';
@@ -352,6 +352,6 @@ export default function App() {
     </Modal>}
     {swapTarget && state.active && <Modal title="Trocar só neste treino" onClose={()=>setSwapTarget(null)} wide><p className="subtle">A ficha original será mantida. Escolha o substituto; sua carga salva será preenchida.</p><ExercisePicker exercises={state.active.exercises.map(snapshotExercise)} replacing={state.active.exercises.findIndex(e=>e.exerciseId===swapTarget)} onClose={()=>setSwapTarget(null)} onSelect={preset=>{commit(s=>swapSessionExercise(s,swapTarget,copyPreset(preset)));setSwapTarget(null);setNotice('Exercício trocado só para hoje.');}} /></Modal>}
     <StreakCelebration cloud={cloudStreak} person={state.selectedPlan ?? 'original'} blocked={!!dialog || !!preview} previewRequest={streakPreview} selfCompletion={selfCompletion} />
-    {preview && <ImagePreview image={preview.image} title={preview.title} motion={preview.motion} onClose={() => setPreview(null)} note={preview.exerciseId ? state.exerciseNotes?.[canonicalExerciseId(preview.exerciseId)] : undefined} onNote={preview.exerciseId ? note => commit(s => ({ ...s, exerciseNotes: { ...s.exerciseNotes, [canonicalExerciseId(preview.exerciseId!)]: note } })) : undefined} />}
+    {preview && <ImagePreview image={preview.image} title={preview.title} motion={preview.motion ?? sharedExerciseMotionId(preview.exerciseId, preview.image)} onClose={() => setPreview(null)} note={preview.exerciseId ? state.exerciseNotes?.[canonicalExerciseId(preview.exerciseId)] : undefined} onNote={preview.exerciseId ? note => commit(s => ({ ...s, exerciseNotes: { ...s.exerciseNotes, [canonicalExerciseId(preview.exerciseId!)]: note } })) : undefined} />}
   </div>;
 }
