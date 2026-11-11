@@ -6,19 +6,24 @@ const motionImages: Record<string, Record<string, number>> = {
   a: { 'bench-press': 0, 'incline-dumbbell': 21, 'pec-deck': 2,
     'parallel-bar-dips': 36, 'rope-pushdown': 3, 'bar-pushdown': 23, 'front-plank':54 },
   b: { 'assisted-pullup': 68, 'chest-supported-row': 31, 'preacher-curl': 10,
-    'rope-curl': 32, 'lateral-raise': 19, 'face-pull': 67 },
+    'rope-curl': 32, 'face-pull': 67 },
   c: { 'lever-squat': 66, 'leg-press': 12, 'leg-extension': 13,
     'leg-curl': 14, 'lying-leg-curl': 56, 'hip-abduction': 64, 'calf-raise': 16 },
-  d: { 'incline-dumbbell': 21, 'crossover': 22, 'parallel-bar-dips': 36,
+  d: { 'incline-dumbbell': 21, 'parallel-bar-dips': 36,
     'rope-pushdown': 3, 'military-situp': 35 },
   e: { 'assisted-pullup': 68, 'preacher-curl': 10,
     'cable-curl': 29, 'rope-curl': 32, 'cable-lateral-raise': 59, 'shoulder-press': 18, 'face-pull': 67 },
   home: { 'tuck-front-lever': 24, 'hanging-leg-raise': 49 },
 };
 
+const sharedMotionImages: Record<string, number> = {
+  'decline-situp': 34, 'cable-row': 7,
+  pushup: 45, 'incline-machine': 30, 'vertical-chest-press': 46,
+  crossover: 22, 'dumbbell-shoulder-press': 47, 'front-raise': 48, 'lateral-raise': 19,
+};
+
 export function sharedExerciseMotionId(id: string | undefined, image: number) {
-  const sharedImages: Record<string, number> = { 'decline-situp': 34, 'cable-row': 7 };
-  return id && sharedImages[id] === image ? id : undefined;
+  return id && sharedMotionImages[id] === image ? id : undefined;
 }
 
 // Some animations are shared by all profiles. The original set remains tied to Bruno's workouts.
@@ -30,6 +35,9 @@ export function exerciseMotionId(plan: string | undefined, workout: string, id: 
 
 export function workoutCoverUrl(plan: string | undefined, workout: string, image: number) {
   const base = `${import.meta.env.BASE_URL}images/`;
+  if (plan === 'sheet' && workout === 'd' && image === 47) {
+    return `${base}motion/covers/dumbbell-shoulder-press.webp`;
+  }
   const covers: Record<string, string> = { a: 'bench-press', b: 'assisted-pullup', c: 'lever-squat', d: 'incline-dumbbell', e: 'preacher-curl', home: 'tuck-front-lever' };
   const cover = covers[workout];
   return cover && exerciseMotionId(plan, workout, cover, image)
