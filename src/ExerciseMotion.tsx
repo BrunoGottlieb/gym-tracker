@@ -11,13 +11,14 @@ const motionImages: Record<string, Record<string, number>> = {
     'leg-curl': 14, 'lying-leg-curl': 56, 'hip-abduction': 64, 'calf-raise': 16 },
   d: { 'incline-dumbbell': 21, 'crossover': 22, 'parallel-bar-dips': 36,
     'rope-pushdown': 3, 'military-situp': 35 },
-  e: { 'assisted-pullup': 68, 'cable-row': 7, 'preacher-curl': 10,
+  e: { 'assisted-pullup': 68, 'preacher-curl': 10,
     'cable-curl': 29, 'rope-curl': 32, 'cable-lateral-raise': 59, 'shoulder-press': 18, 'face-pull': 67 },
   home: { 'tuck-front-lever': 24, 'hanging-leg-raise': 49 },
 };
 
 export function sharedExerciseMotionId(id: string | undefined, image: number) {
-  return id === 'decline-situp' && image === 34 ? id : undefined;
+  const sharedImages: Record<string, number> = { 'decline-situp': 34, 'cable-row': 7 };
+  return id && sharedImages[id] === image ? id : undefined;
 }
 
 // Some animations are shared by all profiles. The original set remains tied to Bruno's workouts.
