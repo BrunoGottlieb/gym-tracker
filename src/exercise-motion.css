@@ -1,4 +1,10 @@
 .exercise-motion { min-width: 0; }
+/* Keep the torso and feet aligned while the arms move between poses. */
+.exercise-motion[data-motion="front-raise"][data-position] {
+  overflow: hidden;
+  background: linear-gradient(#e5ebfd, #e3ecfd 25%, #e3ecfb 50%, #e3ecfd 75%);
+}
+.exercise-motion[data-motion="front-raise"][data-position="2"] > img { transform: translateX(3.5%); }
 .exercise-image-button .exercise-motion { background: #edf2ff; }
 .exercise-image-button .exercise-motion .exercise-image { background: #edf2ff; mix-blend-mode: normal; }
 .image-preview-viewport .motion-preview { width: 100%; background: #edf2ff; border-radius: 16px; overflow: hidden; }
