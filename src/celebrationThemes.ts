@@ -6,6 +6,6 @@ export const celebrationThemes = [
 ] as const;
 
 export type CelebrationTheme = typeof celebrationThemes[number]['id'];
-export const defaultCelebrationTheme: CelebrationTheme = 'knight';
+export const defaultCelebrationTheme: CelebrationTheme = 'bonfire';
 export const isCelebrationTheme = (value: unknown): value is CelebrationTheme =>
   celebrationThemes.some(theme => theme.id === value);
