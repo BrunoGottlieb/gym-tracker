@@ -33,8 +33,8 @@
 .avatar-facial-hair-layer{clip-path:inset(30% 38% 61% 43%)}
 .avatar-facial-hair-layer[src$="moustache.png"]{transform:translate(-.5%,1%) scale(.8);transform-origin:54% 34%}
 .avatar-shirt-layer.shirt-tone-hoodie{transform:scaleY(.84)}
-.avatar-shirt-layer.shirt-tone-leather-jacket{transform:scaleY(.92)}
-.avatar-shirt-layer.shirt-tone-skull-tee{transform:scaleY(.93)}
+.avatar-shirt-layer.shirt-tone-leather-jacket{transform:translateY(-.7%) scaleY(.97)}
+.avatar-shirt-layer.shirt-tone-skull-tee{transform:translateY(-1.3%)}
 .avatar-extra-layer.extra-tone-watch{transform:translateY(-5.5%)}
 .avatar-extra-layer.extra-tone-medal{transform:translateY(-2.7%)}
 
@@ -84,3 +84,5 @@
 .avatar-extra-layer.extra-tone-necktie{transform:translateY(-5%) scale(.85,.7);transform-origin:52% 50%}
 .avatar-extra-layer.extra-tone-bow-tie{transform:translateY(-4.7%) scale(.8);transform-origin:52% 52%}
 .avatar-composition>.avatar-hands-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
+.avatar-composition>svg.avatar-head-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;overflow:visible}
+.avatar-composition>.avatar-head-back{z-index:0}

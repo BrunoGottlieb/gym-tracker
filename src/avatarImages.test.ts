@@ -8,6 +8,25 @@ import { createInitialState } from './data';
 const exists = (file: string) => existsSync(fileURLToPath(new URL(`../public/avatars/layered-v1/${file}.png`, import.meta.url)));
 
 describe('the adopted image avatar library', () => {
+  it('puts crown undersides and headphone arches behind the scalp/hair, retaining only their front details above it', () => {
+    for (const head of ['crown', 'headphones'] as const) for (const hair of ['bald', 'wavy', 'afro', 'long'] as const) {
+      const layers = avatarLayers({ ...defaultAvatars.original, head, hair });
+      expect(layers[0].id).toBe('head-back');
+      expect(layers[0].file).toBe(head);
+      expect(layers.findIndex(layer => layer.id === 'base')).toBeGreaterThan(0);
+      const front = layers.find(layer => layer.id === 'head')!;
+      expect(front.mask).toBe(`${head}-front`);
+      expect(front.file).toBe(layers[0].file);
+      expect(layers.indexOf(front)).toBeGreaterThan(layers.findIndex(layer => layer.id === 'hair-front'));
+      expect(layers.find(layer => layer.id === 'hair-front')?.className ?? '').not.toContain('under-cap');
+    }
+  });
+  it('uses the front-only tie in both the avatar and catalog without changing the saved equipment id', () => {
+    const avatar = { ...defaultAvatars.original, extra: 'necktie' as const };
+    expect(avatarLayers(avatar).find(layer => layer.id === 'extra')?.file).toBe('necktie-front-v2');
+    expect(equipmentImage('extra', 'necktie')?.file).toBe('necktie-front-v2');
+    expect(avatar.extra).toBe('necktie');
+  });
   it('provides real image layers for every existing hairstyle and skin tone, including bald', () => {
     for (const hair of hairstyles) for (const skin of skinTones) {
       const layers = avatarLayers({ ...defaultAvatars.original, hair: hair.id, skin: skin.id });

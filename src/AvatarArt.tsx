@@ -1,6 +1,18 @@
 import { memo, useId } from 'react';
 import type { AvatarConfig } from './avatars';
-import { avatarAsset, avatarLayers } from './avatarImages';
+import { avatarAsset, avatarLayers, type AvatarLayer } from './avatarImages';
+
+function ForegroundHeadgear({ layer }: { layer: AvatarLayer }) {
+  const id = `headgear-${useId().replace(/:/g, '')}`;
+  // The crown's underside/back rim and the headphone arch belong behind the
+  // head. Keep only the curved front circlet / ear cushions in this front pass.
+  return <svg className={layer.className} data-layer={layer.id} viewBox="0 0 1254 1254" aria-hidden="true">
+    <defs><clipPath id={id}>{layer.mask === 'crown-front'
+      ? <path d="M0 0H1254V354H786Q625 310 464 354H0Z" />
+      : <><rect x="375" y="337" width="155" height="180" rx="12" /><rect x="735" y="337" width="145" height="180" rx="12" /></>}</clipPath></defs>
+    <image href={avatarAsset(layer.file)} width="1254" height="1254" clipPath={`url(#${id})`} />
+  </svg>;
+}
 
 function ForegroundHands({ file, sleeves }: { file: string; sleeves: boolean }) {
   const id = useId().replace(/:/g, '');
@@ -20,6 +32,6 @@ function ForegroundHands({ file, sleeves }: { file: string; sleeves: boolean }) 
 export const AvatarArt = memo(function AvatarArt({ avatar, portrait = false, waistUp = false, className = '' }: { avatar: AvatarConfig; portrait?: boolean; waistUp?: boolean; className?: string }) {
   const layers = avatarLayers(avatar);
   return <span className={`avatar-art ${portrait ? 'avatar-portrait' : ''} ${waistUp ? 'avatar-waist-up' : ''} ${['top-hat', 'crown', 'bunny-ears', 'cowboy-hat'].includes(avatar.head) ? 'has-tall-head' : ''} ${className}`} aria-hidden="true" data-avatar-renderer="images" data-avatar-hair={avatar.hair} data-avatar-head={avatar.head}>
-    <span className="avatar-composition">{layers.map(layer => layer.mask === 'hands' ? !portrait && <ForegroundHands key={layer.id} file={layer.file} sleeves={['hoodie', 'leather-jacket'].includes(avatar.shirt)} /> : <img key={layer.id} className={layer.className} data-layer={layer.id} src={avatarAsset(layer.file)} alt="" draggable={false} />)}</span>
+    <span className="avatar-composition">{layers.map(layer => layer.mask === 'hands' ? !portrait && <ForegroundHands key={layer.id} file={layer.file} sleeves={['hoodie', 'leather-jacket'].includes(avatar.shirt)} /> : layer.mask ? <ForegroundHeadgear key={layer.id} layer={layer} /> : <img key={layer.id} className={layer.className} data-layer={layer.id} src={avatarAsset(layer.file)} alt="" draggable={false} />)}</span>
   </span>;
 });
