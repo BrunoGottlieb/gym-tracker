@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { beginWorkout, createBackup, finishSession, parseBackup, validateState } from './domain';
 import { canReplaceEmptyCloudSeed, profileBackup, restoreProfile } from './CloudBackup';
-import { avatarEquipment, defaultAvatars, hairColors, hairstyles, profileAvatar, skinTones, unlockedAvatar, updateAvatar, validAvatar, validTeamProfile } from './avatars';
+import { avatarEquipment, defaultAvatars, hairColors, hairstyles, profileAvatar, skinTones, unlockedAvatar, updateAvatar, validAvatar, validTeamProfile, type EquipmentSlot } from './avatars';
 import { profileFromBackup, teamMembers } from './useTeamProfiles';
 import type { RoutinePlan } from './types';
 
@@ -12,7 +12,7 @@ function withXP(person: RoutinePlan = 'original') {
   next.active!.exercises.forEach(log => { log.done.fill(true); });
   next = finishSession(next);
   const seed = next.history[0];
-  next.history = Array.from({ length: 20 }, (_, i) => ({ ...structuredClone(seed), id: `avatar-test-${i}` }));
+  next.history = Array.from({ length: 60 }, (_, i) => ({ ...structuredClone(seed), id: `avatar-test-${i}` }));
   return next;
 }
 describe('avatar personalization', () => {
@@ -35,7 +35,7 @@ describe('avatar personalization', () => {
   it('enforces level requirements for every item and leaves other profiles intact', () => {
     const initial = createInitialState(), advanced = withXP();
     initial.avatars = { sheet: defaultAvatars.sheet };
-    for (const slot of ['head', 'shirt', 'extra'] as const) for (const item of avatarEquipment[slot]) {
+    for (const slot of Object.keys(avatarEquipment) as EquipmentSlot[]) for (const item of avatarEquipment[slot]) {
       const next = updateAvatar(initial, { [slot]: item.id });
       if (item.level > 1) expect(next).toBe(initial);
       else expect(next.avatars?.original?.[slot]).toBe(item.id);
@@ -52,10 +52,23 @@ describe('avatar personalization', () => {
     const state = createInitialState();
     for (const avatars of [null, [], { stranger: defaultAvatars.original }, { original: { ...defaultAvatars.original, hair: 'invalid' } }, { original: {} }]) expect(validateState({ ...state, avatars })).toBe(false);
     expect(validAvatar({ ...defaultAvatars.original, extra: 'fake' })).toBe(false);
+    expect(validAvatar({ ...defaultAvatars.original, face: 'fake' })).toBe(false);
+    expect(validAvatar({ ...defaultAvatars.original, facialHair: null })).toBe(false);
     expect(updateAvatar(state, { hair: 'fake' } as never)).toBe(state);
   });
+  it('keeps legacy avatars valid and independently gates combined accessories at their unlock boundaries', () => {
+    expect(validAvatar(defaultAvatars.original)).toBe(true);
+    const avatar = { ...defaultAvatars.original, face: 'monocle' as const, facialHair: 'handlebar' as const, head: 'top-hat' as const, shirt: 'leather-jacket' as const, extra: 'watch' as const };
+    expect(unlockedAvatar(avatar, 11)).toMatchObject({ face: 'none', facialHair: 'none', head: 'none', shirt: 'blue', extra: 'watch' });
+    expect(unlockedAvatar(avatar, 12)).toMatchObject({ facialHair: 'handlebar', face: 'none' });
+    expect(unlockedAvatar(avatar, 16)).toMatchObject({ head: 'top-hat', face: 'none' });
+    expect(unlockedAvatar(avatar, 17)).toMatchObject({ face: 'monocle', shirt: 'blue' });
+    expect(unlockedAvatar(avatar, 18)).toEqual(avatar);
+    expect(unlockedAvatar({ ...avatar, head: 'crown' }, 23).head).toBe('none');
+    expect(unlockedAvatar({ ...avatar, head: 'crown' }, 24).head).toBe('crown');
+  });
   it('round-trips appearance and XP through backups and restores only the selected avatar', () => {
-    const remote = updateAvatar(withXP(), { hair: 'ponytail', hairColor: 'silver', head: 'headphones' });
+    const remote = updateAvatar(withXP(), { hair: 'ponytail', hairColor: 'silver', head: 'headphones', face: 'star-glasses', facialHair: 'moustache', shirt: 'skull-tee', extra: 'watch' });
     remote.avatars!.sheet = { ...defaultAvatars.sheet, hair: 'bun' };
     const full = parseBackup(createBackup(remote)); expect(full.avatars).toEqual(remote.avatars);
     const cloud = profileBackup(remote); expect(JSON.parse(cloud).data.avatars).toEqual({ original: remote.avatars?.original });

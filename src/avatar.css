@@ -18,3 +18,36 @@
 @media(max-height:650px){.customizer-preview>.avatar-art{width:140px;height:140px}}
 
 .avatar-color-defs{position:absolute;overflow:hidden;pointer-events:none}
+
+/* Center on desktop, occupy the visual viewport on phones. */
+.avatar-editor{position:fixed;inset:0;margin:auto;width:min(600px,calc(100vw - 40px));height:min(820px,calc(100dvh - 40px));max-width:none;max-height:none;transform:none;box-sizing:border-box}.profile-equipment-slots{grid-template-columns:repeat(3,minmax(0,1fr))}.wardrobe-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.wardrobe-slots>button{padding:8px 3px;min-width:0;font-size:10px}
+@media(max-width:600px){.avatar-editor{width:100vw;height:100dvh;max-width:none;max-height:none;inset:0;margin:0;border:0;border-radius:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.wardrobe-slots>button{font-size:9px}}
+
+/* Fine registration against the shared base; source PNGs remain untouched. */
+.avatar-head-layer.head-top-hat{transform:translateY(-6%)}
+.avatar-head-layer.head-crown{transform:translateY(-7%)}
+.avatar-face-layer.face-sunglasses{transform:translate(-3.4%,-6.8%) scale(.86)}
+.avatar-face-layer.face-star-glasses{transform:translateY(-1.9%) scaleX(.88);transform-origin:53% 33%}
+.avatar-face-layer.face-eyepatch{transform:translate(.8%,-4.8%)}
+.avatar-face-layer.face-monocle{transform:translate(-10.8%,-5.4%)}
+.avatar-facial-hair-layer{clip-path:inset(30% 38% 61% 43%)}
+.avatar-facial-hair-layer[src$="moustache.png"]{transform:translate(-.5%,1%) scale(.8);transform-origin:54% 34%}
+.avatar-shirt-layer.shirt-tone-hoodie{transform:scaleY(.84)}
+.avatar-shirt-layer.shirt-tone-leather-jacket{transform:scaleY(.92)}
+.avatar-shirt-layer.shirt-tone-skull-tee{transform:scaleY(.93)}
+.avatar-extra-layer.extra-tone-watch{transform:translateY(-5.5%)}
+.avatar-extra-layer.extra-tone-medal{transform:translateY(-2.7%)}
+
+/* New independent wardrobe layers. */
+.avatar-facial-hair-layer{z-index:5}.avatar-face-layer{z-index:6}.avatar-head-layer{z-index:7}
+.avatar-art.has-tall-head:not(.avatar-portrait) .avatar-composition{width:90%;transform:translate(-50%,-47%)}
+.avatar-portrait.has-tall-head .avatar-composition{width:220%;transform:translate(-49%,0)}
+.equipment-image.sample-face{background-size:500%;background-position:53% 27%}
+.equipment-image.sample-moustache{background-size:750%;background-position:54% 32%}
+.equipment-image.sample-eyepatch{background-size:400%;background-position:47% 25%}
+.equipment-image.sample-monocle{background-size:450%;background-position:62% 31%}
+.equipment-image.sample-top-hat{background-size:260%;background-position:50% 2%}
+.equipment-image.sample-crown{background-size:300%;background-position:50% 7%}
+.equipment-image.sample-hoodie,.equipment-image.sample-leather-jacket,.equipment-image.sample-skull-tee{background-size:220%;background-position:50% 54%}
+.equipment-image.sample-watch{background-size:700%;background-position:35% 60%}
+.equipment-image.sample-medal{background-size:450%;background-position:52% 51%}

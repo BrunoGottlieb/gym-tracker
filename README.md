@@ -8,11 +8,13 @@ The approved soft miniature visual is used throughout the app as composited tran
 
 **Perfil**, the header portrait, or the portrait beside XP opens only the currently selected profile. Teammates are read-only cards showing their avatar and level; they cannot open a wardrobe or change the selected person. Avatar updates target only `state.selectedPlan`, and malformed attempts to pass another owner in a patch are rejected. Viewing or changing appearance never modifies training history, loads or an active session.
 
-Basic blue/coral/mint tops and a sports headband are available at level one. Wristbands unlock at level 2, a visor at 3, a cap and lavender top at 5, golden wristbands at 7, and headphones/a golden top at 10. Unlocks use the existing XP derived from completed personal history. Saved appearance keys and unlocked items remain compatible with existing backups; only their rendering changes.
+The wardrobe has independent Head, Face, Moustache, Clothing and Extra slots, with 24 items spanning levels 1–24. Basic blue/coral/mint tops and a sports headband are free; premium looks include star glasses, a top hat, leather jacket and crown. The watch belongs to Extra. New face and moustache fields are optional so old backups and customized appearances remain valid. Unlocks use existing XP derived from completed personal history. Native SVG viewports frame each transparent equipment image consistently in cards; the full avatar retains registered compositing. The personalizer fills the viewport on phones up to 600px and is centered with a fixed footer on larger screens, independently of the page scroll position.
 
 Avatar configuration is stored per routine profile in IndexedDB and JSON/cloud backups. Restoring a profile preserves the other profiles' avatars. Customized cloud avatars prevent an otherwise empty backup from being treated as an untouched seed. Teammates' levels and appearance are read from existing cloud backups, cached for offline use and refreshed on reconnect, every minute while visible, or using the refresh button. Unknown levels are shown explicitly until data exists. Reading team data never imports another person's workout history.
 
 `src/avatars.test.ts` and `src/avatarImages.test.ts` cover free choices, level gates, owner isolation, every image mapping, validation and backup/restore. Browser checks cover the full wardrobe, responsive layout, persistent current-profile edits, read-only teammates and offline image layers without WebGL.
+
+`node scripts/avatar-wardrobe-smoke.cjs` runs these browser checks with isolated, mocked cloud data (no real backups are written), including all new items, combined outfits, centered dialogs after scrolling and full-screen phone layouts at 320/390/600px. Configure `PLAYWRIGHT_MODULE`, `CHROME_PATH` and `APP_URL` as with the other smoke scripts. Exact accessory-generation prompts are in `assets/avatar-layered-v1/accessory-prompts.md`.
 
 ## Ivan and Sunday-first calendars
 

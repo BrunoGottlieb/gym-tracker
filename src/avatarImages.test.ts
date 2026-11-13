@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { avatarLayers, equipmentImage } from './avatarImages';
-import { avatarEquipment, defaultAvatars, hairColors, hairstyles, skinTones, updateAvatar } from './avatars';
+import { avatarEquipment, defaultAvatars, hairColors, hairstyles, skinTones, updateAvatar, type EquipmentSlot } from './avatars';
 import { createInitialState } from './data';
 
 const exists = (file: string) => existsSync(fileURLToPath(new URL(`../public/avatars/layered-v1/${file}.png`, import.meta.url)));
@@ -17,7 +17,7 @@ describe('the adopted image avatar library', () => {
     }
   });
   it('has matching images for all equipment without generating a file for every color combination', () => {
-    for (const slot of ['head', 'shirt', 'extra'] as const) for (const item of avatarEquipment[slot]) {
+    for (const slot of Object.keys(avatarEquipment) as EquipmentSlot[]) for (const item of avatarEquipment[slot]) {
       const avatar = { ...defaultAvatars.original, [slot]: item.id };
       expect(avatarLayers(avatar).every(layer => exists(layer.file))).toBe(true);
       const thumbnail = equipmentImage(slot, item.id);
@@ -29,6 +29,13 @@ describe('the adopted image avatar library', () => {
     const layers = avatarLayers({ ...defaultAvatars.original, hair: 'long', shirt: 'mint', extra: 'wristbands', head: 'visor' });
     expect(layers.map(layer => layer.id)).toEqual(['hair-back', 'base', 'shirt', 'hair-front', 'extra', 'head']);
     expect(layers[0].file).toBe(layers[3].file);
+  });
+  it('layers combined clothes, watch, moustache, glasses and hat without replacing independent choices', () => {
+    const layers = avatarLayers({ ...defaultAvatars.original, shirt: 'leather-jacket', extra: 'watch', facialHair: 'moustache', face: 'sunglasses', head: 'top-hat' });
+    expect(layers.map(layer => layer.id)).toEqual(['base', 'shirt', 'hair-front', 'extra', 'facialHair', 'face', 'head']);
+    expect(layers.find(layer => layer.id === 'shirt')?.file).toBe('leather-jacket');
+    expect(layers.find(layer => layer.id === 'extra')?.file).toBe('watch');
+    expect(layers.find(layer => layer.id === 'hair-front')?.className).toContain('under-cap');
   });
 });
 

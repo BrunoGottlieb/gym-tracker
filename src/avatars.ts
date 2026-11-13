@@ -26,6 +26,20 @@ export const avatarEquipment = {
     { id: 'visor', name: 'Viseira menta', level: 3, color: '#80DDBB' },
     { id: 'cap', name: 'Boné azul', level: 5, color: '#6085F5' },
     { id: 'headphones', name: 'Fones dourados', level: 10, color: '#F6C65F' },
+    { id: 'top-hat', name: 'Cartola', level: 16, color: '#413252' },
+    { id: 'crown', name: 'Coroa dourada', level: 24, color: '#EAC36A' },
+  ],
+  face: [
+    { id: 'none', name: 'Sem acessório no rosto', level: 1, color: '#DCE3F4' },
+    { id: 'sunglasses', name: 'Óculos escuros', level: 6, color: '#303747' },
+    { id: 'eyepatch', name: 'Tapa-olho', level: 8, color: '#303747' },
+    { id: 'star-glasses', name: 'Óculos de estrela', level: 14, color: '#F6C65F' },
+    { id: 'monocle', name: 'Monóculo dourado', level: 17, color: '#EAC36A' },
+  ],
+  facialHair: [
+    { id: 'none', name: 'Sem bigode', level: 1, color: '#DCE3F4' },
+    { id: 'moustache', name: 'Bigode clássico', level: 4, color: '#4A3029' },
+    { id: 'handlebar', name: 'Bigode de respeito', level: 12, color: '#4A3029' },
   ],
   shirt: [
     { id: 'blue', name: 'Regata azul', level: 1, color: '#5277EC' },
@@ -33,11 +47,16 @@ export const avatarEquipment = {
     { id: 'mint', name: 'Regata menta', level: 1, color: '#7DCEB7' },
     { id: 'violet', name: 'Regata lavanda', level: 5, color: '#B6A0EA' },
     { id: 'gold', name: 'Regata dourada', level: 10, color: '#EAC36A' },
+    { id: 'hoodie', name: 'Moletom lavanda', level: 9, color: '#A393D4' },
+    { id: 'skull-tee', name: 'Camiseta de caveira', level: 12, color: '#303747' },
+    { id: 'leather-jacket', name: 'Jaqueta de couro', level: 18, color: '#303747' },
   ],
   extra: [
     { id: 'none', name: 'Sem extra', level: 1, color: '#DCE3F4' },
     { id: 'wristbands', name: 'Munhequeiras menta', level: 2, color: '#80DDBB' },
     { id: 'goldbands', name: 'Munhequeiras douradas', level: 7, color: '#F6C65F' },
+    { id: 'medal', name: 'Medalha de campeão', level: 6, color: '#EAC36A' },
+    { id: 'watch', name: 'Relógio esportivo', level: 11, color: '#5377DC' },
   ],
 } as const;
 export type EquipmentSlot = keyof typeof avatarEquipment;
@@ -46,6 +65,8 @@ export interface AvatarConfig {
   hairColor: typeof hairColors[number]['id'];
   skin: typeof skinTones[number]['id'];
   head: typeof avatarEquipment.head[number]['id'];
+  face?: typeof avatarEquipment.face[number]['id'];
+  facialHair?: typeof avatarEquipment.facialHair[number]['id'];
   shirt: typeof avatarEquipment.shirt[number]['id'];
   extra: typeof avatarEquipment.extra[number]['id'];
 }
@@ -58,7 +79,8 @@ const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 export function validAvatar(value: unknown): value is AvatarConfig {
   if (!record(value)) return false;
   return hairstyles.some(item => item.id === value.hair) && hairColors.some(item => item.id === value.hairColor) && skinTones.some(item => item.id === value.skin) &&
-    (Object.keys(avatarEquipment) as EquipmentSlot[]).every(slot => avatarEquipment[slot].some(item => item.id === value[slot]));
+    (Object.keys(avatarEquipment) as EquipmentSlot[]).every(slot =>
+      ((slot === 'face' || slot === 'facialHair') && value[slot] === undefined) || avatarEquipment[slot].some(item => item.id === value[slot]));
 }
 export function validAvatarProfiles(value: unknown) {
   return value === undefined || (record(value) && Object.entries(value).every(([person, avatar]) => Object.hasOwn(defaultAvatars, person) && validAvatar(avatar)));
@@ -66,7 +88,7 @@ export function validAvatarProfiles(value: unknown) {
 export function unlockedAvatar(config: AvatarConfig, level: number): AvatarConfig {
   const avatar = { ...config };
   for (const slot of Object.keys(avatarEquipment) as EquipmentSlot[]) {
-    const item = avatarEquipment[slot].find(item => item.id === avatar[slot]);
+    const item = avatarEquipment[slot].find(item => item.id === (avatar[slot] ?? 'none'));
     if (!item || item.level > level) Object.assign(avatar, { [slot]: slot === 'shirt' ? 'blue' : 'none' });
   }
   return avatar;
@@ -77,7 +99,7 @@ export function profileAvatar(state: AppState, person = state.selectedPlan ?? 'o
 }
 export function updateAvatar(state: AppState, patch: Partial<AvatarConfig>): AppState {
   const person = state.selectedPlan ?? 'original';
-  if (Object.keys(patch).some(key => !Object.hasOwn(defaultAvatars.original, key))) return state;
+  if (Object.keys(patch).some(key => !Object.hasOwn(defaultAvatars.original, key) && !Object.hasOwn(avatarEquipment, key))) return state;
   const avatar = { ...profileAvatar(state, person), ...patch };
   if (!validAvatar(avatar)) return state;
   const level = levelProgress(personalXP(state.history, person)).level;
