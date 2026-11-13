@@ -60,6 +60,7 @@ export const avatarEquipment = {
   ],
 } as const;
 export type EquipmentSlot = keyof typeof avatarEquipment;
+export const MAX_AVATAR_LEVEL = Math.max(...Object.values(avatarEquipment).flatMap(items => items.map(item => item.level)));
 export interface AvatarConfig {
   hair: typeof hairstyles[number]['id'];
   hairColor: typeof hairColors[number]['id'];

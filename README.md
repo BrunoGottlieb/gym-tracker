@@ -4,6 +4,10 @@ A personal, offline-first workout tracker with a light interface in Brazilian Po
 
 ## Customizable avatars and team levels
 
+Bruno and Nick start again at level 1 / 0 XP using a shared cutoff of **2026-11-13 10:41:06 UTC** (07:41:06 in São Paulo). Only sessions finalized on or after that point count toward their levels; their histories, loads, assessments, weekly goals and flame records remain intact. Ivan keeps lifetime XP. The same rule applies to local data, restored JSON/cloud backups and teammate levels, without rewriting remote backups. Team metadata uses a fresh cache namespace to avoid showing old lifetime totals. A backdated session before the cutoff still saves normally and reports no new XP.
+
+**Perfil → Modo sandbox** previews every avatar item independently of the real level. It defaults on for a fine-pointer desktop and off for a touch device; an explicit choice is retained locally. Preview outfits are isolated per selected profile in a device-local storage key, never placed in training state or JSON/cloud backups. Turning the mode off immediately displays the real avatar and reinstates normal locks. The current member's local preview appears in the profile, header, home level panel and team, while teammate cards remain read-only. The home level panel and team now use larger waist-up crops; real XP and levels remain visible during a preview.
+
 The approved soft miniature visual is used throughout the app as composited transparent images: profile, header, XP portrait, wardrobe and team. The former model renderer, rotation controls and Three.js dependency are removed. Twelve hairstyles, six hair colors and six skin tones are free. Hair and clothing layers share one registered canvas; long hair is split into front/back passes so it sits behind the body naturally. Image assets in `public/avatars/layered-v1/` are precached offline, with exact built-in generation prompts in `assets/avatar-layered-v1/`.
 
 **Perfil**, the header portrait, or the portrait beside XP opens only the currently selected profile. Teammates are read-only cards showing their avatar and level; they cannot open a wardrobe or change the selected person. Avatar updates target only `state.selectedPlan`, and malformed attempts to pass another owner in a patch are rejected. Viewing or changing appearance never modifies training history, loads or an active session.
@@ -15,6 +19,10 @@ Avatar configuration is stored per routine profile in IndexedDB and JSON/cloud b
 `src/avatars.test.ts` and `src/avatarImages.test.ts` cover free choices, level gates, owner isolation, every image mapping, validation and backup/restore. Browser checks cover the full wardrobe, responsive layout, persistent current-profile edits, read-only teammates and offline image layers without WebGL.
 
 `node scripts/avatar-wardrobe-smoke.cjs` runs these browser checks with isolated, mocked cloud data (no real backups are written), including all new items, combined outfits, centered dialogs after scrolling and full-screen phone layouts at 320/390/600px. Configure `PLAYWRIGHT_MODULE`, `CHROME_PATH` and `APP_URL` as with the other smoke scripts. Exact accessory-generation prompts are in `assets/avatar-layered-v1/accessory-prompts.md`.
+
+`node scripts/avatar-sandbox-smoke.cjs` verifies the XP restart, unchanged Ivan levels, local sandbox persistence and backup isolation, real level locks, waist-up responsive portraits, every matching Nick/Ivan animation and offline rendering. It prepares fictitious history with Vite SSR and mocks all cloud requests.
+
+`src/motionCatalog.ts` makes all existing two-frame exercise demonstrations available across every profile and workout, including unchanged saved plans and temporary exercises. Matching older names reuse the same movement for machine chest press, supported machine row and straight-bar cable curl. Distinct equipment (e.g. machine Scott vs free-bar Scott, unassisted vs assisted pull-ups) retains its own artwork. Catalog/editor/progression/history thumbnails and workout covers resolve from the same shared registry. This changes presentation only; exercise identities, prescribed sets, loads, session snapshots and custom image selections stay intact.
 
 ## Ivan and Sunday-first calendars
 

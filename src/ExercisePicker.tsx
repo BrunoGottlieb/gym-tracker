@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { exerciseIllustrationUrl } from './motionCatalog';
 import { Search, X, Plus, Check } from 'lucide-react';
 import { canonicalExerciseId, getMuscle, muscleLabels } from './catalog';
 import { exerciseLibrary, searchExercises, type ExercisePreset } from './exerciseLibrary';
@@ -25,7 +26,7 @@ export function ExercisePicker({ exercises, replacing, onSelect, onClose, sugges
       {results.map(preset => {
         const included = exercises.some((exercise, index) => index !== replacing && canonicalExerciseId(exercise.id) === preset.id);
         return <button type="button" className="picker-option" key={preset.id} disabled={included} onClick={() => onSelect(preset)} aria-label={`${included ? 'Já no treino' : 'Selecionar'}: ${preset.name}`}>
-          <img src={`${import.meta.env.BASE_URL}images/exercise-${preset.image}.webp`} alt="" loading="lazy" />
+          <img src={exerciseIllustrationUrl(preset.id, preset.image)} alt="" loading="lazy" />
           <span><strong>{preset.name}</strong><small>{muscleLabels[preset.muscle ?? 'other']} · {preset.sets} séries · {preset.target} {preset.kind === 'seconds' ? 's' : 'rep.'}</small>{included && <small className="picker-included">Já no treino</small>}</span>
           {included ? <Check size={18} /> : <Plus size={18} />}
         </button>;

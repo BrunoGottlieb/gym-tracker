@@ -7,6 +7,8 @@ import { STREAK_GROUP_KEY } from './streakConfig';
 import type { AppState, RoutinePlan } from './types';
 
 const people: RoutinePlan[] = ['original', 'sheet', 'ivan'];
+// Previous cache entries contain lifetime XP, before Bruno/Nick's fresh start.
+const teamCacheKey = 'avatar-team-xp-fresh-start-v1';
 export interface TeamMember extends TeamProfile { known: boolean; current: boolean }
 export function profileFromBackup(payload: string, person: RoutinePlan, updatedAt?: string): TeamProfile {
   const state = parseBackup(payload);
@@ -57,12 +59,12 @@ export function useTeamProfiles(state: AppState | null) {
   }, []);
   useEffect(() => {
     let alive = true;
-    void database.sync.get('avatar-team').then(record => {
+    void database.sync.get(teamCacheKey).then(record => {
       if (alive && Array.isArray(record?.value)) setProfiles(record.value.filter(validTeamProfile));
     }).catch(() => {}).finally(() => { if (alive) setCacheReady(true); });
     return () => { alive = false; };
   }, []);
-  useEffect(() => { if (cacheReady) void database.sync.put({ id: 'avatar-team', value: profiles }).catch(() => {}); }, [profiles, cacheReady]);
+  useEffect(() => { if (cacheReady) void database.sync.put({ id: teamCacheKey, value: profiles }).catch(() => {}); }, [profiles, cacheReady]);
   useEffect(() => { if (person && cacheReady) { lastFetch.current = 0; void refresh(true); } }, [person, cacheReady, refresh]);
   useEffect(() => {
     const update = () => { if (!document.hidden) void refresh(); };

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { addSessionSet, beginWorkout, createBackup, finishSession, parseBackup, recordHold, removeSessionSet, swapSessionExercise, toggleSeriesCompletion, validateState } from './domain';
-import { auraRewards, equippedAura, exerciseXP, levelProgress, personalRecords, personalXP, sessionXP, weeklyGoal, workoutResult } from './gamification';
+import { XP_FRESH_START, auraRewards, equippedAura, exerciseXP, levelProgress, personalRecords, personalXP, sessionXP, weeklyGoal, workoutResult } from './gamification';
 import { profileBackup, restoreProfile } from './CloudBackup';
 import type { Session } from './types';
 
-function started() { const state = createInitialState(); return beginWorkout(state, state.workouts[0], undefined, 1_790_000_000_000); }
+function started() { const state = createInitialState(); return beginWorkout(state, state.workouts[0], undefined, XP_FRESH_START + 10_000); }
 function record(person: Session['person'], at: number): Session {
   const state = started();
   const session = state.active!;
@@ -14,6 +14,30 @@ function record(person: Session['person'], at: number): Session {
 const at = (date: string) => new Date(`${date}T12:00:00`).getTime();
 
 describe('personal XP', () => {
+  it('starts Bruno and Nick at zero using the same cutoff across backups, preserving history and Ivan XP', () => {
+    const state = createInitialState();
+    const bruno = record('original', XP_FRESH_START - 1), nick = record('sheet', XP_FRESH_START - 1), ivan = record('ivan', XP_FRESH_START - 1);
+    state.history = [bruno, nick, ivan];
+    const history = structuredClone(state.history);
+    expect(personalXP(state.history, 'original')).toBe(0);
+    expect(personalXP(state.history, 'sheet')).toBe(0);
+    expect(personalXP(state.history, 'ivan')).toBe(80);
+    const restored = parseBackup(createBackup(state));
+    expect(personalXP(restored.history, 'original')).toBe(0);
+    expect(levelProgress(personalXP(restored.history, 'sheet')).level).toBe(1);
+    expect(state.history).toEqual(history);
+    const current = record('original', XP_FRESH_START);
+    const nextNick = record('sheet', XP_FRESH_START + 1000);
+    expect(personalXP([...state.history, current, current, nextNick], 'original')).toBe(80);
+    expect(personalXP([...state.history, current, nextNick], 'sheet')).toBe(80);
+  });
+  it('does not claim XP or a level-up when a workout is backdated before the fresh start', () => {
+    const before = started(); before.active!.exercises[0].done[0] = true;
+    const after = finishSession(before, XP_FRESH_START - 1000, XP_FRESH_START - 3600000);
+    const result = workoutResult(before, after, after.history[0]);
+    expect(after.history).toHaveLength(1);
+    expect(result).toMatchObject({ xp: { xp: 0, sets: 1 }, levelBefore: 1, levelAfter: 1 });
+  });
   it('only rewards completed sets, gives extra sets more XP and snapshots the planned count', () => {
     let state = started();
     const id = state.active!.exercises[0].exerciseId;
@@ -114,13 +138,13 @@ describe('weekly goals and levels', () => {
   });
   it('summarizes a level-up and goal only on the completion that reaches them, including backdated workouts', () => {
     const before = started(); before.preferences.weeklyGoals = { original: 1 };
-    before.history = Array.from({ length: 6 }, () => record('original', at('2026-11-01'))); // 480 XP
+    before.history = Array.from({ length: 6 }, () => record('original', at('2026-11-15'))); // 480 XP
     before.active!.exercises[0].done[0] = true;
-    const after = finishSession(before, at('2026-11-10'), at('2026-11-10') - 1000);
-    const result = workoutResult(before, after, after.history[0], at('2026-11-13'));
+    const after = finishSession(before, at('2026-11-24'), at('2026-11-24') - 1000);
+    const result = workoutResult(before, after, after.history[0], at('2026-11-27'));
     expect(result).toMatchObject({ xp: { xp: 60, sets: 1 }, levelBefore: 1, levelAfter: 2, goalReached: true });
-    const older = finishSession(before, at('2026-11-07'), at('2026-11-07') - 1000);
-    expect(workoutResult(before, older, older.history[0], at('2026-11-13')).goalReached).toBe(false);
+    const older = finishSession(before, at('2026-11-21'), at('2026-11-21') - 1000);
+    expect(workoutResult(before, older, older.history[0], at('2026-11-27')).goalReached).toBe(false);
   });
 });
 

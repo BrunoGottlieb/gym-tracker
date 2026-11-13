@@ -3,6 +3,7 @@ import { ArrowUpRight, BookOpen, CalendarDays, ChevronDown, ChevronRight, Histor
 import type { AppState } from './types';
 import { currentLoad, exerciseEntries, loadPoints, type LoadPoint } from './progression';
 import { MuscleBadge } from './components';
+import { exerciseIllustrationUrl } from './motionCatalog';
 
 const kg = (value: number) => `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} kg`;
 const shortDate = (at: number) => new Date(at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
@@ -45,7 +46,7 @@ export function Progression({ state, exerciseId, onSelect, onPreview, onOpenSess
   return <>
     <div className="page-heading"><div><span className="eyebrow">CADA PASSO FICA REGISTRADO</span><h1>Sua evolução<span className="accent">.</span></h1><p className="subtitle">A carga de hoje e o caminho que te trouxe até aqui.</p></div><span className="heading-decoration"><TrendingUp size={36} strokeWidth={1.5} /></span></div>
     <label className="progress-selector form-field" htmlFor="progress-exercise">Escolha um exercício<select id="progress-exercise" value={selected.id} onChange={e => onSelect(e.target.value)}>{entries.map(e => <option key={e.id} value={e.id}>{e.name}{e.archived ? ' (anterior)' : ''}</option>)}</select></label>
-    <div className="progress-exercise-heading"><button className="progress-image-button" onClick={() => onPreview(selected.image, selected.name, selected.id)} aria-label={`Ampliar imagem de ${selected.name}`}><img src={`${import.meta.env.BASE_URL}images/exercise-${selected.image}.webp`} alt={selected.name} /></button><div><h2>{selected.name}</h2><MuscleBadge muscle={selected.muscle} />{selected.archived && <p className="subtle">Exercício anterior, mantido no histórico.</p>}</div></div>
+    <div className="progress-exercise-heading"><button className="progress-image-button" onClick={() => onPreview(selected.image, selected.name, selected.id)} aria-label={`Ampliar imagem de ${selected.name}`}><img src={exerciseIllustrationUrl(selected.id, selected.image)} alt={selected.name} /></button><div><h2>{selected.name}</h2><MuscleBadge muscle={selected.muscle} />{selected.archived && <p className="subtle">Exercício anterior, mantido no histórico.</p>}</div></div>
     <div className="load-summary">
       <div><span><BookOpen size={15} />Carga atual</span><strong>{kg(current)}</strong><small>{selected.archived ? 'Última carga guardada' : 'Preenchida no próximo treino'}</small></div>
       <div><span><History size={15} />Último treino</span><strong>{previous ? kg(previous.weight) : '—'}</strong><small>{previous ? shortDate(previous.at) : 'Sem sessão registrada'}</small></div>

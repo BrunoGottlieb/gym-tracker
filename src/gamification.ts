@@ -6,6 +6,10 @@ export const XP_PER_SET = 10;
 export const EXTRA_SET_BONUS = 5;
 export const WORKOUT_XP = 50;
 export const LEVEL_XP = 500;
+// Bruno and Nick requested a fresh start. A shared cutoff keeps every device and
+// restored backup consistent without deleting, editing or re-uploading history.
+export const XP_FRESH_START = Date.parse('2026-11-13T10:41:06Z');
+export const xpStartAt = (person: RoutinePlan) => person === 'original' || person === 'sheet' ? XP_FRESH_START : 0;
 export const auraRewards = [
   { id: 'blue', name: 'Brilho azul', level: 1, color: '#91B3FF' },
   { id: 'amber', name: 'Brilho âmbar', level: 2, color: '#FFC26B' },
@@ -30,7 +34,7 @@ export function sessionXP(session: Session, finalized = session.finishedAt !== u
 export function personalXP(history: Session[], person: RoutinePlan) {
   const seen = new Set<string>();
   return history.reduce((sum, session) => {
-    if (seen.has(session.id) || session.finishedAt === undefined || (session.person ?? 'original') !== person) return sum;
+    if (seen.has(session.id) || session.finishedAt === undefined || session.finishedAt < xpStartAt(person) || (session.person ?? 'original') !== person) return sum;
     seen.add(session.id);
     return sum + sessionXP(session).xp;
   }, 0);
@@ -87,7 +91,7 @@ export interface WorkoutResult {
 export function workoutResult(before: AppState, after: AppState, session: Session, now = Date.now()): WorkoutResult {
   const person = session.person ?? 'original';
   return {
-    session, xp: sessionXP(session),
+    session, xp: { ...sessionXP(session), xp: Math.max(0, personalXP(after.history, person) - personalXP(before.history, person)) },
     levelBefore: levelProgress(personalXP(before.history, person)).level,
     levelAfter: levelProgress(personalXP(after.history, person)).level,
     records: personalRecords(session, before.history),
