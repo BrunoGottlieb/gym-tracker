@@ -1,3 +1,4 @@
+import { APP_SANDBOX, cloudFetch } from './appSandbox';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { database } from './storage';
 import { STREAK_GROUP_KEY } from './streakConfig';
@@ -13,7 +14,7 @@ function savedSettings(value: unknown): SyncSettings {
   if (data.code !== STREAK_GROUP_KEY || (data.cache !== null && !isSnapshot(data.cache)) || !data.acknowledgements || typeof data.acknowledgements !== 'object' || !Object.values(data.acknowledgements).every(value => typeof value === 'string') || typeof data.profileSignature !== 'string' || (data.lastSync !== null && (typeof data.lastSync !== 'number' || !Number.isFinite(data.lastSync)))) return blank();
   return data;
 }
-export type CloudStatus = 'loading' | 'disconnected' | 'syncing' | 'synced' | 'offline' | 'error';
+export type CloudStatus = 'sandbox' | 'loading' | 'disconnected' | 'syncing' | 'synced' | 'offline' | 'error';
 
 export function useCloudStreaks(state: AppState | null) {
   const [settings, setSettings] = useState<SyncSettings>(blank);
@@ -37,6 +38,7 @@ export function useCloudStreaks(state: AppState | null) {
   }).catch(() => { if (alive) { setError('Não foi possível abrir a configuração de sincronização.'); setStatus('error'); setLoaded(true); } }); return () => { alive = false; generation.current++; }; }, []);
 
   const synchronize = useCallback(async (): Promise<void> => {
+    if (APP_SANDBOX) return;
     if (busy.current) { rerun.current = true; return; }
     if (!stateRef.current || !settingsRef.current.code) return;
     if (!navigator.onLine) { setStatus('offline'); return; }
@@ -46,7 +48,7 @@ export function useCloudStreaks(state: AppState | null) {
     const request = async (method: 'GET' | 'POST', body?: unknown) => {
       const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 12000);
       try {
-        const response = await fetch(STREAK_API, { method, headers: { Authorization: `Bearer ${code}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), cache: 'no-store', credentials: 'omit', signal: controller.signal });
+        const response = await cloudFetch(STREAK_API, { method, headers: { Authorization: `Bearer ${code}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), cache: 'no-store', credentials: 'omit', signal: controller.signal });
         if (response.status === 401 || response.status === 403) throw new Error('O serviço de sequências está indisponível. Seus treinos continuam salvos no aparelho.');
         if (!response.ok) throw new Error('A nuvem está indisponível. Seus treinos continuam salvos no aparelho.');
         return response.json();
@@ -95,10 +97,14 @@ export function useCloudStreaks(state: AppState | null) {
     return () => { clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', refresh); };
   }, [synchronize]);
   const checkToday = useCallback(async (): Promise<CloudSnapshot | null> => {
+    if (APP_SANDBOX) {
+      const current = stateRef.current;
+      return { version: 1, today: streakDate(), dates: current ? completionEvents(current).filter(event => event.completed).map(({ person, date }) => ({ person, date })) : [], trainingDays: { ...defaultTrainingDays, ...(current ? { [current.selectedPlan ?? 'original']: scheduledTrainingDays(current.workouts) } : {}) } };
+    }
     if (!navigator.onLine) return null;
     const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 4500);
     try {
-      const response = await fetch(STREAK_API, { headers: { Authorization: `Bearer ${STREAK_GROUP_KEY}` }, credentials: 'omit', cache: 'no-store', signal: controller.signal });
+      const response = await cloudFetch(STREAK_API, { headers: { Authorization: `Bearer ${STREAK_GROUP_KEY}` }, credentials: 'omit', cache: 'no-store', signal: controller.signal });
       if (!response.ok) return null;
       const data = await response.json();
       if (!isSnapshot(data)) return null;
@@ -114,6 +120,6 @@ export function useCloudStreaks(state: AppState | null) {
     if (state) schedules[state.selectedPlan ?? 'original'] = scheduledTrainingDays(state.workouts);
     return sharedStreak([...(settings.cache?.dates ?? []), ...localEvents.filter(event => event.completed)], schedules, today);
   }, [settings.cache, localEvents, state?.selectedPlan, state?.workouts, today]);
-  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status, error, pending, localEvents: localEvents as CompletionEvent[], synchronize, checkToday, group, loaded };
+  return { enabled: !!settings.code, code: settings.code, snapshot: settings.cache, lastSync: settings.lastSync, status: APP_SANDBOX ? 'sandbox' as const : status, error, pending: APP_SANDBOX ? 0 : pending, localEvents: localEvents as CompletionEvent[], synchronize, checkToday, group, loaded };
 }
 export type CloudStreakController = ReturnType<typeof useCloudStreaks>;

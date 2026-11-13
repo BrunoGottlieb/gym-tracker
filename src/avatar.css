@@ -89,6 +89,7 @@
 
 /* A free outfit preview, with one explicit checkout for the selected pieces. */
 .coin-balance{display:inline-flex;align-items:center;gap:6px;color:#a7731f;background:#fff3d7;border:1px solid #f4e2b8;padding:7px 10px;border-radius:12px;font-size:12px;white-space:nowrap}
+.app-sandbox-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid #d9e2ff;background:#eaf0ff;border-radius:16px;margin:0 0 20px;color:#4969b8}.app-sandbox-banner>div{display:grid;gap:4px}.app-sandbox-banner strong{font-size:12px}.app-sandbox-banner span{font-size:10px;line-height:1.5}.app-sandbox-banner>.text-button{font-size:10px;white-space:nowrap}
 .avatar-shop .avatar-editor-heading>div{flex:1}.avatar-shop .avatar-editor-heading p{line-height:1.5;font-size:10px}.avatar-shop .coin-balance{font-size:12px}
 .equipment-grid>button.for-sale small{color:#a67a31}.equipment-grid>button.owned small{color:#66a18b}
 .shop-footer{display:block;padding:12px 20px 8px}.outfit-cart{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #edf0f8}

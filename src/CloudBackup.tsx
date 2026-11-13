@@ -1,3 +1,4 @@
+import { APP_SANDBOX, cloudFetch } from './appSandbox';
 import { avatarWallet, walletBalance } from './avatars';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
@@ -33,7 +34,7 @@ export function canReplaceEmptyCloudSeed(remotePayload:string,localPayload:strin
 }
 const api='https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups';
 async function request(person:string,body?:unknown) {
-  const r=await fetch(`${api}?person=${person}`,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${STREAK_GROUP_KEY}`,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(12000)});
+  const r=await cloudFetch(`${api}?person=${person}`,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${STREAK_GROUP_KEY}`,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(12000)});
   if(r.status===409)throw Error('Outro aparelho salvou uma cópia mais recente. Consulte a nuvem antes de substituir.');
   if(!r.ok)throw Error('Backup pendente. Seus dados continuam neste aparelho.');
   return r.json();
@@ -52,6 +53,7 @@ export function CloudBackupPanel({state,onRestore,visible}:{state:AppState;onRes
     return()=>{window.removeEventListener('online',refresh);clearInterval(timer);};
   },[]);
   useEffect(()=>{
+    if(APP_SANDBOX)return;
     let alive=true;const run=++generation.current;setReady(false);known.current=null;
     (async()=>{
       try {
@@ -65,7 +67,7 @@ export function CloudBackupPanel({state,onRestore,visible}:{state:AppState;onRes
     })();return()=>{alive=false;if(generation.current===run)generation.current++;};
   },[person,tick]);
   async function upload(force=false){
-    if(busy.current)return;const base=force?remote?.revision??null:known.current?.revision;
+    if(APP_SANDBOX || busy.current)return;const base=force?remote?.revision??null:known.current?.revision;
     if(base===undefined)return;
     const run=generation.current,copy=latest.current;busy.current=true;setStatus('Salvando backup…');
     try{
@@ -78,6 +80,6 @@ export function CloudBackupPanel({state,onRestore,visible}:{state:AppState;onRes
     finally{busy.current=false;}
   }
   useEffect(()=>{if(!ready || signature===known.current?.signature)return;const timer=setTimeout(()=>void upload(),2000);return()=>clearTimeout(timer);},[signature,ready,status]);
-  if(!visible || !anchor)return null;
+  if(APP_SANDBOX || !visible || !anchor)return null;
   return createPortal(<section className="settings-section cloud-backup"><h2>Backup automático · {planLabels[person]}</h2><p className="subtle" role="status">{status}</p><p className="subtle">Avatar, moedas, compras, avaliações, cargas, ficha, treino em andamento e histórico. Salva após alterações quando há internet; restaurar exige sua confirmação.</p><div className="backup-actions"><button className="secondary" onClick={()=>setTick(v=>v+1)}>Consultar nuvem</button>{remote && <button className="secondary" onClick={async()=>{if(!confirm(`Restaurar o backup de ${planLabels[person]}? Os dados locais desse perfil serão substituídos.`))return;try{await database.sync.put({id:`backup-${person}`,value:{revision:remote.revision,signature:fingerprint(remote.payload)}});onRestore(restoreProfile(latest.current.state,remote.payload));setTick(v=>v+1);}catch(e){setStatus(e instanceof Error?e.message:'Falha ao restaurar.');}}}>Restaurar da nuvem</button>}{!ready && remote && <button className="secondary" onClick={()=>{if(confirm('Substituir o backup na nuvem pelos dados deste aparelho? A cópia anterior ficará guardada no serviço.'))void upload(true);}}>Guardar este aparelho na nuvem</button>}</div></section>,anchor);
 }

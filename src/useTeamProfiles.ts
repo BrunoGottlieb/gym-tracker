@@ -1,3 +1,4 @@
+import { APP_SANDBOX, cloudFetch } from './appSandbox';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { database } from './storage';
 import { parseBackup } from './domain';
@@ -35,12 +36,12 @@ export function useTeamProfiles(state: AppState | null) {
   const busy = useRef(false), lastFetch = useRef(0);
   const person = state ? state.selectedPlan ?? 'original' : null;
   const refresh = useCallback(async (force = false) => {
-    if (!stateRef.current || busy.current || (!force && Date.now() - lastFetch.current < 60000)) return;
+    if (APP_SANDBOX || !stateRef.current || busy.current || (!force && Date.now() - lastFetch.current < 60000)) return;
     if (!navigator.onLine) { setOffline(true); return; }
     busy.current = true; lastFetch.current = Date.now(); setLoading(true);
     const selected = stateRef.current.selectedPlan ?? 'original';
     const responses = await Promise.allSettled(people.filter(p => p !== selected).map(async person => {
-      const response = await fetch(`https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups?person=${person}`, {
+      const response = await cloudFetch(`https://gym-tracker-streaks-brunogottlieb.darthgottlieb.chatgpt.site/api/backups?person=${person}`, {
         headers: { Authorization: `Bearer ${STREAK_GROUP_KEY}` }, cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(12000),
       });
       if (!response.ok) throw Error('Perfil indisponível.');

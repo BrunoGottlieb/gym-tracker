@@ -3,7 +3,7 @@ import { Flame, Play, RefreshCw } from 'lucide-react';
 import type { CloudStreakController } from './useCloudStreaks';
 import { planLabels } from './routinePlans';
 
-const statusLabel = (cloud: CloudStreakController) => cloud.status === 'syncing' ? 'Sincronizando…' : cloud.status === 'offline' ? 'Offline · envio pendente' : cloud.status === 'error' ? 'Sincronização pendente' : cloud.lastSync ? `Atualizado às ${new Date(cloud.lastSync).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Aguardando sincronização';
+const statusLabel = (cloud: CloudStreakController) => cloud.status === 'sandbox' ? 'Sandbox · sequência apenas de teste' : cloud.status === 'syncing' ? 'Sincronizando…' : cloud.status === 'offline' ? 'Offline · envio pendente' : cloud.status === 'error' ? 'Sincronização pendente' : cloud.lastSync ? `Atualizado às ${new Date(cloud.lastSync).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Aguardando sincronização';
 
 export function StreakBadge({ cloud, onClick }: { cloud: CloudStreakController; onClick: () => void }) {
   const count = cloud.group.current;
@@ -23,6 +23,7 @@ export function StreakDetails({ cloud }: { cloud: CloudStreakController }) {
 }
 
 export function StreakSettings({ cloud, onPreview }: { cloud: CloudStreakController; onPreview: () => void }) {
+  if (cloud.status === 'sandbox') return <section className="settings-section streak-settings"><h2><Flame size={19} />Sequência de teste</h2><p className="subtle">A chama deste PC usa apenas os treinos do sandbox. Nenhuma conclusão é consultada ou enviada à nuvem.</p><button className="secondary" disabled><RefreshCw size={15} />Sincronizar agora</button><button className="text-button shared-streak-preview" onClick={onPreview}><Play size={13} />Ver animação da chama</button></section>;
   const completed=cloud.localEvents.filter(e=>e.completed);
   const days=[...new Set(completed.map(e=>`${e.person}|${e.date}`))];
   const confirmed=days.filter(key=>cloud.snapshot?.dates.some(d=>`${d.person}|${d.date}`===key)).length;

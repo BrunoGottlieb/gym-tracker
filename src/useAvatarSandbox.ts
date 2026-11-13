@@ -1,3 +1,4 @@
+import { APP_SANDBOX } from './appSandbox';
 import { useEffect, useState } from 'react';
 import { AVATAR_SANDBOX_DEVICE_KEY, AVATAR_SANDBOX_KEY, AVATAR_SANDBOX_LOCAL_HASH, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAura, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox, type AvatarSandbox } from './avatarSandbox';
 import { profileAvatar, type AvatarConfig } from './avatars';
@@ -15,12 +16,14 @@ export function useAvatarSandbox(state: AppState | null) {
       if (window.location.hash !== AVATAR_SANDBOX_LOCAL_HASH) return;
       try {
         const next = authorizeLocalAvatarSandbox(window.localStorage);
+        if (!APP_SANDBOX) { window.location.reload(); return; }
         setAvailable(canUseAvatarSandbox(window.localStorage)); setSandbox(next);
         window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
       } catch { /* A blocked local preference must not affect training. */ }
     };
     const sync = (event: StorageEvent) => {
       if ((event.key === AVATAR_SANDBOX_KEY || event.key === AVATAR_SANDBOX_DEVICE_KEY) && event.storageArea === localStorage) {
+        if (canUseAvatarSandbox(localStorage) !== APP_SANDBOX) { window.location.reload(); return; }
         setAvailable(canUseAvatarSandbox(localStorage)); setSandbox(readAvatarSandbox(localStorage));
       }
     };
