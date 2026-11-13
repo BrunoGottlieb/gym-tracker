@@ -2,21 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { beginWorkout, createBackup, finishSession, parseBackup, validateState } from './domain';
 import { canReplaceEmptyCloudSeed, profileBackup, restoreProfile } from './CloudBackup';
-import { avatarEquipment, defaultAvatars, hairColors, hairstyles, profileAvatar, skinTones, unlockedAvatar, updateAvatar, validAvatar, validTeamProfile, type EquipmentSlot } from './avatars';
+import { avatarEquipment, buyAvatarOutfit, defaultAvatars, hairColors, hairstyles, profileAvatar, skinTones, unlockedAvatar, updateAvatar, validAvatar, validTeamProfile, type EquipmentSlot } from './avatars';
 import { profileFromBackup, teamMembers } from './useTeamProfiles';
 import type { RoutinePlan } from './types';
 
 function withXP(person: RoutinePlan = 'original') {
   const state = createInitialState(); state.selectedPlan = person;
-  let next = beginWorkout(state, state.workouts[0]);
-  next.active!.exercises.forEach(log => { log.done.fill(true); });
-  next = finishSession(next);
-  const seed = next.history[0];
-  next.history = Array.from({ length: 60 }, (_, i) => ({ ...structuredClone(seed), id: `avatar-test-${i}` }));
+  let next = state;
+  for (let i = 0; i < 60; i++) {
+    next = beginWorkout(next, next.workouts[0]);
+    next.active!.exercises.forEach(log => { log.done.fill(true); });
+    next = finishSession(next);
+  }
   return next;
 }
 describe('avatar personalization', () => {
-  it('unlocks the gold top at 6, skull T-shirt at 9 and hoodie at 12', () => {
+  it('interprets legacy unlocks for the gold top at 6, skull T-shirt at 9 and hoodie at 12', () => {
     for (const [shirt, level] of [['gold', 6], ['skull-tee', 9], ['hoodie', 12]] as const) {
       const avatar = { ...defaultAvatars.original, shirt };
       expect(unlockedAvatar(avatar, level - 1).shirt).toBe('blue');
@@ -39,16 +40,16 @@ describe('avatar personalization', () => {
     for (const skin of skinTones) expect(updateAvatar(state, { skin: skin.id }).avatars?.original?.skin).toBe(skin.id);
     expect(state.avatars).toBeUndefined();
   });
-  it('enforces level requirements for every item and leaves other profiles intact', () => {
+  it('requires ownership to equip paid items and leaves other profiles intact', () => {
     const initial = createInitialState(), advanced = withXP();
     initial.avatars = { sheet: defaultAvatars.sheet };
     for (const slot of Object.keys(avatarEquipment) as EquipmentSlot[]) for (const item of avatarEquipment[slot]) {
       const next = updateAvatar(initial, { [slot]: item.id });
-      if (item.level > 1) expect(next).toBe(initial);
+      if (item.price > 0) expect(next).toBe(initial);
       else expect(next.avatars?.original?.[slot]).toBe(item.id);
-      expect(updateAvatar(advanced, { [slot]: item.id }).avatars?.original?.[slot]).toBe(item.id);
+      expect(buyAvatarOutfit(advanced, { [slot]: item.id }).avatars?.original?.[slot]).toBe(item.id);
     }
-    expect(updateAvatar(initial, { head: 'headband' }).avatars?.sheet).toEqual(defaultAvatars.sheet);
+    expect(updateAvatar(initial, { hair: 'short' }).avatars?.sheet).toEqual(defaultAvatars.sheet);
   });
   it('does not display locked items restored without enough XP, while retaining freely chosen hair', () => {
     const avatar = { ...defaultAvatars.original, hair: 'long' as const, head: 'headphones' as const, shirt: 'gold' as const, extra: 'goldbands' as const };
@@ -75,7 +76,7 @@ describe('avatar personalization', () => {
     expect(unlockedAvatar({ ...avatar, head: 'crown' }, 24).head).toBe('crown');
   });
   it('round-trips appearance and XP through backups and restores only the selected avatar', () => {
-    const remote = updateAvatar(withXP(), { hair: 'ponytail', hairColor: 'silver', head: 'headphones', face: 'star-glasses', facialHair: 'moustache', shirt: 'skull-tee', extra: 'watch' });
+    const remote = buyAvatarOutfit(withXP(), { hair: 'ponytail', hairColor: 'silver', head: 'headphones', face: 'star-glasses', facialHair: 'moustache', shirt: 'skull-tee', extra: 'watch' });
     remote.avatars!.sheet = { ...defaultAvatars.sheet, hair: 'bun' };
     const full = parseBackup(createBackup(remote)); expect(full.avatars).toEqual(remote.avatars);
     const cloud = profileBackup(remote); expect(JSON.parse(cloud).data.avatars).toEqual({ original: remote.avatars?.original });
@@ -94,7 +95,7 @@ describe('avatar personalization', () => {
 });
 describe('shared team profiles', () => {
   it('derives actual teammate XP from their own cloud backup and validates the requested person', () => {
-    const nick = updateAvatar(withXP('sheet'), { head: 'cap', hair: 'afro' });
+    const nick = buyAvatarOutfit(withXP('sheet'), { head: 'cap', hair: 'afro' });
     const payload = profileBackup(nick);
     const profile = profileFromBackup(payload, 'sheet', '2026-11-13T12:00:00Z');
     expect(profile.person).toBe('sheet'); expect(profile.xp).toBeGreaterThan(500);

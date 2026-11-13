@@ -47,6 +47,6 @@ const out = 'artifacts/avatar-fitting'; fs.mkdirSync(out, { recursive: true });
     await gallery(headFrames, 'headgear'); await gallery(clothingFrames, 'shoulders-and-tie');
     await gallery([...headFrames.filter(frame => frame.label.endsWith('· Ondulado')), ...clothingFrames.filter(frame => frame.label !== 'Regata azul')], 'summary', 5);
     assert.deepEqual(errors, []); assert.deepEqual(missing, []);
-    console.log('PASS: crown/headphone rear parts behind scalp and hair across four haircuts; front details retained; raised clothes and front-only tie; no missing images or browser errors.');
+    console.log('PASS: crown underside/far headphone cup behind head across four haircuts; near cup and arch in front; raised clothes and front-only tie; no missing images or browser errors.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

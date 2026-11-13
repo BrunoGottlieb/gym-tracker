@@ -7,6 +7,7 @@ export const avatarAsset = (file: string) => `${import.meta.env.BASE_URL}avatars
 const equipmentFrames: Record<string, [number, number, number, number]> = {
   headband: [437, 255, 396, 171], visor: [422, 240, 421, 184], cap: [420, 141, 437, 269],
   headphones: [373, 128, 510, 390], 'top-hat': [399, 51, 465, 353], crown: [403, 117, 444, 288],
+  'headphones-perspective-v3': [373, 128, 510, 390],
   sunglasses: [512, 370, 384, 148], 'star-glasses': [501, 323, 336, 175],
   eyepatch: [476, 333, 361, 178], monocle: [789, 387, 146, 244],
   moustache: [605, 384, 151, 74], handlebar: [566, 390, 215, 88],
@@ -28,7 +29,8 @@ const extraFile = (id: string) => wristbands.has(id) ? 'wristbands' : id === 'ne
 /** All saved choices share one registered square canvas. No model renderer is needed. */
 export function avatarLayers(avatar: AvatarConfig): AvatarLayer[] {
   const layers: AvatarLayer[] = [];
-  if (avatar.head === 'crown' || avatar.head === 'headphones') layers.push({ id: 'head-back', file: avatar.head, className: `avatar-head-layer avatar-head-back head-${avatar.head}` });
+  const headFile = avatar.head === 'headphones' ? 'headphones-perspective-v3' : avatar.head;
+  if (avatar.head === 'crown' || avatar.head === 'headphones') layers.push({ id: 'head-back', file: headFile, className: `avatar-head-layer avatar-head-back head-${avatar.head}` });
   const hasBack = ['long', 'bob', 'ponytail'].includes(avatar.hair);
   const hairClass = `hair-tone-${avatar.hairColor}${['cap', 'top-hat', 'cowboy-hat'].includes(avatar.head) ? ' under-cap' : ''}`;
   if (hasBack) layers.push({ id: 'hair-back', file: `hair-${avatar.hair}`, className: `avatar-hair-back ${hairClass}` });
@@ -39,7 +41,7 @@ export function avatarLayers(avatar: AvatarConfig): AvatarLayer[] {
   if (avatar.extra !== 'none') layers.push({ id: 'extra', file: extraFile(avatar.extra), className: `avatar-extra-layer extra-tone-${avatar.extra}` });
   if (avatar.facialHair && avatar.facialHair !== 'none') layers.push({ id: 'facialHair', file: avatar.facialHair, className: `avatar-facial-hair-layer facial-hair-${avatar.facialHair} hair-tone-${avatar.hairColor}` });
   if (avatar.face && avatar.face !== 'none') layers.push({ id: 'face', file: avatar.face, className: `avatar-face-layer face-${avatar.face}` });
-  if (avatar.head !== 'none') layers.push({ id: 'head', file: avatar.head, className: `avatar-head-layer head-${avatar.head}`, ...(avatar.head === 'crown' || avatar.head === 'headphones' ? { mask: `${avatar.head}-front` as 'crown-front' | 'headphones-front' } : {}) });
+  if (avatar.head !== 'none') layers.push({ id: 'head', file: headFile, className: `avatar-head-layer head-${avatar.head}`, ...(avatar.head === 'crown' || avatar.head === 'headphones' ? { mask: `${avatar.head}-front` as 'crown-front' | 'headphones-front' } : {}) });
   return layers;
 }
 
@@ -49,5 +51,5 @@ export function equipmentImage(slot: EquipmentSlot, id: string): { file: string;
   if (slot === 'extra') return { file: extraFile(id), className: `sample-extra sample-${id} extra-tone-${id}` };
   if (slot === 'face') return { file: id, className: `sample-face sample-${id}` };
   if (slot === 'facialHair') return { file: id, className: 'sample-moustache' };
-  return { file: id, className: `sample-head sample-${id}` };
+  return { file: id === 'headphones' ? 'headphones-perspective-v3' : id, className: `sample-head sample-${id}` };
 }

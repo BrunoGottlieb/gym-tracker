@@ -83,6 +83,7 @@ export function personalRecords(session: Session, history: Session[]): PersonalR
 export interface WorkoutResult {
   session: Session;
   xp: ReturnType<typeof sessionXP>;
+  coins: number;
   levelBefore: number;
   levelAfter: number;
   records: PersonalRecord[];
@@ -91,6 +92,7 @@ export interface WorkoutResult {
 export function workoutResult(before: AppState, after: AppState, session: Session, now = Date.now()): WorkoutResult {
   const person = session.person ?? 'original';
   return {
+    coins: after.avatarWallets?.[person]?.awards[session.id] !== undefined && !Object.hasOwn(before.avatarWallets?.[person]?.awards ?? {}, session.id) && !before.history.some(s => s.id === session.id) ? after.avatarWallets[person]!.awards[session.id] : 0,
     session, xp: { ...sessionXP(session), xp: Math.max(0, personalXP(after.history, person) - personalXP(before.history, person)) },
     levelBefore: levelProgress(personalXP(before.history, person)).level,
     levelAfter: levelProgress(personalXP(after.history, person)).level,

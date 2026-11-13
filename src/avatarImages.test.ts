@@ -8,11 +8,11 @@ import { createInitialState } from './data';
 const exists = (file: string) => existsSync(fileURLToPath(new URL(`../public/avatars/layered-v1/${file}.png`, import.meta.url)));
 
 describe('the adopted image avatar library', () => {
-  it('puts crown undersides and headphone arches behind the scalp/hair, retaining only their front details above it', () => {
+  it('puts crown undersides and the far headphone cup behind the head, with a front pass for the near cup and arch', () => {
     for (const head of ['crown', 'headphones'] as const) for (const hair of ['bald', 'wavy', 'afro', 'long'] as const) {
       const layers = avatarLayers({ ...defaultAvatars.original, head, hair });
       expect(layers[0].id).toBe('head-back');
-      expect(layers[0].file).toBe(head);
+      expect(layers[0].file).toBe(head === 'headphones' ? 'headphones-perspective-v3' : head);
       expect(layers.findIndex(layer => layer.id === 'base')).toBeGreaterThan(0);
       const front = layers.find(layer => layer.id === 'head')!;
       expect(front.mask).toBe(`${head}-front`);

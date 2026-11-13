@@ -86,3 +86,14 @@
 .avatar-composition>.avatar-hands-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
 .avatar-composition>svg.avatar-head-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;overflow:visible}
 .avatar-composition>.avatar-head-back{z-index:0}
+
+/* A free outfit preview, with one explicit checkout for the selected pieces. */
+.coin-balance{display:inline-flex;align-items:center;gap:6px;color:#a7731f;background:#fff3d7;border:1px solid #f4e2b8;padding:7px 10px;border-radius:12px;font-size:12px;white-space:nowrap}
+.avatar-shop .avatar-editor-heading>div{flex:1}.avatar-shop .avatar-editor-heading p{line-height:1.5;font-size:10px}.avatar-shop .coin-balance{font-size:12px}
+.equipment-grid>button.for-sale small{color:#a67a31}.equipment-grid>button.owned small{color:#66a18b}
+.shop-footer{display:block;padding:12px 20px 8px}.outfit-cart{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #edf0f8}
+.outfit-cart>span{font-size:10px;color:#7184a6}.outfit-cart>div{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.outfit-cart>div>span{font-size:9px;background:#f1f4fc;color:#7182a1;padding:4px 7px;border-radius:7px}.outfit-cart b{color:#b28537;margin-left:4px}
+.shop-checkout{display:flex;align-items:center;justify-content:space-between;gap:10px}.shop-checkout-info strong{display:flex;align-items:center;gap:5px;font-size:13px;color:#a4792d}.shop-checkout-info p{display:block;line-height:1.5;margin:4px 0 0;font-size:10px}.shop-checkout-info [role=alert]{color:#b25454}
+.shop-checkout>.primary{min-height:42px;font-size:12px;padding:10px 15px;white-space:nowrap}.discard-outfit{display:block;margin:3px auto 0;font-size:10px;min-height:27px;padding:4px 12px}.shop-earning-note{font-size:10px;line-height:1.7;color:#8696b1;margin:11px 0 0;text-align:center}
+@media(max-width:600px){.avatar-shop .customizer-preview{height:155px}.avatar-shop .customizer-preview>.avatar-art{width:175px;height:175px}.shop-footer{padding:10px 15px 5px}}
+@media(max-height:700px){.avatar-shop .customizer-preview{height:110px}.avatar-shop .customizer-preview>.avatar-art{width:130px;height:130px}.avatar-shop .avatar-editor-heading{padding-top:10px}}

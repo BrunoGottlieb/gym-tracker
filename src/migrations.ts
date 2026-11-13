@@ -1,4 +1,5 @@
 import { getMuscle } from './catalog';
+import { avatarWallet } from './avatars';
 import { firstBrunoAssessment, secondBrunoAssessment } from './assessments';
 import type { AppState, Exercise, ExerciseLog } from './types';
 import { articulatedChestPress, declineSitup, militarySitup, parallelBarDips, horizontalLegPress, leverSquat, preacherCurl, initialWorkouts, optionalHomeWorkout, hipAbduction, ropeCurl, machineShoulderPress } from './data';
@@ -276,5 +277,6 @@ export function migrateState(original: AppState): AppState {
     }
     state.brunoShoulderPressRevision = 1;
   }
+  state.avatarWallets = Object.fromEntries((['original', 'sheet', 'ivan'] as const).map(person => [person, avatarWallet(state, person)]));
   return state;
 }

@@ -4,12 +4,12 @@ import { avatarAsset, avatarLayers, type AvatarLayer } from './avatarImages';
 
 function ForegroundHeadgear({ layer }: { layer: AvatarLayer }) {
   const id = `headgear-${useId().replace(/:/g, '')}`;
-  // The crown's underside/back rim and the headphone arch belong behind the
-  // head. Keep only the curved front circlet / ear cushions in this front pass.
+  // Crown underside and far headphone cup sit behind the head. The near cup
+  // and headband can pass over the hair, matching the three-quarter portrait.
   return <svg className={layer.className} data-layer={layer.id} viewBox="0 0 1254 1254" aria-hidden="true">
     <defs><clipPath id={id}>{layer.mask === 'crown-front'
       ? <path d="M0 0H1254V354H786Q625 310 464 354H0Z" />
-      : <><rect x="375" y="337" width="155" height="180" rx="12" /><rect x="735" y="337" width="145" height="180" rx="12" /></>}</clipPath></defs>
+      : <><rect x="350" y="110" width="510" height="225" /><rect x="350" y="320" width="185" height="205" rx="12" /></>}</clipPath></defs>
     <image href={avatarAsset(layer.file)} width="1254" height="1254" clipPath={`url(#${id})`} />
   </svg>;
 }

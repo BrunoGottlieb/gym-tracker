@@ -120,6 +120,7 @@ export function createLegacyState(): AppState {
 
 export function createInitialState(): AppState {
   return {
+    avatarWallets: Object.fromEntries((['original', 'sheet', 'ivan'] as const).map(person => [person, { awards: {}, purchases: {}, gifts: [] }])),
     version: 1, secondAssessmentRevision: 1, assessments: [structuredClone(firstBrunoAssessment),structuredClone(secondBrunoAssessment)], brunoPlankRevision: 1, brunoAdditionsRevision: 1, brunoSeriesRevision: 1, brunoHomeRevision: 1, brunoPlanRevision: 1, routineRevision: 12, brunoFridayRevision: 1, exerciseNotes: {}, workouts: structuredClone(initialWorkouts), weights: {}, active: null, history: [],
     brunoShoulderPressRevision: 1,
     timer: { duration: 90, remaining: 90, endAt: null, exercise: '', started: false },

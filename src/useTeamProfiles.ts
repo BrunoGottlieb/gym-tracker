@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { database } from './storage';
 import { parseBackup } from './domain';
-import { defaultAvatars, profileAvatar, unlockedAvatar, validTeamProfile, type TeamProfile } from './avatars';
-import { levelProgress, personalXP } from './gamification';
+import { profileAvatar, validTeamProfile, type TeamProfile } from './avatars';
+import { personalXP } from './gamification';
 import { STREAK_GROUP_KEY } from './streakConfig';
 import type { AppState, RoutinePlan } from './types';
 
@@ -14,7 +14,7 @@ export function profileFromBackup(payload: string, person: RoutinePlan, updatedA
   const state = parseBackup(payload);
   if ((state.selectedPlan ?? 'original') !== person) throw Error('Perfil diferente do solicitado.');
   const xp = personalXP(state.history, person);
-  return { person, xp, avatar: unlockedAvatar(state.avatars?.[person] ?? defaultAvatars[person], levelProgress(xp).level), updatedAt };
+  return { person, xp, avatar: profileAvatar(state, person), updatedAt };
 }
 export function teamMembers(state: AppState, remote: TeamProfile[]): TeamMember[] {
   const current = state.selectedPlan ?? 'original';

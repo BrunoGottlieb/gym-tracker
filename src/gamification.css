@@ -23,3 +23,4 @@
 
 .xp-feedback.feedback-inline{position:relative;bottom:auto;left:auto;transform:none;margin:0 auto 15px;padding:10px 18px;max-width:100%;animation:xp-label-in .35s both}.feedback-inline strong{font-size:18px}.feedback-inline small{font-size:10px}
 @media(prefers-reduced-motion:reduce){.xp-feedback.feedback-inline{animation:none}}
+.result-coins{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;color:#b18635;margin:10px 0 24px;font-size:14px}.result-coins>span{flex-basis:100%;font-size:10px;color:#9eaaBE;text-align:center}
