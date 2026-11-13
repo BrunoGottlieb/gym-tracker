@@ -342,7 +342,7 @@ Image 24 is recomposed in an oblique three-quarter view with foreshortened knees
 
 ## Avatar coin shop and headphone perspective
 
-Equipment now uses coins rather than level locks. Each finalized workout awards `floor(sessionXP / 10)` coins including extra-set XP, separately from level XP. Basic pieces cost 5–35 coins; the crown is capped at 260 (about ten complete Bruno gym workouts at 23–27 coins). Starter tank tops, hairstyles, hair colors and skin tones remain free. Celebration light rewards still follow their existing levels.
+Equipment now uses coins rather than level locks. Each finalized workout awards `floor(sessionXP / 10)` coins including extra-set XP, separately from level XP. Rebalanced prices are about one third lower overall: basic pieces start at 3 coins and the crown is capped at 175 (about seven complete Bruno gym workouts at 23–27 coins). The blue cap is the cheapest paid Head item (3). Face prices strictly follow scar (15), earrings (20), eyepatch (35), monocle (50), star glasses (70), sunglasses (90), and Turn Down for What glasses (100). Existing purchases retain their original spending and ownership; changing catalog prices never charges them again. Starter tank tops, hairstyles, hair colors and skin tones remain free. Celebration light rewards still follow their existing levels.
 
 The customizer is a full-outfit draft: every piece is previewable regardless of level or balance. Cancel/close discards the entire draft. **Comprar e usar** atomically purchases only unowned selected pieces and saves the look, after rechecking the latest wallet. Owned pieces are reusable without charge. Sandbox saving remains device-local and never spends coins. Other teammates remain read-only.
 

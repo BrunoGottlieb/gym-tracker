@@ -20,6 +20,20 @@ function funded() {
   return state;
 }
 describe('avatar coin shop', () => {
+  it('makes the blue cap the cheapest head item and orders face prices as requested', () => {
+    const heads = [...avatarEquipment.head].filter(item => item.price > 0).sort((a, b) => a.price - b.price);
+    expect(heads[0].id).toBe('cap');
+    expect(heads[1].price).toBeGreaterThan(heads[0].price);
+    expect([...avatarEquipment.face].filter(item => item.price > 0).sort((a, b) => a.price - b.price).map(item => item.id)).toEqual(['scar', 'earrings', 'eyepatch', 'monocle', 'star-glasses', 'sunglasses', 'deal-with-it']);
+  });
+  it('keeps historical purchase costs and ownership intact after a catalog discount', () => {
+    const state = funded();
+    state.avatarWallets!.original!.purchases['head:headphones'] = 100;
+    const next = buyAvatarOutfit(state, { head: 'headphones' });
+    expect(walletBalance(avatarWallet(next))).toBe(400);
+    expect(next.avatarWallets!.original!.purchases['head:headphones']).toBe(100);
+    expect(profileAvatar(next).head).toBe('headphones');
+  });
   it('awards coins only on finishing, includes extra-set XP, and never spends level XP', () => {
     const { before, after } = finish(undefined, 4);
     expect(walletBalance(avatarWallet(before))).toBe(0);
@@ -27,7 +41,7 @@ describe('avatar coin shop', () => {
     expect(walletBalance(avatarWallet(after))).toBe(9);
     expect(workoutResult(before, after, after.history[0]).coins).toBe(9);
     const paid = buyAvatarOutfit(after, { head: 'headband' });
-    expect(walletBalance(avatarWallet(paid))).toBe(4);
+    expect(walletBalance(avatarWallet(paid))).toBe(5);
     expect(personalXP(paid.history, 'original')).toBe(95);
     expect(finishSession(after)).toBe(after);
     const replay = finishSession({ ...after, active: before.active }, now + 60000);
@@ -37,14 +51,14 @@ describe('avatar coin shop', () => {
     const initial = funded();
     const outfit = { head: 'headphones' as const, face: 'star-glasses' as const, shirt: 'skull-tee' as const, hair: 'long' as const };
     const cart = outfitCart(avatarWallet(initial), { ...defaultAvatars.original, ...outfit });
-    expect(cart.reduce((a, item) => a + item.price, 0)).toBe(305);
+    expect(cart.reduce((a, item) => a + item.price, 0)).toBe(185);
     const next = buyAvatarOutfit(initial, outfit);
-    expect(walletBalance(avatarWallet(next))).toBe(195);
+    expect(walletBalance(avatarWallet(next))).toBe(315);
     expect(profileAvatar(next)).toMatchObject(outfit);
     expect(personalXP(next.history, 'original')).toBe(0);
-    expect(walletBalance(avatarWallet(buyAvatarOutfit(next, outfit)))).toBe(195);
+    expect(walletBalance(avatarWallet(buyAvatarOutfit(next, outfit)))).toBe(315);
     const removed = buyAvatarOutfit(next, { head: 'none', shirt: 'blue' });
-    expect(walletBalance(avatarWallet(buyAvatarOutfit(removed, outfit)))).toBe(195);
+    expect(walletBalance(avatarWallet(buyAvatarOutfit(removed, outfit)))).toBe(315);
     expect(initial.avatars).toBeUndefined();
   });
   it('rejects an unaffordable outfit without partially buying or changing free choices', () => {
@@ -54,24 +68,24 @@ describe('avatar coin shop', () => {
     expect(buyAvatarOutfit(state, { person: 'sheet' } as never)).toBe(state);
     expect(buyAvatarOutfit(state, { head: 'headband' })).not.toBe(state);
   });
-  it('keeps all hair, colors, skin and starter tops free, with prices capped around ten normal workouts', () => {
+  it('keeps all hair, colors, skin and starter tops free, with the reduced price cap', () => {
     const state = buyAvatarOutfit(createInitialState(), { hair: 'afro', hairColor: 'red', skin: 'deep', shirt: 'mint' });
     expect(walletBalance(avatarWallet(state))).toBe(0);
     expect(profileAvatar(state)).toMatchObject({ hair: 'afro', skin: 'deep', shirt: 'mint' });
     const prices = Object.values(avatarEquipment).flatMap(items => items.map(item => item.price));
-    expect(Math.max(...prices)).toBe(260);
-    expect(Math.min(...prices.filter(n => n > 0))).toBe(5);
+    expect(Math.max(...prices)).toBe(175);
+    expect(Math.min(...prices.filter(n => n > 0))).toBe(3);
     const complete = beginWorkout(createInitialState(), createInitialState().workouts[0], undefined, now);
     complete.active!.exercises.forEach(e => e.done.fill(true));
-    expect(Math.ceil(260 / Math.floor(sessionXP(complete.active!, true).xp / 10))).toBe(10);
+    expect(Math.ceil(175 / Math.floor(sessionXP(complete.active!, true).xp / 10))).toBe(7);
   });
   it('does not reclaim spent coins or award more when a historical workout changes or is deleted', () => {
     const { after } = finish();
     const paid = buyAvatarOutfit(after, { head: 'headband' });
     const edited = structuredClone(paid.history[0]); edited.exercises[0].done = [true, false, false];
     const next = editHistorySession(paid, edited);
-    expect(walletBalance(avatarWallet(next))).toBe(3);
-    expect(walletBalance(avatarWallet({ ...next, history: [] }))).toBe(3);
+    expect(walletBalance(avatarWallet(next))).toBe(4);
+    expect(walletBalance(avatarWallet({ ...next, history: [] }))).toBe(4);
     expect(profileAvatar({ ...next, history: [] }).head).toBe('headband');
   });
   it('credits each legacy workout once, respects the XP reset, and preserves an already equipped legacy outfit', () => {
