@@ -82,8 +82,12 @@ const out = 'artifacts/avatar-sandbox';
           const row = phone.locator('.exercise-row').nth(i), motion = expected[i];
           assert.equal(await row.locator('.exercise-motion').count(), motion ? 1 : 0);
           if (motion) {
-            await row.locator(`.exercise-motion[data-motion="${motion}"] img`).evaluate(img => img.decode());
             await phone.waitForFunction(({ i, motion }) => document.querySelectorAll('.exercise-row')[i].querySelector('img').src.includes(`/motion/${motion}-`), { i, motion });
+            // Decode a fixed snapshot: the live demonstration can switch frames
+            // during network loading, which intentionally aborts img.decode().
+            await row.locator(`.exercise-motion[data-motion="${motion}"] img`).evaluate(img => {
+              const snapshot = new Image(); snapshot.src = img.currentSrc || img.src; return snapshot.decode();
+            });
           }
         }
         await phone.screenshot({ path: `${out}/${person}-${workout.id}.png`, fullPage: true });
