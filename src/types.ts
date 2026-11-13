@@ -28,6 +28,7 @@ export interface ExerciseLog {
   kind: 'reps' | 'seconds';
   weight: number;
   done: boolean[];
+  plannedSets?: number;
   seconds?: (number | null)[];
   secondsBySide?: Record<HoldSide, (number | null)[]>;
   holdStartedAt?: number;
@@ -54,6 +55,9 @@ export interface RestTimer {
   started: boolean;
 }
 export interface Preferences {
+  weeklyGoals?: Partial<Record<RoutinePlan, number>>;
+  rewardAuras?: Partial<Record<RoutinePlan, import('./gamification').RewardAura>>;
+  haptics?: boolean;
   celebrationTheme?: import('./celebrationThemes').CelebrationTheme;
   autoRest: boolean;
   sound: boolean;

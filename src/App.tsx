@@ -26,13 +26,15 @@ import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
 import { streakDate } from './streaks';
 import { localDateKey, sessionsOnDate, sessionsThisWeek } from './calendar';
 import { holidayName } from './holidays';
+import { equippedAura, exerciseXP, sessionXP, workoutResult, type RewardAura, type WorkoutResult } from './gamification';
+import { GamificationDashboard, GamificationSettings, RestDayNote, SessionXP, WorkoutResults, XPFeedback, type XPFeedbackData } from './GamificationPanel';
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const imageUrl = (image: number) => `${import.meta.env.BASE_URL}images/exercise-${image}.webp`;
 type View = 'home' | 'workout' | 'history' | 'settings' | 'progress';
 type SetAdjustment = { exerciseId: string; change: 1 | -1 };
 const adjustSession = (state: AppState, action: SetAdjustment) => action.change === 1 ? addSessionSet(state, action.exerciseId) : removeSessionSet(state, action.exerciseId);
-type DialogState = { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
+type DialogState = { type: 'workout-result'; result: WorkoutResult } | { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
 
 function Modal({ title, onClose, children, wide = false, className = '' }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -54,6 +56,7 @@ function ExerciseRow({ exercise, log, motion, previous, onWeight, onToggle, onAd
   useEffect(() => { if (log.done.length > previousCount.current) seriesRef.current?.scrollTo({ left: seriesRef.current.scrollWidth, behavior: 'smooth' }); previousCount.current = log.done.length; }, [log.done.length]);
   useEffect(() => { setDraft(String(log.weight)); }, [log.weight]);
   const complete = log.done.every(Boolean);
+  const earnedXP = exerciseXP(log);
   function changeWeight(value: string) {
     setDraft(value);
     const parsed = Number(value.replace(',', '.'));
@@ -68,8 +71,9 @@ function ExerciseRow({ exercise, log, motion, previous, onWeight, onToggle, onAd
       {log.instructions && <p className="exercise-instructions">{log.instructions}</p>}
       <div className="exercise-controls">
         <label className="weight-label">{log.exerciseId === 'assisted-pullup' ? 'Assistência' : ['tuck-front-lever', 'hanging-leg-raise', 'parallel-bar-dips', 'front-lever', 'l-sit', 'pullup'].includes(log.exerciseId) ? 'Carga extra' : 'Carga'}<span className="weight-input"><input inputMode="decimal" type="text" value={draft} onChange={e => changeWeight(e.target.value)} onBlur={() => setDraft(String(log.weight))} aria-label={`Carga de ${log.name}`} /><span>kg</span></span></label>
-        <div className="set-control"><span className="field-caption">Séries</span><div className="series-line"><div className="set-buttons" ref={seriesRef} tabIndex={0} aria-label={`Séries de ${log.name}`}>{log.done.map((done, i) => <button key={i} className={`set-button ${done ? 'is-done' : ''}`} aria-label={`${done ? 'Desmarcar' : 'Concluir'} série ${i + 1} de ${log.name}`} aria-pressed={done} disabled={!!log.holdStartedAt} onClick={() => onToggle(i)}><span>{i + 1}</span>{done && <Check size={13} strokeWidth={2.5} />}</button>)}</div></div><div className="series-actions"><button className="remove-set-button" onClick={onRemoveSet} disabled={log.done.length <= 1 || log.done.every(Boolean) || !!log.holdStartedAt} aria-label={`Remover série de ${log.name}`} title={log.done.every(Boolean) ? "Desmarque uma série antes de removê-la" : "Remover a última série não concluída deste treino"}>−1</button><button className="add-set-button" onClick={onAddSet} disabled={log.done.length >= MAX_SESSION_SETS} aria-label={`Adicionar série de ${log.name}`} title="Adicionar uma série neste treino">+1</button></div></div>
+        <div className="set-control"><span className="field-caption">Séries</span><div className="series-line"><div className="set-buttons" ref={seriesRef} tabIndex={0} aria-label={`Séries de ${log.name}`}>{log.done.map((done, i) => <button key={i} className={`set-button ${done ? 'is-done' : ''}`} aria-label={`${done ? 'Desmarcar' : 'Concluir'} série ${i + 1} de ${log.name}`} aria-pressed={done} title={i >= (log.plannedSets ?? log.done.length) ? "Série extra · 15 XP ao concluir" : "10 XP ao concluir"} data-extra={i >= (log.plannedSets ?? log.done.length) || undefined} disabled={!!log.holdStartedAt} onClick={() => onToggle(i)}><span>{i + 1}</span>{done && <Check size={13} strokeWidth={2.5} />}</button>)}</div></div><div className="series-actions"><button className="remove-set-button" onClick={onRemoveSet} disabled={log.done.length <= 1 || log.done.every(Boolean) || !!log.holdStartedAt} aria-label={`Remover série de ${log.name}`} title={log.done.every(Boolean) ? "Desmarque uma série antes de removê-la" : "Remover a última série não concluída deste treino"}>−1</button><button className="add-set-button" onClick={onAddSet} disabled={log.done.length >= MAX_SESSION_SETS} aria-label={`Adicionar série de ${log.name}`} title="Adicionar uma série neste treino">+1</button></div></div>
       </div>
+      {earnedXP.extra > 0 && <span className="extra-xp-badge">+{earnedXP.extra * 5} XP de bônus nas extras</span>}
       <button className="text-button swap-exercise" onClick={onSwap} disabled={log.done.some(Boolean) || !!log.holdStartedAt || hasRecordedHold(log)}>Trocar só hoje</button>{log.extra && <span className="session-extra-badge">Extra desta sessão</span>}{log.swappedFrom && <p className="subtle">Hoje no lugar de {log.swappedFrom}</p>}<div className="exercise-foot"><span>{previous ? `Última carga: ${previous.weight.toLocaleString('pt-BR')} kg` : 'Primeiro registro'}</span><button onClick={onRest} aria-label={`Descansar após ${log.name}`}><Timer size={13} /> {exercise.rest} s</button><button className="exercise-progress-link" onClick={onProgress} aria-label={`Ver evolução de ${log.name}`}><TrendingUp size={13} />Ver evolução</button></div>
     </div>
     <HoldRecorder log={log} onStart={onHoldStart} onSave={onHoldSave} />
@@ -116,6 +120,8 @@ export default function App() {
   const [streakPreview, setStreakPreview] = useState(0);
   const [selfCompletion, setSelfCompletion] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [xpFeedback, setXPFeedback] = useState<XPFeedbackData | null>(null);
+  const feedbackSerial = useRef(0);
   const finishLock = useRef(false);
   const queue = useRef(Promise.resolve());
   const revision = useRef(0);
@@ -142,6 +148,8 @@ export default function App() {
   useEffect(() => { const status = () => setOnline(navigator.onLine); const install = (e: Event) => { e.preventDefault(); setInstallPrompt(e as Event & { prompt: () => Promise<void> }); }; window.addEventListener('online', status); window.addEventListener('offline', status); window.addEventListener('beforeinstallprompt', install); return () => { window.removeEventListener('online', status); window.removeEventListener('offline', status); window.removeEventListener('beforeinstallprompt', install); }; }, []);
   useEffect(() => { if (!notice) return; const id = setTimeout(() => setNotice(''), 4500); return () => clearTimeout(id); }, [notice]);
 
+  useEffect(() => { if (!xpFeedback) return; const id = setTimeout(() => setXPFeedback(null), 2300); return () => clearTimeout(id); }, [xpFeedback]);
+
   const commit = useCallback((transform: (current: AppState) => AppState, promptCompletion = false) => {
     if (!stateRef.current) return;
     const previous = stateRef.current.active;
@@ -149,6 +157,15 @@ export default function App() {
     stateRef.current = next;
     setState(next);
     if (promptCompletion && next.active) {
+      const previousSession = previous?.id === next.active.id ? previous : null;
+      const previousXP = previousSession ? sessionXP(previousSession, false).xp : 0;
+      const earned = sessionXP(next.active, false).xp - previousXP;
+      if (earned > 0) {
+        const extra = sessionXP(next.active, false).extra - (previousSession ? sessionXP(previousSession, false).extra : 0);
+        const exerciseComplete = next.active.exercises.some(log => log.done.every(Boolean) && !previousSession?.exercises.find(old => old.exerciseId === log.exerciseId)?.done.every(Boolean));
+        setXPFeedback({ key: ++feedbackSerial.current, xp: earned, extra, exerciseComplete });
+        if (next.preferences.haptics !== false) { try { navigator.vibrate?.(extra > 0 ? [25, 40, 25] : 18); } catch { /* Optional browser support. */ } }
+      }
       const progress = getProgress(next.active);
       const wasComplete = previous?.id === next.active.id && getProgress(previous).done === getProgress(previous).total;
       if (!wasComplete && progress.total > 0 && progress.done === progress.total) setDialog({ type: 'finish' });
@@ -180,13 +197,22 @@ export default function App() {
       if (stateRef.current?.active?.id !== session.id) return;
       const today = streakDate();
       const first = date === today && !!latest && latest.today === today && !latest.dates.some(day => day.date === today) && !cloudStreak.localEvents.some(event => event.completed && event.date === today);
-      commit(s => finishSession(s, finishedAt, startedAt));
+      const before = stateRef.current!;
+      const after = finishSession(before, finishedAt, startedAt);
+      const saved = after.history.find(record => record.id === session.id);
+      if (!saved || after.active) return;
+      const result = workoutResult(before, after, saved);
+      commit(() => after);
       if (first) setSelfCompletion(session.id);
       navigate('history');
+      setXPFeedback(null);
+      setDialog({ type: 'workout-result', result });
       setNotice(`Treino registrado em ${new Date(finishedAt).toLocaleDateString('pt-BR')}.`);
     } finally { finishLock.current = false; setFinishing(false); }
   }
 
+  function setWeeklyGoal(goal: number) { commit(s => ({ ...s, preferences: { ...s.preferences, weeklyGoals: { ...s.preferences.weeklyGoals, [s.selectedPlan ?? 'original']: goal } } })); }
+  function equipReward(aura: RewardAura) { commit(s => ({ ...s, preferences: { ...s.preferences, rewardAuras: { ...s.preferences.rewardAuras, [s.selectedPlan ?? 'original']: aura } } })); }
   function navigate(next: View) { setView(next); setDialog(null); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openProgress(exerciseId: string) { setProgressTab('loads'); setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
   function openWorkout(workout: Workout) {
@@ -280,6 +306,8 @@ export default function App() {
         <section className="week-summary" aria-label="Resumo da semana"><div className="week-heading"><div><h2>Tua semana</h2><p className="week-total">{weeklyRecords.length} treino{weeklyRecords.length !== 1 ? 's' : ''} registrado{weeklyRecords.length !== 1 ? 's' : ''}</p></div><button className="week-calendar" aria-label="Calendário" onClick={() => navigate('history')}><CalendarDays size={20} /></button></div>
         <div className="week-strip" aria-label="Sua semana">{Array.from({ length: 7 }, (_, i) => { const current = new Date(date); const offset = day; current.setDate(date.getDate() - offset + i); const weekday = current.getDay(), key = localDateKey(current); const today = key === localDateKey(date); const holiday = holidayName(key); const records = sessionsOnDate(state.history, key); const label = `${days[weekday]}, ${current.getDate()}${today ? ', hoje' : ''}${holiday ? ', ' + holiday : ''}${records.length ? ': ' + records.map(s => s.workoutName).join('; ') : ', sem treino registrado'}`; return <button key={i} data-date={key} className={`week-day ${today ? 'today' : ''} ${records.length ? 'trained' : ''} ${holiday ? 'holiday' : ''}`} aria-label={label} title={label} onClick={() => setDialog({ type: 'day', date: key })}><span>{['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][weekday]}</span><strong>{current.getDate()}</strong>{records.length ? <DayMarkers sessions={records} /> : <span className="week-marker"><span /></span>}</button>; })}</div>
         </section>
+        <GamificationDashboard state={state} now={now} onGoal={setWeeklyGoal} />
+        {(!workoutToday || workoutToday.optional || holidayName(localDateKey(now))) && <RestDayNote flameProtected={cloudStreak.group.restToday} />}
         <div className="section-heading"><h2>Seus treinos</h2><span>{weeklyCards ? `${weeklyCards} de ${state.workouts.length} feitos nesta semana` : workoutToday ? (workoutToday.optional ? 'Opcional hoje: em casa' : `Sugestão de hoje: ${workoutToday.id.toUpperCase()}`) : 'Você escolhe a ordem'}</span></div>
         <div className="workout-grid">{state.workouts.map(workout => {
           const coverUrl = workoutCoverUrl(state.selectedPlan, workout.id, workout.image);
@@ -306,6 +334,7 @@ export default function App() {
               <div><h3>{workout.name}</h3><p>{days[workout.day]} <span>·</span> {workout.optional && <>Opcional <span>·</span> </>}{workout.exercises.length} exercícios</p></div>
               <ArrowRight size={17} />
             </div>
+            {inProgress && <div className="tile-progress"><span>{progress.done}/{progress.total} séries</span><div role="progressbar" aria-label={`Progresso de ${workout.name}`} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}><i style={{ width: `${progress.total ? progress.done / progress.total * 100 : 0}%` }} /></div></div>}
           </button>;
         })}</div>
         <WeeklyMuscleSummary workouts={state.workouts} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
@@ -315,6 +344,7 @@ export default function App() {
         <div className="workout-topline"><button className="back-link" onClick={() => navigate('home')}><ArrowLeft size={17} />Meus treinos</button><span className="workout-badge">{selectedWorkout.optional ? 'OPCIONAL · EM CASA' : `TREINO ${selectedWorkout.id.toUpperCase()}`}</span></div>
         <div className="page-heading workout-heading"><div><h1>{displayedSession.workoutName}</h1><p className="subtitle">{displayedSession.exercises.length} exercícios <span>·</span> {displayedProgress.total} séries <span>·</span> {viewingActive && active ? `${Math.max(0, Math.floor((now - active.startedAt) / 60000))} min` : 'Visualização do treino'}</p></div>{viewingActive && <button className="icon-button" onClick={() => setDialog({ type: 'discard' })} aria-label="Descartar treino em andamento"><Trash2 size={19} /></button>}</div>
         <WorkoutMuscleSummary exercises={displayedSession.exercises} />
+        {viewingActive && <SessionXP session={displayedSession} />}
         {selectedWorkout.optional && <p className="optional-workout-note">Treino opcional em casa. Fazer conta para a chama; pular não acrescenta um dia obrigatório à sua ficha.</p>}
         <div className="progress-caption"><span>{displayedProgress.done === displayedProgress.total ? 'Treino completo. Mandou bem!' : 'Seu progresso'}</span><span>{displayedProgress.done} de {displayedProgress.total} séries</span></div><div className="progress-track" role="progressbar" aria-label="Progresso do treino" aria-valuenow={displayedProgress.done} aria-valuemin={0} aria-valuemax={displayedProgress.total}><div style={{ width: `${displayedProgress.total ? displayedProgress.done / displayedProgress.total * 100 : 0}%` }} /></div>
         {displayedSession.exercises.some(log => !log.swappedFrom && !log.extra && !selectedWorkout.exercises.some(e => e.id === log.exerciseId)) && <p className="subtle legacy-session-note">Exercícios já realizados nesta sessão continuam registrados. A rotina atualizada será usada no próximo treino.</p>}
@@ -341,6 +371,7 @@ export default function App() {
         <section className="settings-section routine-plan-section"><h2><LayoutGrid size={19} />Escolher ficha de treino</h2><p className="subtle">Cada celular guarda sua própria escolha, cargas e histórico. Ao trocar de ficha neste aparelho, suas edições ficam guardadas para quando voltar.</p><div className="routine-plan-options">{(['original', 'sheet', 'ivan'] as const).map(plan => <button key={plan} className={`routine-plan-option ${(state.selectedPlan ?? 'original') === plan ? 'selected' : ''}`} aria-pressed={(state.selectedPlan ?? 'original') === plan} disabled={!!active || (state.selectedPlan ?? 'original') === plan} onClick={() => setDialog({ type: 'plan', plan })}><span><strong>{planLabels[plan]}</strong><small>{plan === 'original' ? 'Sua configuração atual, preservada.' : plan === 'sheet' ? 'Ficha da foto · treinos A, B, C, D e E.' : 'Push, Pull, Legs, Upper e Lower · descanso quinta e domingo.'}</small></span>{(state.selectedPlan ?? 'original') === plan ? <CircleCheck size={21} /> : <ArrowRight size={20} />}</button>)}</div>{active && <p className="subtle">Finalize ou descarte o treino em andamento antes de trocar de ficha.</p>}<p className="subtle">Na ficha Ivan, as séries seguem a lista enviada; descanso de 90 s e tempo da prancha são metas editáveis.</p><p className="subtle">Na ficha Nick, séries, metas e combinações seguem a foto. Os dias da semana são sugestões editáveis.</p></section>
         <section className="settings-section"><h2><Timer size={19} />Descanso</h2><label className="toggle-row"><span><strong>Iniciar ao concluir uma série</strong><small>O cronômetro começa com um toque na série.</small></span><input type="checkbox" role="switch" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label><label className="toggle-row"><span><strong>Aviso sonoro</strong><small>Um toque curto quando o descanso terminar.</small></span><input type="checkbox" role="switch" checked={state.preferences.sound} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, sound: e.target.checked } }))} /></label><p className="subtle">O som depende das permissões do navegador. A contagem é retomada ao reabrir o app.</p></section>
         <section className="settings-section"><h2><Dumbbell size={19} />Meus treinos</h2><p className="subtle">Edite nomes, dias, exercícios, séries e metas.</p>{state.workouts.map(w => <div className="settings-workout" key={w.id}><span className="settings-letter">{w.id.length === 1 ? w.id.toUpperCase() : <Dumbbell size={15} />}</span><span><strong>{w.name}</strong><small>{days[w.day]} · {w.exercises.length} exercícios</small></span><button className="icon-button" aria-label={`Editar ${w.name}`} disabled={active?.workoutId === w.id} title={active?.workoutId === w.id ? 'Finalize ou descarte o treino antes de editar.' : 'Editar treino'} onClick={() => setDialog({ type: 'edit', workout: w })}><Pencil size={17} /></button></div>)}{active && <p className="subtle">Finalize ou descarte o treino em andamento para editar sua estrutura.</p>}</section>
+        <GamificationSettings state={state} onGoal={setWeeklyGoal} onAura={equipReward} onHaptics={haptics => commit(s => ({ ...s, preferences: { ...s.preferences, haptics } }))} />
         <CelebrationSettings theme={state.preferences.celebrationTheme} onChange={celebrationTheme => commit(current => ({ ...current, preferences: { ...current.preferences, celebrationTheme } }))} onPreview={() => setStreakPreview(value => value + 1)} />
         <StreakSettings key={cloudStreak.code} cloud={cloudStreak} onPreview={() => setStreakPreview(value => value + 1)} />
         <div id="cloud-backup-anchor" /><section className="settings-section"><h2><ShieldCheck size={19} />Seus dados</h2><p className="subtle">Tudo fica salvo neste aparelho, sem cadastro. Limpar os dados do navegador ou trocar de endereço do app pode remover o acesso aos registros. Exporte backups regularmente.</p><div className="backup-actions"><button className="secondary" onClick={exportBackup}><Download size={17} />Exportar backup</button><button className="secondary" onClick={() => importRef.current?.click()}><Upload size={17} />Importar backup</button></div><p className="subtle">A importação substitui os dados atuais após sua confirmação.</p><button className="text-button" onClick={async () => { try { const granted = await navigator.storage?.persist?.(); setNotice(granted ? 'O navegador concedeu proteção extra ao armazenamento.' : 'O navegador decide automaticamente a proteção dos dados. Mantenha seus backups.'); } catch { setNotice('A proteção depende do navegador. Mantenha seus backups.'); } }}><ShieldCheck size={15} />Solicitar proteção do armazenamento</button></section>
@@ -349,13 +380,16 @@ export default function App() {
       </>}
     </main>
     <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button></nav>
+    {xpFeedback && dialog?.type !== 'finish' && <XPFeedback feedback={xpFeedback} />}
     {notice && <div className="toast" role="status"><CircleCheck size={18} /><span>{notice}</span></div>}
     <input ref={importRef} type="file" accept=".json,application/json" hidden aria-label="Selecionar arquivo de backup" onChange={e => { const file = e.target.files?.[0]; if (file) void importBackup(file); e.target.value = ''; }} />
     {dialog?.type === 'muscle' && <Modal title={`${muscleLabels[dialog.muscle]} na sua semana`} onClose={() => setDialog(null)}><div className="muscle-exercise-list">{state.workouts.filter(workout => workout.exercises.some(exercise => getMuscle(exercise) === dialog.muscle)).map(workout => <section key={workout.id}><h3>{days[workout.day]} · {workout.name}</h3>{workout.exercises.filter(exercise => getMuscle(exercise) === dialog.muscle).map(exercise => <button key={exercise.id} onClick={() => openWorkout(workout)} aria-label={`Ver ${exercise.name} em ${days[workout.day]}`}><img src={imageUrl(exercise.image)} alt="" /><span><strong>{exercise.name}</strong><small>{exercise.sets} séries · {exercise.target}{exercise.kind === 'seconds' ? ' s' : ' repetições'}</small></span><ChevronRight size={16} /></button>)}</section>)}{!state.workouts.some(workout => workout.exercises.some(exercise => getMuscle(exercise) === dialog.muscle)) && <p className="subtle">Nenhum exercício deste grupo na ficha atual.</p>}</div><p className="subtle">Grupo muscular principal de cada exercício.</p></Modal>}
     {dialog?.type === 'streak' && <Modal title="Chama do grupo" className="streak-mini-modal" onClose={() => setDialog(null)}><StreakDetails cloud={cloudStreak} /></Modal>}
     {dialog?.type === 'plan' && <Modal title={`Usar ${planLabels[dialog.plan]}?`} onClose={() => setDialog(null)}><p className="subtle">A escolha vale apenas para este aparelho. A configuração da ficha atual ficará guardada para quando você voltar. Suas cargas e seu histórico serão mantidos neste aparelho; eles não são enviados para outro celular.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" disabled={!!active} onClick={() => { const plan = dialog.plan; commit(current => selectRoutinePlan(current, plan)); setViewedWorkoutId(null); navigate('home'); setNotice(`Ficha selecionada: ${planLabels[plan]}.`); }}>Usar esta ficha</button></div></Modal>}
     {dialog?.type === 'timer' && <Modal title="Um respiro entre as séries" onClose={() => setDialog(null)}>{restPanel(true)}<label className="toggle-row"><span><strong>Começar automaticamente</strong><small>Ao marcar uma série como concluída.</small></span><input role="switch" type="checkbox" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label></Modal>}
+    {dialog?.type === 'workout-result' && <Modal title="Treino registrado!" className="result-modal" onClose={() => setDialog(null)}><WorkoutResults result={dialog.result} equipped={equippedAura(state).id} onEquip={equipReward} onClose={() => setDialog(null)} /></Modal>}
     {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar treino?'} onClose={() => { if (!finishing) setDialog(null); }}>
+      {xpFeedback && <XPFeedback feedback={xpFeedback} inline />}
       <FinishWorkoutForm key={active.id} session={active} saving={finishing} onCancel={() => setDialog(null)} onSave={(start, end) => { void saveFinishedWorkout(start, end); }} />
     </Modal>}
     {dialog?.type === 'discard' && <Modal title="Descartar este treino?" onClose={() => setDialog(null)}><p className="subtle">As séries marcadas nesta sessão serão descartadas. Suas cargas continuarão salvas para o próximo treino.</p><div className="modal-actions"><button className="secondary" disabled={finishing} onClick={() => setDialog(null)}>Continuar treino</button><button className="danger-button" onClick={() => { commit(s => ({ ...s, active: null, timer: { ...s.timer, started: false, endAt: null, remaining: s.timer.duration } })); navigate('home'); }}>Descartar sessão</button></div></Modal>}
@@ -382,7 +416,7 @@ export default function App() {
       }} />
     </Modal>}
     {swapTarget && state.active && <Modal title="Trocar só neste treino" onClose={()=>setSwapTarget(null)} wide><p className="subtle">A ficha original será mantida. Escolha o substituto; sua carga salva será preenchida.</p><ExercisePicker exercises={state.active.exercises.map(snapshotExercise)} replacing={state.active.exercises.findIndex(e=>e.exerciseId===swapTarget)} onClose={()=>setSwapTarget(null)} onSelect={preset=>{commit(s=>swapSessionExercise(s,swapTarget,copyPreset(preset)));setSwapTarget(null);setNotice('Exercício trocado só para hoje.');}} /></Modal>}
-    <StreakCelebration theme={state.preferences.celebrationTheme} cloud={cloudStreak} person={state.selectedPlan ?? 'original'} blocked={!!dialog || !!preview} previewRequest={streakPreview} selfCompletion={selfCompletion} />
+    <StreakCelebration aura={equippedAura(state).color} theme={state.preferences.celebrationTheme} cloud={cloudStreak} person={state.selectedPlan ?? 'original'} blocked={!!dialog || !!preview} previewRequest={streakPreview} selfCompletion={selfCompletion} />
     {preview && <ImagePreview image={preview.image} title={preview.title} motion={preview.motion ?? sharedExerciseMotionId(preview.exerciseId, preview.image)} onClose={() => setPreview(null)} note={preview.exerciseId ? state.exerciseNotes?.[canonicalExerciseId(preview.exerciseId)] : undefined} onNote={preview.exerciseId ? note => commit(s => ({ ...s, exerciseNotes: { ...s.exerciseNotes, [canonicalExerciseId(preview.exerciseId!)]: note } })) : undefined} />}
   </div>;
 }

@@ -28,7 +28,7 @@ function ClassicFlameArt() {
 
 interface Celebration { people: RoutinePlan[]; count: number; preview: boolean; self?: boolean }
 
-export function CelebrationScreen({ data, onClose, theme = defaultCelebrationTheme }: { data: Celebration; onClose: () => void; theme?: CelebrationTheme }) {
+export function CelebrationScreen({ data, onClose, theme = defaultCelebrationTheme, aura }: { aura?: string; data: Celebration; onClose: () => void; theme?: CelebrationTheme }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [replay, setReplay] = useState(0);
   useEffect(() => {
@@ -38,7 +38,7 @@ export function CelebrationScreen({ data, onClose, theme = defaultCelebrationThe
     return () => { document.body.style.overflow = previous; if (node.open) node.close(); };
   }, []);
   return <dialog ref={dialog} className={`streak-celebration ${theme === 'realistic' ? 'bonfire-celebration' : theme === 'classic' ? '' : 'minimal-celebration'}`} data-theme={theme} aria-labelledby="celebration-title" onCancel={event => { event.preventDefault(); onClose(); }}>
-    <div className="celebration-stage" key={replay} data-replay={replay}>
+    <div className="celebration-stage" style={{ '--reward-aura': aura } as CSSProperties} key={replay} data-replay={replay}>
       {theme === 'realistic' && <BonfireScene />}<header className="celebration-brand">gym tracker<span>.</span></header>
       {data.preview && <span className="celebration-preview">Prévia da animação</span>}
       <div className="celebration-content">
@@ -54,7 +54,7 @@ export function CelebrationScreen({ data, onClose, theme = defaultCelebrationThe
   </dialog>;
 }
 
-export function StreakCelebration({ cloud, person, blocked, previewRequest, selfCompletion, theme = defaultCelebrationTheme }: { theme?: CelebrationTheme; cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number; selfCompletion: string | null }) {
+export function StreakCelebration({ cloud, person, blocked, previewRequest, selfCompletion, aura, theme = defaultCelebrationTheme }: { aura?: string; theme?: CelebrationTheme; cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number; selfCompletion: string | null }) {
   const [seen, setSeen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
@@ -85,5 +85,5 @@ export function StreakCelebration({ cloud, person, blocked, previewRequest, self
     handledPreview.current = previewRequest;
     setScreen({ people: cloud.group.peopleToday.length ? cloud.group.peopleToday : [person], count: cloud.group.current, preview: true });
   }, [previewRequest, cloud.group, person]);
-  return screen && <CelebrationScreen data={screen} theme={theme} onClose={() => setScreen(null)} />;
+  return screen && <CelebrationScreen aura={aura} data={screen} theme={theme} onClose={() => setScreen(null)} />;
 }

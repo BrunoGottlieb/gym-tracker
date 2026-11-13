@@ -1,3 +1,4 @@
+import { auraRewards } from './gamification';
 import { isCelebrationTheme } from './celebrationThemes';
 import type { AppState, Exercise, ExerciseLog, HoldSide, RestTimer, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, LAST_IMAGE_INDEX, muscleLabels } from './catalog';
@@ -51,7 +52,7 @@ export function removeSessionSet(state: AppState, exerciseId: string): AppState 
   const index = log.done.lastIndexOf(false);
   if (index < 0) return state;
   const indices = log.done.map((_, i) => i).filter(i => i !== index);
-  const updated = { ...log, done: indices.map(i => log.done[i]), ...resizeHoldTimes(log, indices) };
+  const updated = { ...log, plannedSets: log.plannedSets ?? log.done.length, done: indices.map(i => log.done[i]), ...resizeHoldTimes(log, indices) };
   return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e === log ? updated : e) } };
 }
 
@@ -60,14 +61,14 @@ export function addSessionSet(state: AppState, exerciseId: string): AppState {
   const log = state.active.exercises.find(e => e.exerciseId === exerciseId);
   if (!log || log.done.length >= MAX_SESSION_SETS) return state;
   const indices = [...log.done.map((_, i) => i), log.done.length];
-  const updated = { ...log, done: [...log.done, false], ...resizeHoldTimes(log, indices) };
+  const updated = { ...log, plannedSets: log.plannedSets ?? log.done.length, done: [...log.done, false], ...resizeHoldTimes(log, indices) };
   return { ...state, active: { ...state.active, exercises: state.active.exercises.map(e => e === log ? updated : e) } };
 }
 
 export function createSession(workout: Workout, weights: Record<string, number>, now = Date.now()): Session {
   return {
     id: crypto.randomUUID(), workoutId: workout.id, workoutName: workout.name, startedAt: now,
-    exercises: workout.exercises.map(e => { const id = canonicalExerciseId(e.id); return { exerciseId: e.id, name: e.name, image: e.image, target: e.target, kind: e.kind, muscle: getMuscle(e), ...(e.instructions ? { instructions: e.instructions } : {}), weight: Object.hasOwn(weights, id) && Number.isFinite(weights[id]) ? weights[id] : 0, done: Array(e.sets).fill(false) }; }),
+    exercises: workout.exercises.map(e => { const id = canonicalExerciseId(e.id); return { exerciseId: e.id, name: e.name, image: e.image, target: e.target, kind: e.kind, muscle: getMuscle(e), ...(e.instructions ? { instructions: e.instructions } : {}), plannedSets: e.sets, weight: Object.hasOwn(weights, id) && Number.isFinite(weights[id]) ? weights[id] : 0, done: Array(e.sets).fill(false) }; }),
   };
 }
 export function getProgress(session: Session) {
@@ -116,7 +117,7 @@ const text = (value: unknown, max = 160): value is string => typeof value === 's
 const number = (value: unknown, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
 const integer = (value: unknown, max: number): value is number => number(value, max) && Number.isInteger(value);
 function validSession(value: unknown): value is Session {
-  return object(value) && (value.person === undefined || ['original', 'sheet', 'ivan'].includes(String(value.person))) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && validHoldSides(e) && (e.extra === undefined || e.extra === true) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && (e.holdStartedAt === undefined || (e.kind === 'seconds' && number(e.holdStartedAt))) && (e.swappedFrom === undefined || text(e.swappedFrom)) && (e.seconds === undefined || (e.kind === 'seconds' && Array.isArray(e.seconds) && Array.isArray(e.done) && e.seconds.length === e.done.length && e.seconds.every(v => v === null || integer(v,86400)))) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
+  return object(value) && (value.person === undefined || ['original', 'sheet', 'ivan'].includes(String(value.person))) && text(value.id) && text(value.workoutId) && text(value.workoutName) && number(value.startedAt) && (value.finishedAt === undefined || (number(value.finishedAt) && value.finishedAt >= value.startedAt)) && Array.isArray(value.exercises) && value.exercises.length > 0 && value.exercises.length <= 100 && new Set(value.exercises.map(e => e?.exerciseId)).size === value.exercises.length && value.exercises.every(e => object(e) && (e.plannedSets === undefined || (integer(e.plannedSets, MAX_SESSION_SETS) && e.plannedSets >= 1)) && validHoldSides(e) && (e.extra === undefined || e.extra === true) && text(e.exerciseId) && text(e.name) && integer(e.image, LAST_IMAGE_INDEX) && (e.instructions === undefined || (typeof e.instructions === 'string' && e.instructions.length <= 1000)) && (e.muscle === undefined || Object.hasOwn(muscleLabels, String(e.muscle))) && text(e.target, 30) && ['reps', 'seconds'].includes(String(e.kind)) && (e.holdStartedAt === undefined || (e.kind === 'seconds' && number(e.holdStartedAt))) && (e.swappedFrom === undefined || text(e.swappedFrom)) && (e.seconds === undefined || (e.kind === 'seconds' && Array.isArray(e.seconds) && Array.isArray(e.done) && e.seconds.length === e.done.length && e.seconds.every(v => v === null || integer(v,86400)))) && number(e.weight, 5000) && Array.isArray(e.done) && e.done.length >= 1 && e.done.length <= MAX_SESSION_SETS && e.done.every(d => typeof d === 'boolean'));
 }
 function validWorkouts(workouts: unknown): workouts is Workout[] {
   if (!Array.isArray(workouts) || !workouts.length || workouts.length > 30) return false;
@@ -159,7 +160,13 @@ export function validateState(value: unknown): value is AppState {
   if (value.routineRevision !== undefined && !integer(value.routineRevision, 12)) return false;
   if (value.brunoPlanRevision !== 1 && typeof value.routineRevision === 'number' && value.routineRevision >= 5 && !['sheet', 'ivan'].includes(String(value.selectedPlan)) && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;
-  return object(p) && (p.celebrationTheme === undefined || isCelebrationTheme(p.celebrationTheme)) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';
+  return object(p) && validGamificationPreferences(p) && (p.celebrationTheme === undefined || isCelebrationTheme(p.celebrationTheme)) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';
+}
+function validGamificationPreferences(p: Record<string, unknown>) {
+  const profiles = ['original', 'sheet', 'ivan'];
+  return (p.haptics === undefined || typeof p.haptics === 'boolean') &&
+    (p.weeklyGoals === undefined || (object(p.weeklyGoals) && Object.entries(p.weeklyGoals).every(([person, goal]) => profiles.includes(person) && integer(goal, 7) && goal >= 1))) &&
+    (p.rewardAuras === undefined || (object(p.rewardAuras) && Object.entries(p.rewardAuras).every(([person, aura]) => profiles.includes(person) && auraRewards.some(reward => reward.id === aura))));
 }
 export function parseBackup(content: string): AppState {
   let backup: unknown;
@@ -200,7 +207,7 @@ export function swapSessionExercise(state: AppState, id: string, replacement: Ex
   const session = state.active, old = session?.exercises.find(e => e.exerciseId === id);
   if (!session || !old || old.done.some(Boolean) || old.holdStartedAt || hasRecordedHold(old) || session.exercises.some(e => e.exerciseId !== id && canonicalExerciseId(e.exerciseId) === canonicalExerciseId(replacement.id))) return state;
   const log = createSession({ id:'temporary', name:'temporary', day:0, image:0, exercises:[{...replacement,sets:old.done.length}] }, state.weights).exercises[0];
-  return { ...state, active: { ...session, exercises: session.exercises.map(e => e.exerciseId === id ? {...log,extra:old.extra,swappedFrom:old.swappedFrom ?? old.name} : e) } };
+  return { ...state, active: { ...session, exercises: session.exercises.map(e => e.exerciseId === id ? {...log,plannedSets:old.plannedSets ?? old.done.length,extra:old.extra,swappedFrom:old.swappedFrom ?? old.name} : e) } };
 }
 
 export function addSessionExercise(state: AppState, workout: Workout, exercise: Exercise): AppState {
