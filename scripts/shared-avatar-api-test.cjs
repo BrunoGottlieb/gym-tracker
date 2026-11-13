@@ -1,0 +1,21 @@
+const fs = require('node:fs'), assert = require('node:assert/strict');
+(async () => {
+  const key = fs.readFileSync('streak-cloud/.dev.vars', 'utf8').match(/STREAK_ROOM_CODE\s*=\s*"?([^"\r\n]+)/)[1];
+  const base = 'http://127.0.0.1:5180/api', headers = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Origin: 'https://brunogottlieb.github.io' };
+  const get = async path => { const response = await fetch(base + path, { headers }); assert.equal(response.status, 200); return response.json(); };
+  const post = data => fetch(base + '/avatars', { method: 'POST', headers, body: JSON.stringify(data) });
+  assert.equal((await fetch(base + '/avatars')).status, 401);
+  const preflight = await fetch(base + '/avatars', { method: 'OPTIONS', headers }); assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), 'https://brunogottlieb.github.io');
+  const backups = await Promise.all(['original', 'sheet', 'ivan'].map(person => get('/backups?person=' + person)));
+  const previous = (await get('/avatars')).profiles.find(profile => profile.person === 'sheet');
+  const sample = { person: 'sheet', xp: 80, changedAt: Math.max(Date.now() - 1000, (previous?.changedAt ?? 0) + 1), avatar: { hair: 'curly', hairColor: 'black', skin: 'brown', head: 'none', shirt: 'coral', extra: 'none' } };
+  let response = await post(sample); assert.equal(response.status, 200); assert.equal((await response.json()).accepted, true);
+  const update = { ...sample, avatar: { ...sample.avatar, hair: 'long' }, changedAt: sample.changedAt + 1 };
+  response = await post(update); assert.equal((await response.json()).accepted, true);
+  const replay = await post(sample); assert.equal((await replay.json()).accepted, false);
+  const legacy = await post({ ...sample, changedAt: 0 }); assert.equal((await legacy.json()).accepted, false);
+  const stored = (await get('/avatars')).profiles.find(p => p.person === 'sheet'); assert.equal(stored.avatar.hair, 'long');
+  for (const invalid of [{ ...sample, person: 'other' }, { ...sample, xp: -1 }, { ...sample, avatar: { hair: 'long' } }, { ...sample, changedAt: Date.now() + 172800000 }]) assert.equal((await post(invalid)).status, 400);
+  assert.deepEqual(await Promise.all(['original', 'sheet', 'ivan'].map(person => get('/backups?person=' + person))), backups);
+  console.log('PASS: local avatar API auth/CORS, persistence, newer edits, stale/legacy rejection, validation; existing backups untouched.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

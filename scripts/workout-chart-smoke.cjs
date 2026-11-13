@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
  try{
- const p=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});await p.route('**/api/{streaks,backups}**',r=>r.abort());
+ const p=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});await p.route('**/api/{streaks,backups,avatars}**',r=>r.abort());
  await p.goto('http://127.0.0.1:4174/gym-tracker/');await p.getByRole('button',{name:'Abrir ajustes',exact:true}).click();
  const download=p.waitForEvent('download');await p.getByRole('button',{name:'Exportar backup',exact:true}).click();const file=await(await download).path();const backup=JSON.parse(fs.readFileSync(file,'utf8'));
  const log={exerciseId:'bench-press',name:'Supino reto com barra',image:0,target:'12',kind:'reps',muscle:'chest',weight:20,done:[true,true]};

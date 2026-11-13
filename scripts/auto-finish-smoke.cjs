@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
  const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});
- await context.route('**/api/streaks', route => route.abort());
+ await context.route('**/api/avatars',r=>r.abort());await context.route('**/api/streaks', route => route.abort());
   const page=await context.newPage(),errors=[];
   await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });page.on('pageerror',e=>errors.push(e.message));
  const output=path.resolve('artifacts/auto-finish');fs.mkdirSync(output,{recursive:true});

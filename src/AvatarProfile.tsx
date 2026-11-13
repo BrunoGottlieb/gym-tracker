@@ -75,7 +75,8 @@ export function AvatarProfile({ state, team, onChange, sandbox, sandboxAvailable
       const item = avatarEquipment[slot].find(item => item.id === (member.avatar[slot] ?? 'none'))!;
       return <button key={slot} onClick={() => setEditing({ slot })} aria-label={`Personalizar ${slotNames[slot]}, ${item.name}`}><strong>{slotNames[slot]}</strong><EquipmentArt slot={slot} id={item.id} /><small>{item.id === 'none' ? 'Escolher' : item.name}</small></button>;
     })}</div><button className="primary full-width" onClick={() => setEditing({ slot: null })}><Pencil size={17} />Personalizar avatar</button><p className="shop-earning-note">10 XP = 1 moeda ao finalizar um treino. O XP continua contando para o nível.</p></section>
-    <AvatarTeam team={team} /><p className="team-backup-caption">Os avatares e níveis da equipe vêm do último backup de cada pessoa. Apenas o seu perfil pode ser personalizado.</p>
+    <p className={`avatar-share-status avatar-share-${team.avatarStatus}`} role="status">{({ local: 'Salve seu visual para compartilhar com a equipe.', syncing: 'Compartilhando avatar…', synced: 'Avatar compartilhado com a equipe.', offline: 'Avatar salvo neste aparelho. Será enviado ao reconectar.', error: 'Não foi possível compartilhar o avatar. Tentaremos novamente.', stale: 'Há um visual mais recente na nuvem. Salve seu avatar para atualizar.', sandbox: 'Avatar de teste: não é enviado à equipe.' })[team.avatarStatus]}{(team.avatarStatus === 'error' || team.avatarStatus === 'offline') && <button className="text-button" onClick={team.refresh}>Tentar novamente</button>}</p>
+    <AvatarTeam team={team} /><p className="team-backup-caption">Avatares e níveis atualizados automaticamente. Apenas o seu perfil pode ser personalizado.</p>
     {editing && <AvatarCustomizer key={member.person} member={member} wallet={wallet} onChange={onChange} onClose={() => setEditing(null)} initialSlot={editing.slot} sandbox={sandbox} />}
   </div>;
 }

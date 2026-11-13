@@ -362,7 +362,7 @@ export default function App() {
           </button>;
         })}</div>
         <AvatarTeam team={team} onOpenProfile={openProfile} compact />
-        <WeeklyMuscleSummary workouts={state.workouts} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
+        <WeeklyMuscleSummary workouts={state.workouts} history={state.history} person={person} now={now} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
       {view === 'workout' && displayedSession && selectedWorkout && <>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completedWorkoutAverages, completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import { completedWeeklyMuscleCounts, completedWorkoutAverages, completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
 import { createInitialState } from './data';
 import { createSession, editHistorySession } from './domain';
 import type { MuscleGroup, Session } from './types';
@@ -30,6 +30,22 @@ describe('actual sets by workout type',()=>{
  });
 });
 describe('weekly planned muscle counts', () => {
+  it('counts completed exercise appearances from Sunday to now, with profile/date isolation and no duplicate sessions', () => {
+    const now = new Date(2026, 10, 13, 20).getTime();
+    const sunday = record(8, [{ muscle: 'chest', done: [true, true, true] }, { muscle: 'triceps', done: [true, false, false] }], 10);
+    const otherDay = record(10, [{ muscle: 'chest', done: [true] }, { muscle: 'abs', done: [true, true] }], 10);
+    const nick = { ...otherDay, id: 'nick', person: 'sheet' as const };
+    const previousWeek = record(7, [{ muscle: 'legs', done: [true] }], 10);
+    const future = record(14, [{ muscle: 'back', done: [true] }], 10);
+    const active = { ...otherDay, id: 'active', finishedAt: undefined };
+    const history = [sunday, sunday, otherDay, nick, previousWeek, future, active], before = structuredClone(history);
+    expect(completedWeeklyMuscleCounts(history, 'original', now)).toEqual({ chest: 2, triceps: 0, biceps: 0, legs: 0, shoulders: 0, back: 0, abs: 1, other: 0 });
+    expect(completedWeeklyMuscleCounts(history, 'sheet', now).chest).toBe(1);
+    expect(history).toEqual(before);
+    const edited = { ...otherDay, exercises: otherDay.exercises.map(log => ({ ...log, muscle: 'other' as const })) };
+    expect(completedWeeklyMuscleCounts([edited], 'original', now).other).toBe(2);
+    expect(completedWeeklyMuscleCounts(history, 'original', new Date(2026, 10, 15, 0).getTime()).chest).toBe(0);
+  });
   it('counts occurrences by primary muscle, including repeated exercises across workouts', () => {
     const state = createInitialState();
     const counts = plannedMuscleCounts(state.workouts);

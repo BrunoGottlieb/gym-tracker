@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH });
   try {
     const c = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await c.route('**/api/streaks', r => r.abort());
+    await c.route('**/api/avatars',r=>r.abort());await c.route('**/api/streaks', r => r.abort());
     await c.route('**/api/backups?*', r => r.abort());
     const p = await c.newPage(), errors = [];
     p.on('pageerror', e => errors.push(e.message));

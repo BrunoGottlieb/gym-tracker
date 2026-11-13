@@ -137,6 +137,7 @@ function validWorkouts(workouts: unknown): workouts is Workout[] {
 }
 export function validateState(value: unknown): value is AppState {
   if (!object(value) || value.version !== 1 || !validWorkouts(value.workouts)) return false;
+  if (value.avatarChangedAt !== undefined && (!object(value.avatarChangedAt) || !Object.entries(value.avatarChangedAt).every(([person, at]) => ['original', 'sheet', 'ivan'].includes(person) && number(at)))) return false;
   if (value.assessments !== undefined && (!Array.isArray(value.assessments) || value.assessments.length > 1000 || !value.assessments.every(validAssessment) || new Set(value.assessments.map(a=>a.id)).size !== value.assessments.length)) return false;
   if (value.selectedPlan !== undefined && !['original', 'sheet', 'ivan'].includes(String(value.selectedPlan))) return false;
   if (value.planSnapshots !== undefined && (!object(value.planSnapshots) || !Object.entries(value.planSnapshots).every(([key, workouts]) => ['original', 'sheet', 'ivan'].includes(key) && validWorkouts(workouts) && (key !== 'original' || value.brunoPlanRevision === 1 || workouts.every(w => w.exercises.every(e => e.sets === 3)))))) return false;

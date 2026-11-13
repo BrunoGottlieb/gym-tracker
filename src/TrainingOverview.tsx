@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
+import { Check, Minus } from 'lucide-react';
 import { MuscleIcon } from './components';
 import { getMuscle, muscleLabels } from './catalog';
-import { completedWorkoutAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import { completedWeeklyMuscleCounts, completedWorkoutAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
 import type { ExerciseLog, MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
-export function WeeklyMuscleSummary({ workouts, onSelect }: { workouts: Workout[]; onSelect: (group: MuscleGroup) => void }) {
+export function WeeklyMuscleSummary({ workouts, history, person, now, onSelect }: { workouts: Workout[]; history: Session[]; person: RoutinePlan; now: number; onSelect: (group: MuscleGroup) => void }) {
   const counts = useMemo(() => plannedMuscleCounts(workouts), [workouts]);
+  const completed = useMemo(() => completedWeeklyMuscleCounts(history, person, now), [history, person, now]);
   const groups = muscleOrder.filter(group => group !== 'other' || counts.other > 0);
   return <section className="weekly-muscle-summary" aria-label="Exercícios por grupo muscular na semana">
     <h2>Sua semana por grupo muscular</h2>
@@ -16,6 +18,13 @@ export function WeeklyMuscleSummary({ workouts, onSelect }: { workouts: Workout[
       <span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={26} /></span>
       <span><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>
     </button>)}</div>
+    <div className="weekly-actual-list"><div className="weekly-actual-heading"><h3>O que saiu do papel</h3><span>Esta semana</span></div>
+      <table><caption className="sr-only">Exercícios da ficha e exercícios concluídos nesta semana por grupo muscular</caption><thead><tr><th scope="col">Grupo</th><th scope="col">Ficha</th><th scope="col">Feitos</th></tr></thead><tbody>{muscleOrder.filter(group => group !== 'other' || counts.other > 0 || completed.other > 0).map(group => <tr key={group} data-muscle={group} data-completed={completed[group]}>
+        <th scope="row"><span className="weekly-actual-group"><span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={21} /></span>{muscleLabels[group]}</span></th>
+        <td className="weekly-actual-planned">{counts[group]}</td><td><span className={`weekly-actual-count ${completed[group] ? 'has-completed' : ''}`}>{completed[group] ? <Check size={15} /> : <Minus size={13} />}{completed[group]}</span></td>
+      </tr>)}</tbody></table>
+      <p>Domingo até hoje · cada exercício conta ao concluir todas as séries em um treino finalizado. Repetições em outras sessões contam novamente, incluindo exercícios extras.</p>
+    </div>
   </section>;
 }
 

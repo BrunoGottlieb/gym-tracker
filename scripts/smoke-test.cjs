@@ -9,7 +9,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
     window.__testVibrations = [];
     Object.defineProperty(navigator, 'vibrate', { configurable: true, value: pattern => { window.__testVibrations.push(pattern); return true; } });
   });
-  await context.route('**/api/streaks', route => route.abort());
+  await context.route('**/api/avatars',r=>r.abort());await context.route('**/api/streaks', route => route.abort());
   const page = await context.newPage();
   await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];
@@ -114,7 +114,7 @@ async function verifyExtraSeriesAndVibration(browser, base, output) {
 (async () => {
   const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, acceptDownloads: true });
-  await context.route('**/api/streaks', route => route.abort());
+  await context.route('**/api/avatars',r=>r.abort());await context.route('**/api/streaks', route => route.abort());
   const page = await context.newPage();
   await page.addLocatorHandler(page.locator('.streak-celebration'), async () => { await page.locator('.streak-celebration').getByRole('button',{name:'Continuar',exact:true}).click(); });
   const errors = [];

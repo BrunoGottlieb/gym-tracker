@@ -1,5 +1,5 @@
 import { getMuscle } from './catalog';
-import { localDateKey } from './calendar';
+import { localDateKey, sessionsThisWeek } from './calendar';
 import type { MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
 export const muscleOrder: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'biceps', 'triceps', 'abs', 'other'];
@@ -13,6 +13,17 @@ const emptyCounts = (): Record<MuscleGroup, number> => Object.fromEntries(muscle
 export function plannedMuscleCounts(workouts: Workout[]): Record<MuscleGroup, number> {
   const counts = emptyCounts();
   for (const workout of workouts) for (const exercise of workout.exercises) counts[getMuscle(exercise)]++;
+  return counts;
+}
+
+/** Completed exercise appearances, not sets or unique catalog entries. */
+export function completedWeeklyMuscleCounts(history: Session[], person: RoutinePlan, now = Date.now()): Record<MuscleGroup, number> {
+  const counts = emptyCounts(), seen = new Set<string>();
+  for (const session of sessionsThisWeek(history, now, person)) {
+    if (seen.has(session.id)) continue;
+    seen.add(session.id);
+    for (const log of session.exercises) if (log.done.length > 0 && log.done.every(Boolean)) counts[getMuscle(log)]++;
+  }
   return counts;
 }
 

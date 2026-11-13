@@ -64,6 +64,7 @@ export interface Preferences {
   restDuration: number;
 }
 export interface AppState {
+  avatarChangedAt?: Partial<Record<RoutinePlan, number>>;
   avatarWallets?: Partial<Record<RoutinePlan, import('./avatars').AvatarWallet>>;
   avatars?: Partial<Record<RoutinePlan, import('./avatars').AvatarConfig>>;
   assessments?: import('./assessments').BodyAssessment[];

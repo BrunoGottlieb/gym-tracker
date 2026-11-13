@@ -10,7 +10,7 @@ const out = 'artifacts/avatar-sandbox';
   const errors = [], uploads = [];
   async function context(options) {
     const c = await browser.newContext(options);
-    await c.route('**/api/streaks', r => r.fulfill({ json: r.request().method() === 'GET' ? { version: 1, today: '2026-11-13', dates: [], trainingDays: { original: [1,2,3,4,5], sheet: [1,2,3,4,5], ivan: [1,2,3,5,6] } } : { ok: true, accepted: [] } }));
+    await c.route('**/api/avatars',r=>r.abort());await c.route('**/api/streaks', r => r.fulfill({ json: r.request().method() === 'GET' ? { version: 1, today: '2026-11-13', dates: [], trainingDays: { original: [1,2,3,4,5], sheet: [1,2,3,4,5], ivan: [1,2,3,5,6] } } : { ok: true, accepted: [] } }));
     await c.route('**/api/backups?*', r => {
       const person = new URL(r.request().url()).searchParams.get('person');
       if (r.request().method() !== 'GET') uploads.push({ person, ...r.request().postDataJSON() });

@@ -8,7 +8,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   try {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/Sao_Paulo' });
     await context.route('**/api/backups?*', route => route.abort());
-    await context.route('**/api/streaks', route => route.fulfill({ json: route.request().method() === 'POST' ? { ok: true, accepted: [] } : {
+    await context.route('**/api/avatars',r=>r.abort());await context.route('**/api/streaks', route => route.fulfill({ json: route.request().method() === 'POST' ? { ok: true, accepted: [] } : {
       version: 1, today: '2026-11-03', dates: [{ person: 'ivan', date: '2026-10-31' }],
       trainingDays: { original: [1, 2, 3, 4, 5], sheet: [1, 2, 3, 4, 5], ivan: [1, 2, 3, 5, 6] },
     } }));

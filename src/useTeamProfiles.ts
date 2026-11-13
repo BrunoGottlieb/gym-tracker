@@ -6,6 +6,7 @@ import { profileAvatar, validTeamProfile, type TeamProfile } from './avatars';
 import { personalXP } from './gamification';
 import { STREAK_GROUP_KEY } from './streakConfig';
 import type { AppState, RoutinePlan } from './types';
+import { mergeSharedAvatars, useSharedAvatars } from './useSharedAvatars';
 
 const people: RoutinePlan[] = ['original', 'sheet', 'ivan'];
 // Previous cache entries contain lifetime XP, before Bruno/Nick's fresh start.
@@ -28,6 +29,7 @@ export function teamMembers(state: AppState, remote: TeamProfile[]): TeamMember[
 }
 
 export function useTeamProfiles(state: AppState | null) {
+  const shared = useSharedAvatars(state);
   const [profiles, setProfiles] = useState<TeamProfile[]>([]);
   const [cacheReady, setCacheReady] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -74,6 +76,6 @@ export function useTeamProfiles(state: AppState | null) {
     const timer = setInterval(update, 60000);
     return () => { clearInterval(timer); window.removeEventListener('online', reconnect); document.removeEventListener('visibilitychange', update); };
   }, [refresh]);
-  return { members: state ? teamMembers(state, profiles) : [], loading, offline, refresh: () => { void refresh(true); } };
+  return { members: state ? teamMembers(state, mergeSharedAvatars(profiles, shared.profiles)) : [], avatarStatus: shared.status, loading, offline, refresh: () => { void refresh(true); shared.refresh(); } };
 }
 export type TeamController = ReturnType<typeof useTeamProfiles>;

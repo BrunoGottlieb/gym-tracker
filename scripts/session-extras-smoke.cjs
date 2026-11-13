@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
  const cloud=new Map();let writes=0;
- async function context(){const c=await browser.newContext({viewport:{width:390,height:844}});await c.route('**/api/streaks',r=>r.abort());await c.route('**/api/backups?*',async r=>{
+ async function context(){const c=await browser.newContext({viewport:{width:390,height:844}});await c.route('**/api/avatars',r=>r.abort());await c.route('**/api/streaks',r=>r.abort());await c.route('**/api/backups?*',async r=>{
   const person=new URL(r.request().url()).searchParams.get('person'),saved=cloud.get(person);
   if(r.request().method()==='GET')return r.fulfill({json:saved??{revision:null}});
   const body=r.request().postDataJSON();if((saved?.revision??null)!==body.expectedRevision)return r.fulfill({status:409,json:{}});

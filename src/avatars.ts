@@ -119,7 +119,7 @@ export function updateAvatar(state: AppState, patch: Partial<AvatarConfig>): App
   if (!validAvatar(avatar)) return state;
   const wallet = avatarWallet(state, person);
   if ((Object.keys(avatarEquipment) as EquipmentSlot[]).some(slot => !ownsEquipment(wallet, slot, avatar[slot] ?? 'none'))) return state;
-  return { ...state, avatars: { ...state.avatars, [person]: avatar } };
+  return { ...state, avatars: { ...state.avatars, [person]: avatar }, avatarChangedAt: { ...state.avatarChangedAt, [person]: Date.now() } };
 }
 
 export interface AvatarWallet {
@@ -159,7 +159,7 @@ export function buyAvatarOutfit(state: AppState, patch: Partial<AvatarConfig>): 
   const wallet = avatarWallet(state), cart = outfitCart(wallet, avatar);
   if (cart.reduce((sum, item) => sum + item.price, 0) > walletBalance(wallet)) return state;
   const purchases = { ...wallet.purchases, ...Object.fromEntries(cart.map(item => [item.key, item.price])) };
-  return { ...state, avatars: { ...state.avatars, [person]: avatar }, avatarWallets: { ...state.avatarWallets, [person]: { ...wallet, purchases } } };
+  return { ...state, avatars: { ...state.avatars, [person]: avatar }, avatarChangedAt: { ...state.avatarChangedAt, [person]: Date.now() }, avatarWallets: { ...state.avatarWallets, [person]: { ...wallet, purchases } } };
 }
 export function awardWorkoutCoins(state: AppState, session: Session): AppState['avatarWallets'] {
   const person = session.person ?? 'original', wallet = avatarWallet(state, person);
