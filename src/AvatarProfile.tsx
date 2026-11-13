@@ -7,6 +7,7 @@ import { planLabels } from './routinePlans';
 import type { RoutinePlan } from './types';
 import type { TeamController, TeamMember } from './useTeamProfiles';
 import './avatar.css';
+import { LayeredAvatarPreview } from './LayeredAvatarPreview';
 
 export function EquipmentArt({ slot, id, color }: { slot: EquipmentSlot; id: string; color: string }) {
   const uid = `${slot}-${id}`;
@@ -42,10 +43,13 @@ export function AvatarProfile({ team, person, onPerson, onChange }: { team: Team
   const member = team.members.find(member => member.person === person)!;
   const [editing, setEditing] = useState<{ slot: EquipmentSlot | null } | null>(null);
   const [angle, setAngle] = useState(-.12);
+  const [imagePreview, setImagePreview] = useState(true);
   useEffect(() => { setAngle(-.12); setEditing(null); }, [person]);
   const level = levelProgress(member.xp);
   const nextReward = Object.entries(avatarEquipment).flatMap(([slot, items]) => items.map(item => ({ ...item, slot: slot as EquipmentSlot }))).filter(item => item.level > level.level).sort((a, b) => a.level - b.level)[0];
   return <div className="profile-page"><div className="page-heading"><div><span className="eyebrow">SEU ESPAÇO</span><h1>{member.current ? 'Perfil' : planLabels[person]}<span className="accent">.</span></h1><p className="subtitle">Seu ritmo. Seu estilo.</p></div></div>
+    {member.current && <div className="avatar-visual-switch" role="group" aria-label="Visual do avatar"><button aria-pressed={imagePreview} onClick={() => setImagePreview(true)}>Novo visual · prévia</button><button aria-pressed={!imagePreview} onClick={() => setImagePreview(false)}>Avatar atual</button></div>}
+    {member.current && imagePreview ? <LayeredAvatarPreview name={planLabels[person]} xp={member.xp} /> : <>
     <div className="profile-showcase"><span className="showcase-orbit" /><button className="avatar-turn turn-left" aria-label="Girar avatar para a esquerda" onClick={() => setAngle(value => value - .4)}><ChevronLeft size={23} /></button><AvatarArt avatar={member.avatar} angle={angle} className="profile-miniature" /><button className="avatar-turn turn-right" aria-label="Girar avatar para a direita" onClick={() => setAngle(value => value + .4)}><ChevronRight size={23} /></button>{Math.abs(angle + .12) > .01 && <button className="avatar-reset" onClick={() => setAngle(-.12)}><RotateCcw size={12} />Frente</button>}</div>
     <div className="profile-identity"><h2>{planLabels[person]}</h2><span className="avatar-level-badge">Nível {member.known ? level.level : '—'}</span>{member.current && <span className="profile-you">Você</span>}</div>
     {member.known ? <div className="profile-xp"><div><span>{level.current} / {LEVEL_XP} XP</span><small>{member.xp.toLocaleString('pt-BR')} XP no total</small></div><div className="game-meter" role="progressbar" aria-label="Progresso do nível" aria-valuemin={0} aria-valuemax={LEVEL_XP} aria-valuenow={level.current}><span style={{ width: `${level.current / LEVEL_XP * 100}%` }} /></div></div> : <p className="profile-no-data">O nível aparece após o primeiro backup deste perfil.</p>}
@@ -53,6 +57,7 @@ export function AvatarProfile({ team, person, onPerson, onChange }: { team: Team
       const item = avatarEquipment[slot].find(item => item.id === member.avatar[slot])!;
       return <button key={slot} disabled={!member.current} onClick={() => setEditing({ slot })} aria-label={`Personalizar ${slotNames[slot]}, ${item.name}`}><strong>{slotNames[slot]}</strong><EquipmentArt slot={slot} id={item.id} color={item.color} /><small>{item.id === 'none' ? 'Escolher' : item.name}</small></button>;
     })}{nextReward && member.known && <div className="next-avatar-reward"><LockKeyhole size={13} /><EquipmentArt slot={nextReward.slot} id={nextReward.id} color={nextReward.color} /><span>Nível {nextReward.level}</span><small>{nextReward.name}</small></div>}</div>{member.current ? <button className="primary full-width" onClick={() => setEditing({ slot: null })}><Pencil size={17} />Personalizar avatar</button> : <button className="secondary full-width" onClick={() => onPerson(team.members.find(member => member.current)!.person)}>Voltar ao meu avatar</button>}</section>
+    </>}
     <AvatarTeam team={team} selected={person} onSelect={onPerson} /><p className="team-backup-caption">Os avatares e níveis da equipe vêm do último backup de cada pessoa.</p>
     {editing && member.current && <AvatarCustomizer member={member} onChange={onChange} onClose={() => setEditing(null)} initialSlot={editing.slot} />}
   </div>;

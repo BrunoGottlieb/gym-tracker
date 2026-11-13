@@ -4,6 +4,8 @@ A personal, offline-first workout tracker with a light interface in Brazilian Po
 
 ## Customizable avatars and team levels
 
+An experimental **Perfil → Novo visual · prévia** uses generated transparent image layers matching the approved soft miniature mockup. It offers a single base, two interchangeable hairstyles, blue/mint tops and an optional mint visor. Preview choices are temporary component state; saved appearance, progression and backups remain unchanged. **Avatar atual** opens the existing complete wardrobe described below. The five original PNGs in `public/avatars/layered-v1/` are precached offline, with CSS registration in `src/layered-avatar-preview.css`; exact built-in generation prompts are recorded in `assets/avatar-layered-v1/prompts.md`.
+
 **Perfil**, the header portrait, or the portrait beside XP opens the soft 3D miniature. The wardrobe offers twelve free hairstyles, six free hair colors and six skin tones. Basic blue/coral/mint tops and a sports headband are available at level one. Wristbands unlock at level 2, a visor at 3, a cap and lavender top at 5, golden wristbands at 7, and headphones/a golden top at 10. Unlocks use the existing XP derived from completed personal history; changing appearance never changes XP or training data. A user can inspect a teammate's avatar without switching the selected routine or editing that teammate.
 
 Avatar configuration is stored per routine profile in IndexedDB and JSON/cloud backups. Restoring a profile preserves the other profiles' avatars. Customized cloud avatars also prevent an otherwise empty backup from being treated as an untouched seed. Older installations and backups receive distinct default appearances without resetting data.
