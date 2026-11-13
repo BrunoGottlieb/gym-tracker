@@ -361,6 +361,13 @@ Workouts, history edits, loads, coins, purchases, assessments and preferences ca
 
 No cloud backup component is mounted; team refresh and streak sync are disabled. A shared `cloudFetch` boundary also refuses all API requests in sandbox mode. `checkToday` supplies a local-only snapshot, allowing completion/chama UI tests without posting events. Daily seen markers and cached sync data use only the sandbox database. There is no export/promotion of sandbox events into real mode.
 
-The existing completion popup displays the final earned XP and coins, workout statistics, records and level-up/weekly goal notices. It does not animate a numeric XP count-up. This behavior is unchanged.
+The existing completion popup displays the final earned XP and coins, workout statistics, records and level-up/weekly goal notices. It does not animate a numeric XP count-up. These awarded totals remain separate from the animated level-progress bar described below.
 
 `src/appSandbox.test.ts` covers private mode selection, no real-DB creation/upgrade/write, guarded reset and fail-closed network access. `scripts/app-sandbox-smoke.cjs` completes a workout, buys equipment, reloads and resets in a disposable browser while asserting the real database's state and sync rows are byte-for-byte unchanged and no cloud request occurs. It also verifies ordinary devices remain in real mode and the banner works at 320–1280px.
+
+
+## Workout result avatar and animated XP bar
+
+The workout summary now shows the current profile's equipped avatar (including local sandbox preview) using the existing waist-up crop. The XP meter animates from the exact pre-workout XP to the final value. At a level boundary it visibly fills to 500, pauses, advances the level and fills the remaining XP. Unusually large multi-level rewards show a bounded sequence ending at the correct level; no reward data changes. A zero-XP result is static. Reduced-motion preferences show the final value immediately, including when changed while animating; closing the popup cancels its animation frame. Only the result meter disables the shared CSS width transition so its fill and numeric label stay aligned.
+
+`WorkoutResult.xpBefore/xpAfter` snapshot totals at finalization; XP and coins are still awarded exactly once by the existing domain logic. `scripts/workout-result-smoke.cjs` checks current equipment/waist framing, same-level fill, intermediate 500/full state, rollover/remainder, reduced-motion exact-level completion, unchanged reward/history records and 320–1280px layout. It uses an isolated full-app sandbox and refuses all cloud calls. Visual artifacts are saved under ignored `artifacts/workout-result/`.

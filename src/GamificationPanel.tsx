@@ -1,6 +1,6 @@
 import { Award, Check, Coins, LockKeyhole, Sparkles, Target, Trophy, Zap } from 'lucide-react';
-import type { CSSProperties } from 'react';
-import { auraRewards, equippedAura, levelProgress, personalXP, sessionXP, weeklyGoal, type RewardAura, type WorkoutResult } from './gamification';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { LEVEL_XP, auraRewards, equippedAura, levelProgress, personalXP, sessionXP, weeklyGoal, type RewardAura, type WorkoutResult } from './gamification';
 import { planLabels } from './routinePlans';
 import type { AppState } from './types';
 import { MinimalBonfire } from './MinimalBonfire';
@@ -38,9 +38,51 @@ export function GamificationSettings({ state, onGoal, onAura, onHaptics, sandbox
   })}</div></section>;
 }
 
-export function WorkoutResults({ result, equipped, onEquip, onClose }: { result: WorkoutResult; equipped: RewardAura; onEquip: (aura: RewardAura) => void; onClose: () => void }) {
+function ResultXPProgress({ before, after }: { before: number; after: number }) {
+  const [shown, setShown] = useState(() => ({ ...levelProgress(before), complete: false }));
+  useEffect(() => {
+    const start = levelProgress(before), end = levelProgress(after);
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    const finish = () => { cancelAnimationFrame(frame); setShown({ ...end, complete: true }); };
+    if (motion.matches || after <= before) { finish(); return; }
+    const stages: { level: number; from: number; to: number; duration: number; hold: number }[] = start.level === end.level
+      ? [{ level: start.level, from: start.current, to: end.current, duration: 1400, hold: 0 }]
+      : [
+        { level: start.level, from: start.current, to: LEVEL_XP, duration: 850, hold: 230 },
+        // Keep unusually large rewards brief while still showing a full bar
+        // before the final level. All XP remains accounted for in the result.
+        ...(end.level > start.level + 1 ? [{ level: end.level - 1, from: 0, to: LEVEL_XP, duration: 650, hold: 180 }] : []),
+        { level: end.level, from: 0, to: end.current, duration: end.current ? 1000 : 0, hold: 0 },
+      ];
+    let index = 0, stageStart: number | null = null;
+    const tick = (time: number) => {
+      if (stageStart === null) stageStart = time + 300;
+      const stage = stages[index], elapsed = Math.max(0, time - stageStart);
+      const t = stage.duration ? Math.min(1, elapsed / stage.duration) : 1;
+      const current = Math.round(stage.from + (stage.to - stage.from) * (1 - Math.pow(1 - t, 3)));
+      setShown({ level: stage.level, current, remaining: LEVEL_XP - current, complete: false });
+      if (time >= stageStart && elapsed >= stage.duration + stage.hold) {
+        index++; stageStart = time;
+        if (index === stages.length) { finish(); return; }
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    setShown({ ...start, complete: false }); frame = requestAnimationFrame(tick);
+    const reduce = () => { if (motion.matches) finish(); };
+    motion.addEventListener('change', reduce);
+    return () => { cancelAnimationFrame(frame); motion.removeEventListener('change', reduce); };
+  }, [before, after]);
+  return <div className={`result-progress ${shown.current === LEVEL_XP ? 'result-bar-full' : ''}`} data-complete={shown.complete}>
+    <div className="result-progress-label"><strong>Nível {shown.level}</strong><span>{number(shown.current)} / {LEVEL_XP} XP</span></div>
+    <Meter value={shown.current} max={LEVEL_XP} label="Progresso de XP após este treino" />
+    <small>{shown.current === LEVEL_XP ? 'Nível completo!' : `${number(shown.remaining)} XP para o próximo nível`}</small>
+  </div>;
+}
+
+export function WorkoutResults({ result, avatar, equipped, onEquip, onClose }: { result: WorkoutResult; avatar: AvatarConfig; equipped: RewardAura; onEquip: (aura: RewardAura) => void; onClose: () => void }) {
   const rewards = auraRewards.filter(reward => reward.level > result.levelBefore && reward.level <= result.levelAfter);
-  return <div className="workout-results"><div className="result-scroll"><div className="result-medal"><Trophy size={34} /></div><p className="result-workout">{result.session.workoutName}</p><strong className="result-xp">+{number(result.xp.xp)}<span> XP</span></strong><div className="result-coins"><Coins size={18} /><strong>+{result.coins} moedas</strong><span>para o seu próximo visual</span></div><div className="result-stats"><span><b>{result.xp.sets}</b>{result.xp.sets === 1 ? 'série realizada' : 'séries realizadas'}</span><span><b>{result.xp.extra}</b>{result.xp.extra === 1 ? 'série extra' : 'séries extras'}</span><span><b>{Math.max(1, Math.round((result.session.finishedAt! - result.session.startedAt) / 60000))}</b>minutos</span></div><p className="result-breakdown">{result.xp.xp === 0 ? 'Treino registrado. A data informada é anterior ao reinício do XP.' : <>{result.xp.sets * 10} XP em séries{result.xp.extra ? ` + ${result.xp.extra * 5} XP de bônus` : ''} + 50 XP ao finalizar</>}</p>
+  return <div className="workout-results"><div className="result-scroll"><div className="result-avatar"><AvatarArt avatar={avatar} waistUp /></div><p className="result-workout">{result.session.workoutName}</p><strong className="result-xp">+{number(result.xp.xp)}<span> XP</span></strong><div className="result-coins"><Coins size={18} /><strong>+{result.coins} moedas</strong><span>para o seu próximo visual</span></div><ResultXPProgress before={result.xpBefore} after={result.xpAfter} /><div className="result-stats"><span><b>{result.xp.sets}</b>{result.xp.sets === 1 ? 'série realizada' : 'séries realizadas'}</span><span><b>{result.xp.extra}</b>{result.xp.extra === 1 ? 'série extra' : 'séries extras'}</span><span><b>{Math.max(1, Math.round((result.session.finishedAt! - result.session.startedAt) / 60000))}</b>minutos</span></div><p className="result-breakdown">{result.xp.xp === 0 ? 'Treino registrado. A data informada é anterior ao reinício do XP.' : <>{result.xp.sets * 10} XP em séries{result.xp.extra ? ` + ${result.xp.extra * 5} XP de bônus` : ''} + 50 XP ao finalizar</>}</p>
     {result.goalReached && <div className="result-highlight"><Target size={18} /><strong>Meta semanal alcançada!</strong></div>}
     {result.levelAfter > result.levelBefore && <div className="result-level-up"><Award size={27} /><strong>Você chegou ao nível {result.levelAfter}!</strong><p>Uma série de cada vez. Olha onde você chegou.</p></div>}
     {rewards.map(reward => <div className="reward-unlocked" key={reward.id}><i style={{ background: reward.color, boxShadow: `0 0 25px ${reward.color}` }} /><div><small>NOVA RECOMPENSA</small><strong>{reward.name}</strong></div><button className="secondary compact" disabled={equipped === reward.id} onClick={() => onEquip(reward.id)}>{equipped === reward.id ? 'Equipado' : 'Equipar'}</button></div>)}

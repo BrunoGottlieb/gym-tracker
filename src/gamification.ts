@@ -84,6 +84,8 @@ export interface WorkoutResult {
   session: Session;
   xp: ReturnType<typeof sessionXP>;
   coins: number;
+  xpBefore: number;
+  xpAfter: number;
   levelBefore: number;
   levelAfter: number;
   records: PersonalRecord[];
@@ -91,11 +93,13 @@ export interface WorkoutResult {
 }
 export function workoutResult(before: AppState, after: AppState, session: Session, now = Date.now()): WorkoutResult {
   const person = session.person ?? 'original';
+  const xpBefore = personalXP(before.history, person), xpAfter = personalXP(after.history, person);
   return {
+    xpBefore, xpAfter,
     coins: after.avatarWallets?.[person]?.awards[session.id] !== undefined && !Object.hasOwn(before.avatarWallets?.[person]?.awards ?? {}, session.id) && !before.history.some(s => s.id === session.id) ? after.avatarWallets[person]!.awards[session.id] : 0,
-    session, xp: { ...sessionXP(session), xp: Math.max(0, personalXP(after.history, person) - personalXP(before.history, person)) },
-    levelBefore: levelProgress(personalXP(before.history, person)).level,
-    levelAfter: levelProgress(personalXP(after.history, person)).level,
+    session, xp: { ...sessionXP(session), xp: Math.max(0, xpAfter - xpBefore) },
+    levelBefore: levelProgress(xpBefore).level,
+    levelAfter: levelProgress(xpAfter).level,
     records: personalRecords(session, before.history),
     goalReached: !weeklyGoal(before, now).reached && weeklyGoal(after, now).reached,
   };
