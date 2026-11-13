@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState } from './data';
 import { toggleSeriesCompletion, addSessionSet, removeSessionSet, beginWorkout, createBackup, createSession, finishSession, getProgress, parseBackup, timerSeconds, validateState } from './domain';
+import { celebrationThemes, defaultCelebrationTheme } from './celebrationThemes';
+
+it('retains each celebration style in backups and defaults older settings to the knight', () => {
+  const state = createInitialState();
+  expect(state.preferences.celebrationTheme).toBe('knight');
+  for (const theme of celebrationThemes) {
+    state.preferences.celebrationTheme = theme.id;
+    expect(parseBackup(createBackup(state)).preferences.celebrationTheme).toBe(theme.id);
+  }
+  delete state.preferences.celebrationTheme;
+  expect(validateState(state)).toBe(true);
+  expect(parseBackup(createBackup(state)).preferences.celebrationTheme ?? defaultCelebrationTheme).toBe('knight');
+  expect(validateState({ ...state, preferences: { ...state.preferences, celebrationTheme: 'invalid' } })).toBe(false);
+});
 
 describe('workout sessions', () => {
   it.each([2, 3, 4, 13, 100])('completes every series up to the selected number, including %i-series sessions', count => {

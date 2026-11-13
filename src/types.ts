@@ -54,6 +54,7 @@ export interface RestTimer {
   started: boolean;
 }
 export interface Preferences {
+  celebrationTheme?: import('./celebrationThemes').CelebrationTheme;
   autoRest: boolean;
   sound: boolean;
   restDuration: number;

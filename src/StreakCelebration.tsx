@@ -6,6 +6,9 @@ import { planLabels } from './routinePlans';
 import type { RoutinePlan } from './types';
 import type { CloudStreakController } from './useCloudStreaks';
 import './streak-celebration.css';
+import { BonfireScene } from './BonfireScene';
+import { MinimalBonfire } from './MinimalBonfire';
+import { defaultCelebrationTheme, type CelebrationTheme } from './celebrationThemes';
 
 export function StreakFlame({ className = '' }: { className?: string }) {
   return <svg className={`shared-flame ${className}`} viewBox="0 0 120 150" fill="none" aria-hidden="true"><path className="flame-outer" fill="#FF8A00" d="M58 5C80 17 94 36 89 60C87 69 90 77 96 82C98 75 102 69 108 66C107 84 120 96 116 115C112 137 91 148 61 148C30 148 8 133 5 111C2 91 15 77 24 62C28 66 30 72 31 77C47 59 62 43 58 5Z"/><path className="flame-inner" fill="#FFD54A" d="M65 64C49 70 39 84 42 99C35 97 31 91 30 87C19 108 27 135 51 141C75 147 96 133 95 113C94 93 64 87 65 64Z"/></svg>;
@@ -14,9 +17,18 @@ export function personNames(people: RoutinePlan[]) {
   const names = people.map(person => planLabels[person]);
   return names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names.at(-1)}` : names[0];
 }
+function ClassicFlameArt() {
+  return (<div className="celebration-art">
+          <span className="celebration-halo" /><span className="celebration-ring" /><span className="celebration-ring celebration-ring-echo" />
+          <div className="celebration-flight-trail" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ '--trail-delay': `${90 + index * 38}ms`, '--trail-size': `${3 + index % 4}px`, '--trail-offset': `${(index % 5 - 2) * 9}px`, '--trail-color': ['#FFD54A', '#FFAE33', '#FFF2B5'][index % 3] } as CSSProperties} />)}</div>
+          <div className="celebration-sparks">{Array.from({ length: 20 }, (_, index) => <i key={index} style={{ '--angle': `${index * 137.508}deg`, '--spark-delay': `${1800 + index % 4 * 45}ms`, '--distance': `${82 + index % 5 * 14}px` } as CSSProperties} />)}</div>
+          <div className="celebration-flame-arrival"><StreakFlame /></div>
+        </div>);
+}
+
 interface Celebration { people: RoutinePlan[]; count: number; preview: boolean; self?: boolean }
 
-function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () => void }) {
+export function CelebrationScreen({ data, onClose, theme = defaultCelebrationTheme }: { data: Celebration; onClose: () => void; theme?: CelebrationTheme }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [replay, setReplay] = useState(0);
   useEffect(() => {
@@ -25,17 +37,12 @@ function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () =
     const previous = document.body.style.overflow; document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previous; if (node.open) node.close(); };
   }, []);
-  return <dialog ref={dialog} className="streak-celebration" aria-labelledby="celebration-title" onCancel={event => { event.preventDefault(); onClose(); }}>
+  return <dialog ref={dialog} className={`streak-celebration ${theme === 'realistic' ? 'bonfire-celebration' : theme === 'classic' ? '' : 'minimal-celebration'}`} data-theme={theme} aria-labelledby="celebration-title" onCancel={event => { event.preventDefault(); onClose(); }}>
     <div className="celebration-stage" key={replay} data-replay={replay}>
-      <header className="celebration-brand">gym tracker<span>.</span></header>
+      {theme === 'realistic' && <BonfireScene />}<header className="celebration-brand">gym tracker<span>.</span></header>
       {data.preview && <span className="celebration-preview">Prévia da animação</span>}
       <div className="celebration-content">
-        <div className="celebration-art">
-          <span className="celebration-halo" /><span className="celebration-ring" /><span className="celebration-ring celebration-ring-echo" />
-          <div className="celebration-flight-trail" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ '--trail-delay': `${90 + index * 38}ms`, '--trail-size': `${3 + index % 4}px`, '--trail-offset': `${(index % 5 - 2) * 9}px`, '--trail-color': ['#FFD54A', '#FFAE33', '#FFF2B5'][index % 3] } as CSSProperties} />)}</div>
-          <div className="celebration-sparks">{Array.from({ length: 20 }, (_, index) => <i key={index} style={{ '--angle': `${index * 137.508}deg`, '--spark-delay': `${1800 + index % 4 * 45}ms`, '--distance': `${82 + index % 5 * 14}px` } as CSSProperties} />)}</div>
-          <div className="celebration-flame-arrival"><StreakFlame /></div>
-        </div>
+        {theme === 'realistic' ? <p className="bonfire-caption">Fogueira acesa</p> : theme === 'classic' ? <ClassicFlameArt /> : <div className="minimal-art"><MinimalBonfire knight={theme === 'knight'} /></div>}
         <h1 id="celebration-title" className="celebration-title"><strong>{data.self ? 'Você' : personNames(data.people)}</strong><span>{!data.self && data.people.length > 1 ? 'mantiveram a' : 'manteve a'}<br />chama acesa!</span></h1>
         <div className="celebration-count"><StreakFlame /><span>{data.count} {data.count === 1 ? 'dia' : 'dias'} de chama</span></div>
       </div>
@@ -47,7 +54,7 @@ function CelebrationScreen({ data, onClose }: { data: Celebration; onClose: () =
   </dialog>;
 }
 
-export function StreakCelebration({ cloud, person, blocked, previewRequest, selfCompletion }: { cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number; selfCompletion: string | null }) {
+export function StreakCelebration({ cloud, person, blocked, previewRequest, selfCompletion, theme = defaultCelebrationTheme }: { theme?: CelebrationTheme; cloud: CloudStreakController; person: RoutinePlan; blocked: boolean; previewRequest: number; selfCompletion: string | null }) {
   const [seen, setSeen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
@@ -78,5 +85,5 @@ export function StreakCelebration({ cloud, person, blocked, previewRequest, self
     handledPreview.current = previewRequest;
     setScreen({ people: cloud.group.peopleToday.length ? cloud.group.peopleToday : [person], count: cloud.group.current, preview: true });
   }, [previewRequest, cloud.group, person]);
-  return screen && <CelebrationScreen data={screen} onClose={() => setScreen(null)} />;
+  return screen && <CelebrationScreen data={screen} theme={theme} onClose={() => setScreen(null)} />;
 }

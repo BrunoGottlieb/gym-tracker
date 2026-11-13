@@ -1,0 +1,30 @@
+.streak-celebration.bonfire-celebration { background:#06090c;color:#e5d6bd; }
+.bonfire-celebration::backdrop { background:#06090c; }
+.bonfire-celebration .celebration-stage { background:#06090c;min-height:100dvh;padding-top:calc(28px + env(safe-area-inset-top,0px)); }
+.bonfire-visual { position:absolute;z-index:-1;top:0;left:50%;transform:translateX(-50%);width:min(100%,720px);height:78dvh;min-height:480px;pointer-events:none; }
+.bonfire-landscape,.bonfire-fire,.bonfire-vignette { position:absolute;inset:0;width:100%;height:100%; }
+.bonfire-landscape { object-fit:cover;object-position:center;animation:bonfire-awaken 3s ease-out both; }
+.bonfire-fire { mix-blend-mode:screen; }
+.bonfire-vignette { background:linear-gradient(#06090c25,transparent 25%,transparent 65%,#06090c 100%),linear-gradient(90deg,#06090c70,transparent 20%,transparent 80%,#06090c70); }
+.bonfire-celebration .celebration-brand { font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b5b7b4;font-weight:450; }
+.bonfire-celebration .celebration-brand>span { color:#c78b46; }
+.bonfire-celebration .celebration-preview { top:calc(58px + env(safe-area-inset-top,0px));font-size:9px;letter-spacing:1px;color:#72797a; }
+.bonfire-celebration .celebration-content { justify-content:flex-end;min-height:440px;padding:0 0 20px;position:relative; }
+.bonfire-caption { margin:0 0 14px;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#b99463;animation:bonfire-text 1.8s 1.3s both; }
+.bonfire-celebration .celebration-title { font-family:Georgia,'Times New Roman',serif;font-size:23px!important;letter-spacing:0.3px!important;line-height:1.35!important;font-weight:400!important;max-width:340px;animation:bonfire-text 1.6s 1.4s both;text-shadow:0 2px 20px #000; }
+.bonfire-celebration .celebration-title strong { font-family:inherit;font-size:28px;color:#efcf98;letter-spacing:1px;font-weight:400;margin-bottom:4px; }
+.bonfire-celebration .celebration-title>span { color:#e6dfd0; }
+.bonfire-celebration .celebration-count { color:#ae9c80;border:0;background:transparent;margin-top:15px;padding:0;font-size:11px;letter-spacing:1px;font-weight:400;animation:bonfire-text 1.8s 1.7s both; }
+.bonfire-celebration .celebration-count svg { width:11px;height:14px;opacity:.75; }
+.bonfire-celebration .celebration-actions { gap:8px;padding-top:0; }
+.bonfire-celebration .celebration-replay { color:#92938c;font-size:10px;letter-spacing:.4px; }
+.bonfire-celebration .celebration-replay:hover { background:#ffffff08;color:#e4c28b; }
+.bonfire-celebration .celebration-continue { background:linear-gradient(#372b1c,#211d17);color:#e5c595;border:1px solid #a8793b65;border-radius:3px;box-shadow:0 0 25px #df8f2420,inset 0 0 0 3px #110e0a85;font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:2px;font-weight:400;width:230px; }
+.bonfire-celebration .celebration-continue:hover { border-color:#c69550;box-shadow:0 0 30px #df8f2435; }
+.bonfire-celebration .celebration-continue:active { transform:translateY(1px); }
+.bonfire-celebration .celebration-actions button:focus-visible { outline:1px solid #d7a662;outline-offset:4px; }
+@keyframes bonfire-awaken { from { opacity:0;filter:brightness(.3); } to { opacity:1;filter:brightness(1); } }
+@keyframes bonfire-text { from { opacity:0;transform:translateY(10px);filter:blur(3px); } to { opacity:1;transform:translateY(0);filter:blur(0); } }
+@media(min-width:700px) { .bonfire-visual { height:82dvh; }.bonfire-celebration .celebration-content { padding-bottom:25px; }.bonfire-celebration .celebration-title { font-size:27px!important; } }
+@media(max-height:650px) { .bonfire-visual { height:88dvh;min-height:0; }.bonfire-celebration .celebration-content { min-height:250px;padding-bottom:8px; }.bonfire-caption { margin-bottom:7px; }.bonfire-celebration .celebration-title { font-size:18px!important; }.bonfire-celebration .celebration-title strong { font-size:23px; }.bonfire-celebration .celebration-count { margin-top:8px; }.bonfire-celebration .celebration-continue { height:42px; } }
+@media(prefers-reduced-motion:reduce) { .bonfire-landscape { animation:none; }.bonfire-celebration .celebration-title,.bonfire-caption,.bonfire-celebration .celebration-count { animation:none; } }

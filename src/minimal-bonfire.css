@@ -1,0 +1,40 @@
+.minimal-bonfire { display:block;width:100%;overflow:visible; }
+.minimal-celebration .minimal-art { width:270px;max-width:85vw;height:225px;margin-bottom:23px;display:grid;place-items:center;animation:minimal-arrival 1.2s cubic-bezier(.2,.8,.2,1) both; }
+.minimal-celebration .celebration-title { animation-delay:1s; }
+.minimal-celebration .celebration-count { animation-delay:1.2s; }
+.minimal-sword { transform-box:fill-box;transform-origin:50% 100%;animation:minimal-sword-settle 1.4s cubic-bezier(.2,.8,.2,1) both; }
+.minimal-flames { transform-box:fill-box;transform-origin:50% 100%;animation:minimal-ignite 1.1s .35s both; }
+.minimal-flame-main,.minimal-flame-left,.minimal-flame-core { transform-box:fill-box;transform-origin:50% 100%; }
+.minimal-flame-main { animation:minimal-fire-main 1.8s ease-in-out infinite; }
+.minimal-flame-left { animation:minimal-fire-left 2.3s ease-in-out -.6s infinite; }
+.minimal-flame-core { animation:minimal-fire-core 1.4s ease-in-out -.3s infinite; }
+.minimal-aura { transform-box:fill-box;transform-origin:center;animation:minimal-aura 3s ease-in-out infinite; }
+.minimal-fire-glow { transform-box:fill-box;transform-origin:center;animation:minimal-aura 1.7s ease-in-out infinite; }
+.minimal-knight { transform-box:fill-box;transform-origin:50% 100%;animation:minimal-rest 4s ease-in-out infinite; }
+.minimal-reflection { animation:minimal-reflection 1.8s ease-in-out infinite; }
+.minimal-ember { transform-box:fill-box;transform-origin:center;animation:minimal-ember 2.6s linear infinite; }
+.ember-two { animation-delay:-.9s;animation-duration:3.2s; }.ember-three { animation-delay:-1.8s;animation-duration:3.6s; }
+.is-compact * { animation:none!important; }.is-compact .minimal-ember { opacity:1; }
+@keyframes minimal-arrival { from { opacity:0;transform:translateY(16px) scale(.83); } to { opacity:1;transform:translateY(0) scale(1); } }
+@keyframes minimal-sword-settle { 0% { transform:translateY(-25px) rotate(-7deg);opacity:0; } 65% { transform:translateY(2px) rotate(2deg);opacity:1; } 100% { transform:none;opacity:1; } }
+@keyframes minimal-ignite { 0% { opacity:0;transform:scale(.3,.05); } 75% { opacity:1;transform:scale(.95,1.13); } 100% { opacity:1;transform:scale(1); } }
+@keyframes minimal-fire-main { 0%,100% { transform:scale(.98,1) rotate(-2deg); } 50% { transform:scale(1.03,1.09) rotate(2deg); } }
+@keyframes minimal-fire-left { 0%,100% { transform:scale(1,.96) rotate(1deg); } 50% { transform:scale(.97,1.07) rotate(-3deg); } }
+@keyframes minimal-fire-core { 0%,100% { transform:scale(1,1); } 50% { transform:scale(1.06,.9) translateY(-2px); } }
+@keyframes minimal-aura { 0%,100% { opacity:.65;transform:scale(.98); } 50% { opacity:1;transform:scale(1.04); } }
+@keyframes minimal-rest { 0%,100% { transform:scaleY(1); } 50% { transform:scaleY(1.013); } }
+@keyframes minimal-reflection { 0%,100% { opacity:.55; } 50% { opacity:1; } }
+@keyframes minimal-ember { 0% { opacity:0;transform:translate(0,22px) scale(.5); } 20% { opacity:1; } 80% { opacity:.8; } 100% { opacity:0;transform:translate(10px,-28px) scale(.3); } }
+@media(max-height:620px) { .minimal-celebration .minimal-art { width:200px;height:165px;margin-bottom:10px; } }
+@media(prefers-reduced-motion:reduce) { .minimal-bonfire * { animation:none!important; }.minimal-celebration .minimal-art { animation:none; } }
+
+.celebration-theme-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0; }
+.celebration-theme-option { display:flex;flex-direction:column;gap:7px;text-align:left;padding:10px;border:1px solid #e0e6f2;background:#fff;border-radius:16px;color:var(--ink);cursor:pointer;min-width:0; }
+.celebration-theme-option.selected { background:#edf2ff;border-color:#4161f3;box-shadow:0 0 0 1px #4161f3; }
+.celebration-theme-thumbnail { display:grid;place-items:center;width:100%;height:105px;overflow:hidden;background:#4161ff;border-radius:10px; }
+.celebration-theme-thumbnail .minimal-bonfire { width:135px;max-height:105px; }
+.celebration-theme-thumbnail>svg:not(.minimal-bonfire) { width:45px;height:64px;color:#ffba3b;fill:#ff9624; }
+.celebration-theme-thumbnail>img { width:100%;height:100%;object-fit:cover;object-position:50% 49%; }
+.celebration-theme-option strong { font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:5px; }
+.celebration-theme-option strong svg { flex-shrink:0;color:#4161f3; }.celebration-theme-option small { color:#6e7d96;font-size:10px;line-height:1.5; }
+.celebration-theme-option:focus-visible { outline:3px solid #96a9ff;outline-offset:3px; }
