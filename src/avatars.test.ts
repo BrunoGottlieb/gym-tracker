@@ -16,6 +16,13 @@ function withXP(person: RoutinePlan = 'original') {
   return next;
 }
 describe('avatar personalization', () => {
+  it('unlocks the gold top at 6, skull T-shirt at 9 and hoodie at 12', () => {
+    for (const [shirt, level] of [['gold', 6], ['skull-tee', 9], ['hoodie', 12]] as const) {
+      const avatar = { ...defaultAvatars.original, shirt };
+      expect(unlockedAvatar(avatar, level - 1).shirt).toBe('blue');
+      expect(unlockedAvatar(avatar, level).shirt).toBe(shirt);
+    }
+  });
   it('keeps old data valid and supplies distinct free starter characters', () => {
     const state = createInitialState(); expect(validateState(state)).toBe(true);
     for (const person of ['original', 'sheet', 'ivan'] as const) expect(profileAvatar(state, person)).toEqual(defaultAvatars[person]);

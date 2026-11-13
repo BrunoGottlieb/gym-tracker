@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AVATAR_SANDBOX_KEY, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox } from './avatarSandbox';
+import { AVATAR_SANDBOX_KEY, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox } from './avatarSandbox';
 import { avatarEquipment, defaultAvatars, profileAvatar, type EquipmentSlot } from './avatars';
 import { createInitialState } from './data';
 import { profileBackup } from './CloudBackup';
@@ -9,14 +9,20 @@ function storage() {
   return { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); } };
 }
 describe('device-local avatar sandbox', () => {
-  it('defaults to enabled on a desktop and disabled on a touch device, respecting explicit local choice', () => {
+  it('stays unavailable without an explicit device grant, including old automatic desktop preferences', () => {
     const local = storage(), otherPhone = storage();
-    expect(readAvatarSandbox(local, true).enabled).toBe(true);
-    expect(readAvatarSandbox(otherPhone, false).enabled).toBe(false);
+    expect(readAvatarSandbox(local).enabled).toBe(false);
+    saveAvatarSandbox(local, { enabled: true, avatars: { original: defaultAvatars.original } });
+    expect(readAvatarSandbox(local).enabled).toBe(false);
+    expect(canUseAvatarSandbox(local)).toBe(false);
+    expect(authorizeLocalAvatarSandbox(local).enabled).toBe(true);
+    expect(canUseAvatarSandbox(local)).toBe(true);
+    expect(readAvatarSandbox(otherPhone).enabled).toBe(false);
+    expect(canUseAvatarSandbox(otherPhone)).toBe(false);
     saveAvatarSandbox(local, { enabled: false, avatars: {} });
-    expect(readAvatarSandbox(local, true).enabled).toBe(false);
+    expect(readAvatarSandbox(local).enabled).toBe(false);
     local.setItem(AVATAR_SANDBOX_KEY, '{broken');
-    expect(readAvatarSandbox(local, false)).toEqual({ enabled: false, avatars: {} });
+    expect(readAvatarSandbox(local)).toEqual({ enabled: false, avatars: {} });
   });
   it('previews every item at level one without changing the real avatar, XP, training or backup', () => {
     const state = createInitialState();
@@ -40,7 +46,7 @@ describe('device-local avatar sandbox', () => {
     expect(changeSandboxAvatar(nick, 'original', defaultAvatars.original, { head: 'fake' } as never)).toBe(nick);
     const off = { ...nick, enabled: false };
     expect(changeSandboxAvatar(off, 'original', defaultAvatars.original, { head: 'crown' })).toBe(off);
-    const local = storage(); saveAvatarSandbox(local, nick);
-    expect(readAvatarSandbox(local, false)).toEqual(nick);
+    const local = storage(); authorizeLocalAvatarSandbox(local); saveAvatarSandbox(local, nick);
+    expect(readAvatarSandbox(local)).toEqual(nick);
   });
 });

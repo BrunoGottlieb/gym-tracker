@@ -46,9 +46,9 @@ export const avatarEquipment = {
     { id: 'coral', name: 'Regata coral', level: 1, color: '#F5907D' },
     { id: 'mint', name: 'Regata menta', level: 1, color: '#7DCEB7' },
     { id: 'violet', name: 'Regata lavanda', level: 5, color: '#B6A0EA' },
-    { id: 'gold', name: 'Regata dourada', level: 10, color: '#EAC36A' },
-    { id: 'hoodie', name: 'Moletom lavanda', level: 9, color: '#A393D4' },
-    { id: 'skull-tee', name: 'Camiseta de caveira', level: 12, color: '#303747' },
+    { id: 'gold', name: 'Regata dourada', level: 6, color: '#EAC36A' },
+    { id: 'hoodie', name: 'Moletom lavanda', level: 12, color: '#A393D4' },
+    { id: 'skull-tee', name: 'Camiseta de caveira', level: 9, color: '#303747' },
     { id: 'leather-jacket', name: 'Jaqueta de couro', level: 18, color: '#303747' },
   ],
   extra: [

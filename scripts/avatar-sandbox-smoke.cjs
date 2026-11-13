@@ -46,7 +46,7 @@ const out = 'artifacts/avatar-sandbox';
     assert.ok((await page.locator('.level-emblem').boundingBox()).height >= 100);
     assert.equal(await page.locator('.team-person .avatar-waist-up').count(), 3);
     const before = await read(page), countBefore = uploads.length;
-    await click('Perfil'); assert.equal(await page.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).isChecked(), true);
+    await click('Perfil'); assert.equal(await page.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).count(), 0); await page.goto(appURL + '#avatar-sandbox-local'); await click('Perfil'); assert.equal(await page.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).isChecked(), true);
     await click('Personalizar avatar'); await click('Equipamentos');
     for (const category of ['Cabeça', 'Rosto', 'Bigode', 'Roupa', 'Extra']) { await click(category); assert.equal(await page.locator('.equipment-grid button:disabled').count(), 0); }
     await click('Cabeça'); await click('Coroa dourada'); await click('Rosto'); await click('Óculos de estrela'); await click('Bigode'); await click('Bigode de respeito'); await click('Roupa'); await click('Jaqueta de couro'); await click('Extra'); await click('Relógio esportivo');
@@ -71,7 +71,7 @@ const out = 'artifacts/avatar-sandbox';
       await seed(phone, person); const before = await read(phone);
       const level = Math.floor(fixtures[person].xp / 500) + 1;
       assert.match(await phone.locator('.game-level').innerText(), new RegExp(`Nível ${level}\\s+${fixtures[person].xp.toLocaleString('pt-BR')} XP`));
-      await phone.getByRole('button', { name: 'Perfil', exact: true }).click(); assert.equal(await phone.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).isChecked(), false);
+      await phone.getByRole('button', { name: 'Perfil', exact: true }).click(); assert.equal(await phone.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).count(), 0);
       await phone.getByRole('button', { name: 'Treinos', exact: true }).click();
       await phone.screenshot({ path: `${out}/${person}-home.png`, fullPage: true });
       if (person !== 'original') for (const workout of fixtures[person].state.workouts) {
@@ -98,6 +98,6 @@ const out = 'artifacts/avatar-sandbox';
     await phone.evaluate(async () => { await navigator.serviceWorker.ready; }); await mobile.setOffline(true); await phone.reload();
     await phone.getByRole('button', { name: 'Perfil', exact: true }).click(); await phone.locator('.profile-miniature img').evaluateAll(imgs => Promise.all(imgs.map(img => img.decode())));
     await mobile.close(); assert.deepEqual(errors, []);
-    console.log('PASS: Bruno/Nick reset with preserved history and Ivan XP; desktop-only default sandbox and isolated persisted previews; real level locks; expanded waist-up portraits at 320–1280px; all matching Nick/Ivan animations and covers; unchanged routines/loads/history; offline avatars.');
+    console.log('PASS: Bruno/Nick reset with preserved history and Ivan XP; explicitly authorized device-only sandbox, hidden and disabled elsewhere and isolated persisted previews; real level locks; expanded waist-up portraits at 320–1280px; all matching Nick/Ivan animations and covers; unchanged routines/loads/history; offline avatars.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });
