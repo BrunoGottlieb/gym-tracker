@@ -1,14 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { AVATAR_SANDBOX_KEY, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox } from './avatarSandbox';
+import { AVATAR_SANDBOX_KEY, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAura, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox } from './avatarSandbox';
 import { avatarEquipment, defaultAvatars, profileAvatar, type EquipmentSlot } from './avatars';
 import { createInitialState } from './data';
 import { profileBackup } from './CloudBackup';
+import { auraRewards, equippedAura } from './gamification';
 
 function storage() {
   const data = new Map<string, string>();
   return { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); } };
 }
 describe('device-local avatar sandbox', () => {
+  it('previews every celebration glow locally without modifying level locks or backups, and keeps profiles separate', () => {
+    const state = createInitialState(), local = storage();
+    const backup = JSON.stringify(JSON.parse(profileBackup(state)).data);
+    let sandbox = authorizeLocalAvatarSandbox(local);
+    for (const reward of auraRewards) {
+      sandbox = changeSandboxAura(sandbox, 'original', reward.id);
+      expect(sandbox.auras?.original).toBe(reward.id);
+      expect(equippedAura(state).id).toBe('blue');
+    }
+    sandbox = changeSandboxAura(sandbox, 'sheet', 'violet');
+    expect(sandbox.auras).toEqual({ original: 'gold', sheet: 'violet' });
+    saveAvatarSandbox(local, sandbox); expect(readAvatarSandbox(local)).toEqual(sandbox);
+    expect(JSON.stringify(JSON.parse(profileBackup(state)).data)).toBe(backup);
+    const off = { ...sandbox, enabled: false };
+    expect(changeSandboxAura(off, 'original', 'mint')).toBe(off);
+    expect(changeSandboxAura(sandbox, 'original', 'fake' as never)).toBe(sandbox);
+  });
   it('stays unavailable without an explicit device grant, including old automatic desktop preferences', () => {
     const local = storage(), otherPhone = storage();
     expect(readAvatarSandbox(local).enabled).toBe(false);

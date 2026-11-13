@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { AVATAR_SANDBOX_DEVICE_KEY, AVATAR_SANDBOX_KEY, AVATAR_SANDBOX_LOCAL_HASH, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox, type AvatarSandbox } from './avatarSandbox';
+import { AVATAR_SANDBOX_DEVICE_KEY, AVATAR_SANDBOX_KEY, AVATAR_SANDBOX_LOCAL_HASH, authorizeLocalAvatarSandbox, canUseAvatarSandbox, changeSandboxAura, changeSandboxAvatar, readAvatarSandbox, saveAvatarSandbox, type AvatarSandbox } from './avatarSandbox';
 import { profileAvatar, type AvatarConfig } from './avatars';
 import type { AppState } from './types';
+import { auraRewards, type RewardAura } from './gamification';
 
 export function useAvatarSandbox(state: AppState | null) {
   const [available, setAvailable] = useState(() => { try { return canUseAvatarSandbox(window.localStorage); } catch { return false; } });
@@ -33,6 +34,8 @@ export function useAvatarSandbox(state: AppState | null) {
     available,
     enabled: sandbox.enabled,
     avatar: sandbox.enabled ? sandbox.avatars[person] ?? realAvatar : realAvatar,
+    aura: sandbox.enabled ? auraRewards.find(reward => reward.id === sandbox.auras?.[person]) : undefined,
+    changeAura: (aura: RewardAura) => setSandbox(previous => changeSandboxAura(previous, person, aura)),
     toggle: (enabled: boolean) => { if (available) setSandbox(previous => ({ ...previous, enabled })); },
     change: (patch: Partial<AvatarConfig>) => { if (realAvatar) setSandbox(previous => changeSandboxAvatar(previous, person, realAvatar, patch)); },
     reset: () => setSandbox(previous => {

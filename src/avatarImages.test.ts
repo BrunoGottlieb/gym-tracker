@@ -27,15 +27,25 @@ describe('the adopted image avatar library', () => {
   });
   it('composites long hair behind the body and in front of the scalp, leaving the garment underneath accessories', () => {
     const layers = avatarLayers({ ...defaultAvatars.original, hair: 'long', shirt: 'mint', extra: 'wristbands', head: 'visor' });
-    expect(layers.map(layer => layer.id)).toEqual(['hair-back', 'base', 'shirt', 'hair-front', 'extra', 'head']);
-    expect(layers[0].file).toBe(layers[3].file);
+    expect(layers.map(layer => layer.id)).toEqual(['hair-back', 'base', 'shirt', 'hands', 'hair-front', 'extra', 'head']);
+    expect(layers[0].file).toBe(layers[4].file);
   });
   it('layers combined clothes, watch, moustache, glasses and hat without replacing independent choices', () => {
     const layers = avatarLayers({ ...defaultAvatars.original, shirt: 'leather-jacket', extra: 'watch', facialHair: 'moustache', face: 'sunglasses', head: 'top-hat' });
-    expect(layers.map(layer => layer.id)).toEqual(['base', 'shirt', 'hair-front', 'extra', 'facialHair', 'face', 'head']);
+    expect(layers.map(layer => layer.id)).toEqual(['base', 'shirt', 'hands', 'hair-front', 'extra', 'facialHair', 'face', 'head']);
     expect(layers.find(layer => layer.id === 'shirt')?.file).toBe('leather-jacket');
     expect(layers.find(layer => layer.id === 'extra')?.file).toBe('watch');
     expect(layers.find(layer => layer.id === 'hair-front')?.className).toContain('under-cap');
+  });
+  it('restores each skin’s actual hands above every garment while leaving the original blue top unchanged', () => {
+    expect(avatarLayers(defaultAvatars.original).some(layer => layer.id === 'hands')).toBe(false);
+    for (const skin of skinTones) for (const shirt of avatarEquipment.shirt.filter(item => item.id !== 'blue')) {
+      const layers = avatarLayers({ ...defaultAvatars.original, skin: skin.id, shirt: shirt.id });
+      const hands = layers.find(layer => layer.id === 'hands')!;
+      expect(hands.mask).toBe('hands');
+      expect(hands.file).toBe(skin.id === 'peach' ? 'base' : `base-${skin.id}`);
+      expect(layers.indexOf(hands)).toBeGreaterThan(layers.findIndex(layer => layer.id === 'shirt'));
+    }
   });
 });
 

@@ -1,6 +1,6 @@
 import type { AvatarConfig, EquipmentSlot } from './avatars';
 
-export interface AvatarLayer { id: string; file: string; className: string }
+export interface AvatarLayer { id: string; file: string; className: string; mask?: 'hands' }
 export const avatarAsset = (file: string) => `${import.meta.env.BASE_URL}avatars/layered-v1/${file}.png`;
 
 // Frame the actual piece independently of card dimensions and the full-figure padding.
@@ -13,23 +13,28 @@ const equipmentFrames: Record<string, [number, number, number, number]> = {
   'shirt-mint': [477, 510, 318, 314], hoodie: [345, 474, 556, 392],
   'skull-tee': [372, 508, 511, 342], 'leather-jacket': [345, 497, 566, 353],
   wristbands: [399, 687, 463, 129], watch: [746, 733, 146, 177], medal: [542, 546, 215, 260],
+  'bunny-ears': [408, 8, 467, 395], 'cowboy-hat': [368, 130, 520, 301],
+  scar: [749, 453, 86, 73], 'deal-with-it': [438, 405, 419, 116], earrings: [437, 482, 414, 99],
+  'short-beard': [497, 426, 295, 174], 'long-beard': [451, 425, 381, 319],
+  poncho: [332, 510, 588, 500], necktie: [559, 593, 198, 367], 'bow-tie': [535, 587, 238, 123],
 };
 export const equipmentViewBox = (file: string) => equipmentFrames[file]?.join(' ') ?? '0 0 1254 1254';
 
-const clothing = new Set(['hoodie', 'skull-tee', 'leather-jacket']);
+const clothing = new Set(['hoodie', 'skull-tee', 'leather-jacket', 'poncho']);
 const wristbands = new Set(['wristbands', 'goldbands']);
 
 /** All saved choices share one registered square canvas. No model renderer is needed. */
 export function avatarLayers(avatar: AvatarConfig): AvatarLayer[] {
   const layers: AvatarLayer[] = [];
   const hasBack = ['long', 'bob', 'ponytail'].includes(avatar.hair);
-  const hairClass = `hair-tone-${avatar.hairColor}${['cap', 'top-hat', 'crown'].includes(avatar.head) ? ' under-cap' : ''}`;
+  const hairClass = `hair-tone-${avatar.hairColor}${['cap', 'top-hat', 'crown', 'cowboy-hat'].includes(avatar.head) ? ' under-cap' : ''}`;
   if (hasBack) layers.push({ id: 'hair-back', file: `hair-${avatar.hair}`, className: `avatar-hair-back ${hairClass}` });
   layers.push({ id: 'base', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-base-layer' });
   if (avatar.shirt !== 'blue') layers.push({ id: 'shirt', file: clothing.has(avatar.shirt) ? avatar.shirt : 'shirt-mint', className: `avatar-shirt-layer shirt-tone-${avatar.shirt}` });
+  if (avatar.shirt !== 'blue') layers.push({ id: 'hands', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-hands-layer', mask: 'hands' });
   if (avatar.hair !== 'bald') layers.push({ id: 'hair-front', file: `hair-${avatar.hair}`, className: `avatar-hair-front ${hairClass}${hasBack ? ' has-back-layer' : ''}` });
   if (avatar.extra !== 'none') layers.push({ id: 'extra', file: wristbands.has(avatar.extra) ? 'wristbands' : avatar.extra, className: `avatar-extra-layer extra-tone-${avatar.extra}` });
-  if (avatar.facialHair && avatar.facialHair !== 'none') layers.push({ id: 'facialHair', file: avatar.facialHair, className: `avatar-facial-hair-layer hair-tone-${avatar.hairColor}` });
+  if (avatar.facialHair && avatar.facialHair !== 'none') layers.push({ id: 'facialHair', file: avatar.facialHair, className: `avatar-facial-hair-layer facial-hair-${avatar.facialHair} hair-tone-${avatar.hairColor}` });
   if (avatar.face && avatar.face !== 'none') layers.push({ id: 'face', file: avatar.face, className: `avatar-face-layer face-${avatar.face}` });
   if (avatar.head !== 'none') layers.push({ id: 'head', file: avatar.head, className: `avatar-head-layer head-${avatar.head}` });
   return layers;

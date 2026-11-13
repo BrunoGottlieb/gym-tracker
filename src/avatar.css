@@ -69,3 +69,18 @@
 .sandbox-status>span{display:flex;align-items:center;gap:5px;font-size:10px;color:#617cc0}
 .sandbox-status>.text-button{font-size:10px;min-height:32px}
 @media(max-width:380px){.level-emblem.avatar-level-link{width:88px;height:100px}.game-level{padding:16px;gap:12px}.level-info strong{font-size:13px}.level-info small{font-size:10px}.team-portrait,.compact-team .team-portrait{border-radius:17px}.avatar-team-list{gap:8px}}
+
+/* Fit headgear to the skull/ears rather than letting it float above the head. */
+.avatar-head-layer.head-headphones{transform:translateY(2.2%) scaleX(.92)}
+.avatar-head-layer.head-crown{transform:translateY(-4%) scale(.86);transform-origin:50% 26%}
+.avatar-head-layer.head-cowboy-hat{transform:translateY(-6%) scale(.92);transform-origin:50% 26%}
+.avatar-head-layer.head-bunny-ears{transform:translateY(-1%) scaleY(.82);transform-origin:50% 22%}
+.avatar-face-layer.face-deal-with-it{transform:translateY(-6.2%) scaleX(.81);transform-origin:53% 37%}
+.avatar-face-layer.face-scar{transform:translate(-3.2%,-3.2%)}
+.avatar-face-layer.face-earrings{transform:translate(-1.35%,-5%) scaleX(1.1)}
+.avatar-facial-hair-layer.facial-hair-short-beard{clip-path:none;transform:translate(1%,-3.2%)}
+.avatar-facial-hair-layer.facial-hair-long-beard{clip-path:none;transform:translate(1%,-3.8%) scaleY(.85);transform-origin:53% 39%}
+.avatar-shirt-layer.shirt-tone-poncho{transform:translateY(-2.3%) scaleY(.7)}
+.avatar-extra-layer.extra-tone-necktie{transform:translateY(-5%) scale(.85,.7);transform-origin:52% 50%}
+.avatar-extra-layer.extra-tone-bow-tie{transform:translateY(-4.7%) scale(.8);transform-origin:52% 52%}
+.avatar-composition>.avatar-hands-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}

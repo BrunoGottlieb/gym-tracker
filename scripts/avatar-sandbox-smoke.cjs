@@ -53,7 +53,20 @@ const out = 'artifacts/avatar-sandbox';
     await page.locator('.customizer-preview img').evaluateAll(imgs => Promise.all(imgs.map(img => img.decode())));
     await page.screenshot({ path: `${out}/sandbox.png` }); await click('Concluído');
     assert.deepEqual(await read(page), before); assert.equal(uploads.length, countBefore);
+    await click('Abrir ajustes');
+    assert.equal(await page.locator('.aura-options button:disabled').count(), 0);
+    for (const name of ['Brilho âmbar', 'Brilho violeta', 'Brilho menta', 'Brilho dourado']) {
+      await page.locator('.aura-options button').filter({ hasText: name }).click();
+      assert.equal(await page.locator('.aura-options button.equipped strong').innerText(), name);
+    }
+    await click('Ver animação da chama');
+    assert.equal(await page.locator('.celebration-stage').evaluate(el => el.style.getPropertyValue('--reward-aura')), '#FFDA61');
+    await page.waitForTimeout(3500); // Capture the glow after the entrance has settled.
+    await page.screenshot({ path: `${out}/golden-glow.png` });
+    await page.locator('.streak-celebration').getByRole('button', { name: 'Continuar', exact: true }).click();
+    assert.deepEqual(await read(page), before); assert.equal(uploads.length, countBefore);
     await page.reload(); await click('Perfil'); assert.equal(await page.locator('.profile-miniature').getAttribute('data-avatar-head'), 'crown');
+    await click('Abrir ajustes'); assert.equal(await page.locator('.aura-options button.equipped strong').innerText(), 'Brilho dourado'); await click('Perfil');
     await page.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).uncheck();
     assert.equal(await page.locator('.profile-miniature').getAttribute('data-avatar-head'), 'none');
     await click('Personalizar avatar'); await click('Equipamentos'); assert.equal(await page.getByRole('button', { name: 'Coroa dourada, desbloqueia no nível 24', exact: true }).isDisabled(), true); await click('Concluído');
@@ -72,6 +85,7 @@ const out = 'artifacts/avatar-sandbox';
       const level = Math.floor(fixtures[person].xp / 500) + 1;
       assert.match(await phone.locator('.game-level').innerText(), new RegExp(`Nível ${level}\\s+${fixtures[person].xp.toLocaleString('pt-BR')} XP`));
       await phone.getByRole('button', { name: 'Perfil', exact: true }).click(); assert.equal(await phone.getByRole('switch', { name: 'Modo sandbox neste aparelho' }).count(), 0);
+      if (person === 'original') { await phone.getByRole('button', { name: 'Abrir ajustes', exact: true }).click(); assert.equal(await phone.locator('.aura-options button:disabled').count(), 4); }
       await phone.getByRole('button', { name: 'Treinos', exact: true }).click();
       await phone.screenshot({ path: `${out}/${person}-home.png`, fullPage: true });
       if (person !== 'original') for (const workout of fixtures[person].state.workouts) {

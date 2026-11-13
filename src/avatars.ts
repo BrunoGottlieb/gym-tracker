@@ -28,6 +28,8 @@ export const avatarEquipment = {
     { id: 'headphones', name: 'Fones dourados', level: 10, color: '#F6C65F' },
     { id: 'top-hat', name: 'Cartola', level: 16, color: '#413252' },
     { id: 'crown', name: 'Coroa dourada', level: 24, color: '#EAC36A' },
+    { id: 'bunny-ears', name: 'Orelhas de coelho', level: 8, color: '#F5D6DF' },
+    { id: 'cowboy-hat', name: 'Chapéu de cowboy', level: 20, color: '#B47A47' },
   ],
   face: [
     { id: 'none', name: 'Sem acessório no rosto', level: 1, color: '#DCE3F4' },
@@ -35,11 +37,16 @@ export const avatarEquipment = {
     { id: 'eyepatch', name: 'Tapa-olho', level: 8, color: '#303747' },
     { id: 'star-glasses', name: 'Óculos de estrela', level: 14, color: '#F6C65F' },
     { id: 'monocle', name: 'Monóculo dourado', level: 17, color: '#EAC36A' },
+    { id: 'scar', name: 'Cicatriz', level: 7, color: '#B77E70' },
+    { id: 'deal-with-it', name: 'Óculos Turn Down for What', level: 13, color: '#303747' },
+    { id: 'earrings', name: 'Brincos de argola', level: 5, color: '#EAC36A' },
   ],
   facialHair: [
     { id: 'none', name: 'Sem bigode', level: 1, color: '#DCE3F4' },
     { id: 'moustache', name: 'Bigode clássico', level: 4, color: '#4A3029' },
     { id: 'handlebar', name: 'Bigode de respeito', level: 12, color: '#4A3029' },
+    { id: 'short-beard', name: 'Barba curta', level: 6, color: '#4A3029' },
+    { id: 'long-beard', name: 'Barba cheia', level: 15, color: '#4A3029' },
   ],
   shirt: [
     { id: 'blue', name: 'Regata azul', level: 1, color: '#5277EC' },
@@ -50,6 +57,7 @@ export const avatarEquipment = {
     { id: 'hoodie', name: 'Moletom lavanda', level: 12, color: '#A393D4' },
     { id: 'skull-tee', name: 'Camiseta de caveira', level: 9, color: '#303747' },
     { id: 'leather-jacket', name: 'Jaqueta de couro', level: 18, color: '#303747' },
+    { id: 'poncho', name: 'Poncho peruano', level: 21, color: '#B65B44' },
   ],
   extra: [
     { id: 'none', name: 'Sem extra', level: 1, color: '#DCE3F4' },
@@ -57,6 +65,8 @@ export const avatarEquipment = {
     { id: 'goldbands', name: 'Munhequeiras douradas', level: 7, color: '#F6C65F' },
     { id: 'medal', name: 'Medalha de campeão', level: 6, color: '#EAC36A' },
     { id: 'watch', name: 'Relógio esportivo', level: 11, color: '#5377DC' },
+    { id: 'necktie', name: 'Gravata tradicional', level: 8, color: '#304467' },
+    { id: 'bow-tie', name: 'Gravata borboleta', level: 14, color: '#EC796B' },
   ],
 } as const;
 export type EquipmentSlot = keyof typeof avatarEquipment;
