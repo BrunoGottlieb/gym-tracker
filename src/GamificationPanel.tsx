@@ -5,6 +5,8 @@ import { planLabels } from './routinePlans';
 import type { AppState } from './types';
 import { MinimalBonfire } from './MinimalBonfire';
 import './gamification.css';
+import { AvatarArt } from './AvatarArt';
+import { profileAvatar } from './avatars';
 
 const number = (value: number) => value.toLocaleString('pt-BR');
 function Meter({ value, max, label }: { value: number; max: number; label: string }) {
@@ -16,12 +18,12 @@ export function WeeklyGoalControl({ state, onChange }: { state: AppState; onChan
   return <label className="goal-control">Meta de {planLabels[state.selectedPlan ?? 'original']}<select aria-label="Meta semanal de dias de treino" value={target} onChange={event => onChange(+event.target.value)}>{[1, 2, 3, 4, 5, 6, 7].map(goal => <option value={goal} key={goal}>{goal} {goal === 1 ? 'dia' : 'dias'} / semana</option>)}</select></label>;
 }
 
-export function GamificationDashboard({ state, now, onGoal }: { state: AppState; now: number; onGoal: (goal: number) => void }) {
+export function GamificationDashboard({ state, now, onGoal, onProfile }: { state: AppState; now: number; onGoal: (goal: number) => void; onProfile: () => void }) {
   const xp = personalXP(state.history, state.selectedPlan ?? 'original');
   const level = levelProgress(xp);
   const goal = weeklyGoal(state, now);
   return <section className="game-dashboard" aria-label="XP e meta semanal">
-    <div className="game-level"><div className="level-emblem"><Zap size={21} fill="currentColor" /><strong>{level.level}</strong></div><div className="level-info"><div><strong>Nível {level.level}</strong><span>{number(xp)} XP</span></div><Meter value={level.current} max={500} label="XP até o próximo nível" /><small>{number(level.remaining)} XP para o próximo nível</small></div></div>
+    <div className="game-level"><button className="level-emblem avatar-level-link" aria-label="Ver meu avatar e nível" onClick={onProfile}><AvatarArt avatar={profileAvatar(state)} portrait /></button><div className="level-info"><div><strong>Nível {level.level}</strong><span>{number(xp)} XP</span></div><Meter value={level.current} max={500} label="XP até o próximo nível" /><small>{number(level.remaining)} XP para o próximo nível</small></div></div>
     <div className={`weekly-goal ${goal.reached ? 'goal-reached' : ''}`}><div className="goal-heading"><span>{goal.reached ? <Trophy size={18} /> : <Target size={18} />}<strong>{goal.reached ? 'Meta da semana alcançada!' : 'Sua meta semanal'}</strong></span><b>{goal.done}<span> / {goal.target} {goal.target === 1 ? 'dia' : 'dias'}</span></b></div><Meter value={goal.done} max={goal.target} label="Dias treinados nesta semana" /><WeeklyGoalControl state={state} onChange={onGoal} /><p>Domingo a sábado · cada dia treinado conta uma vez.</p></div>
   </section>;
 }

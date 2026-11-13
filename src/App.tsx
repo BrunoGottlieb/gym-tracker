@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CalendarDays, Check, ChevronRight, CircleCheck, CloudOff, Download, Dumbbell, History, Leaf, LayoutGrid, LoaderCircle, MoreHorizontal, Pause, Pencil, Play, Plus, RotateCcw, Settings, ShieldCheck, Timer, Trash2, TrendingUp, Upload, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CalendarDays, Check, ChevronRight, CircleCheck, CloudOff, Download, Dumbbell, History, Leaf, LayoutGrid, LoaderCircle, MoreHorizontal, Pause, Pencil, Play, Plus, RotateCcw, Settings, ShieldCheck, Timer, Trash2, TrendingUp, Upload, UserRound, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { recordHold, addSessionExercise, hasRecordedHold, holdSides, holdSideLabels, swapSessionExercise, editHistorySession, toggleSeriesCompletion, addSessionSet, removeSessionSet, MAX_SESSION_SETS, beginWorkout, createSession, finishSession, formatTime, getProgress, createBackup, parseBackup, timerSeconds } from './domain';
 import { loadState, saveState } from './storage';
@@ -26,12 +26,16 @@ import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
 import { streakDate } from './streaks';
 import { localDateKey, sessionsOnDate, sessionsThisWeek } from './calendar';
 import { holidayName } from './holidays';
-import { equippedAura, exerciseXP, sessionXP, workoutResult, type RewardAura, type WorkoutResult } from './gamification';
+import { AvatarArt } from './AvatarArt';
+import { AvatarProfile, AvatarTeam } from './AvatarProfile';
+import { profileAvatar, updateAvatar, type AvatarConfig } from './avatars';
+import { useTeamProfiles } from './useTeamProfiles';
+import { equippedAura, exerciseXP, levelProgress, personalXP, sessionXP, workoutResult, type RewardAura, type WorkoutResult } from './gamification';
 import { GamificationDashboard, GamificationSettings, RestDayNote, SessionXP, WorkoutResults, XPFeedback, type XPFeedbackData } from './GamificationPanel';
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const imageUrl = (image: number) => `${import.meta.env.BASE_URL}images/exercise-${image}.webp`;
-type View = 'home' | 'workout' | 'history' | 'settings' | 'progress';
+type View = 'home' | 'workout' | 'history' | 'settings' | 'progress' | 'profile';
 type SetAdjustment = { exerciseId: string; change: 1 | -1 };
 const adjustSession = (state: AppState, action: SetAdjustment) => action.change === 1 ? addSessionSet(state, action.exerciseId) : removeSessionSet(state, action.exerciseId);
 type DialogState = { type: 'workout-result'; result: WorkoutResult } | { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
@@ -117,6 +121,9 @@ export default function App() {
   const [state, setState] = useState<AppState | null>(null);
   const stateRef = useRef<AppState | null>(null);
   const cloudStreak = useCloudStreaks(state);
+  const team = useTeamProfiles(state);
+  const [profilePerson, setProfilePerson] = useState<RoutinePlan | null>(null);
+  useEffect(() => { setProfilePerson(null); }, [state?.selectedPlan]);
   const [streakPreview, setStreakPreview] = useState(0);
   const [selfCompletion, setSelfCompletion] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -213,6 +220,8 @@ export default function App() {
 
   function setWeeklyGoal(goal: number) { commit(s => ({ ...s, preferences: { ...s.preferences, weeklyGoals: { ...s.preferences.weeklyGoals, [s.selectedPlan ?? 'original']: goal } } })); }
   function equipReward(aura: RewardAura) { commit(s => ({ ...s, preferences: { ...s.preferences, rewardAuras: { ...s.preferences.rewardAuras, [s.selectedPlan ?? 'original']: aura } } })); }
+  function openProfile(person = stateRef.current?.selectedPlan ?? 'original') { setProfilePerson(person); navigate('profile'); }
+  function customizeAvatar(patch: Partial<AvatarConfig>) { commit(s => updateAvatar(s, patch)); }
   function navigate(next: View) { setView(next); setDialog(null); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openProgress(exerciseId: string) { setProgressTab('loads'); setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
   function openWorkout(workout: Workout) {
@@ -271,6 +280,8 @@ export default function App() {
   if (!state) return <main className="loading-screen"><Dumbbell size={38} /><h1>gym tracker.</h1>{loadError ? <><p role="alert">{loadError}</p><button className="primary" onClick={() => location.reload()}>Tentar novamente</button><label className="secondary">Restaurar backup<input type="file" accept=".json,application/json" hidden onChange={async e => { const file = e.target.files?.[0]; if (!file) return; try { const value = parseBackup(await file.text()); if (!confirm('Restaurar este backup e substituir os dados locais?')) return; await saveState(value); location.reload(); } catch (error) { setLoadError(error instanceof Error ? error.message : 'Falha ao restaurar backup.'); } }} /></label></> : <><LoaderCircle className="spin" size={22} /><p>Abrindo seus treinos…</p></>}</main>;
 
   const active = state.active;
+  const person = state.selectedPlan ?? 'original';
+  const avatarLevel = levelProgress(personalXP(state.history, person)).level;
   const selectedWorkout = state.workouts.find(w => w.id === viewedWorkoutId);
   const viewingActive = !!active && selectedWorkout?.id === active.workoutId;
   const displayedSession = viewingActive ? active : selectedWorkout ? createSession(selectedWorkout, state.weights) : null;
@@ -296,7 +307,7 @@ export default function App() {
   </section>;
 
   return <div className="app-shell">
-    <header className="app-header"><div className="brand-group"><button className="brand" onClick={() => navigate('home')} aria-label="Gym Tracker, início"><Dumbbell size={29} strokeWidth={2.5} /><span>gym tracker<span className="brand-dot">.</span></span></button><StreakBadge cloud={cloudStreak} onClick={() => setDialog({ type: 'streak' })} /></div><div className="header-actions"><span className={`save-status ${error ? 'save-error' : ''}`} title={error || 'Dados armazenados neste aparelho'}>{saving ? <LoaderCircle size={14} className="spin" /> : online ? <ShieldCheck size={14} /> : <CloudOff size={14} />}<span>{error ? 'Falha ao salvar' : saving ? 'Salvando…' : online ? 'Salvo no aparelho' : 'Modo offline'}</span></span><button className={`icon-button ${view === 'settings' ? 'selected' : ''}`} onClick={() => navigate('settings')} aria-label="Abrir ajustes"><Settings size={21} /></button></div></header>
+    <header className="app-header"><div className="brand-group"><button className="brand" onClick={() => navigate('home')} aria-label="Gym Tracker, início"><Dumbbell size={29} strokeWidth={2.5} /><span>gym tracker<span className="brand-dot">.</span></span></button><StreakBadge cloud={cloudStreak} onClick={() => setDialog({ type: 'streak' })} /></div><div className="header-actions"><span className={`save-status ${error ? 'save-error' : ''}`} title={error || 'Dados armazenados neste aparelho'}>{saving ? <LoaderCircle size={14} className="spin" /> : online ? <ShieldCheck size={14} /> : <CloudOff size={14} />}<span>{error ? 'Falha ao salvar' : saving ? 'Salvando…' : online ? 'Salvo no aparelho' : 'Modo offline'}</span></span><button className="header-avatar" onClick={() => openProfile()} aria-label={`Abrir perfil de ${planLabels[person]}, nível ${avatarLevel}`}><AvatarArt avatar={profileAvatar(state)} portrait /><b>{avatarLevel}</b></button><button className={`icon-button ${view === 'settings' ? 'selected' : ''}`} onClick={() => navigate('settings')} aria-label="Abrir ajustes"><Settings size={21} /></button></div></header>
     {error && <div className="alert error" role="alert"><span>{error}</span><button onClick={() => setError('')} aria-label="Fechar aviso"><X size={17} /></button></div>}
     {needRefresh && <div className="alert"><span>Uma atualização está pronta. Seu treino está salvo.</span><button onClick={async () => { try { await queue.current; if (stateRef.current) await saveState(stateRef.current); await updateServiceWorker(true); } catch { setError('Salve seus dados ou exporte um backup antes de atualizar.'); } }}>Atualizar app</button></div>}
     <main className={`main-content ${view === 'workout' ? 'workout-content' : ''}`}>
@@ -306,7 +317,7 @@ export default function App() {
         <section className="week-summary" aria-label="Resumo da semana"><div className="week-heading"><div><h2>Tua semana</h2><p className="week-total">{weeklyRecords.length} treino{weeklyRecords.length !== 1 ? 's' : ''} registrado{weeklyRecords.length !== 1 ? 's' : ''}</p></div><button className="week-calendar" aria-label="Calendário" onClick={() => navigate('history')}><CalendarDays size={20} /></button></div>
         <div className="week-strip" aria-label="Sua semana">{Array.from({ length: 7 }, (_, i) => { const current = new Date(date); const offset = day; current.setDate(date.getDate() - offset + i); const weekday = current.getDay(), key = localDateKey(current); const today = key === localDateKey(date); const holiday = holidayName(key); const records = sessionsOnDate(state.history, key); const label = `${days[weekday]}, ${current.getDate()}${today ? ', hoje' : ''}${holiday ? ', ' + holiday : ''}${records.length ? ': ' + records.map(s => s.workoutName).join('; ') : ', sem treino registrado'}`; return <button key={i} data-date={key} className={`week-day ${today ? 'today' : ''} ${records.length ? 'trained' : ''} ${holiday ? 'holiday' : ''}`} aria-label={label} title={label} onClick={() => setDialog({ type: 'day', date: key })}><span>{['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][weekday]}</span><strong>{current.getDate()}</strong>{records.length ? <DayMarkers sessions={records} /> : <span className="week-marker"><span /></span>}</button>; })}</div>
         </section>
-        <GamificationDashboard state={state} now={now} onGoal={setWeeklyGoal} />
+        <GamificationDashboard state={state} now={now} onGoal={setWeeklyGoal} onProfile={() => openProfile()} />
         {(!workoutToday || workoutToday.optional || holidayName(localDateKey(now))) && <RestDayNote flameProtected={cloudStreak.group.restToday} />}
         <div className="section-heading"><h2>Seus treinos</h2><span>{weeklyCards ? `${weeklyCards} de ${state.workouts.length} feitos nesta semana` : workoutToday ? (workoutToday.optional ? 'Opcional hoje: em casa' : `Sugestão de hoje: ${workoutToday.id.toUpperCase()}`) : 'Você escolhe a ordem'}</span></div>
         <div className="workout-grid">{state.workouts.map(workout => {
@@ -337,6 +348,7 @@ export default function App() {
             {inProgress && <div className="tile-progress"><span>{progress.done}/{progress.total} séries</span><div role="progressbar" aria-label={`Progresso de ${workout.name}`} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}><i style={{ width: `${progress.total ? progress.done / progress.total * 100 : 0}%` }} /></div></div>}
           </button>;
         })}</div>
+        <AvatarTeam team={team} selected={person} onSelect={openProfile} compact />
         <WeeklyMuscleSummary workouts={state.workouts} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
@@ -366,6 +378,7 @@ export default function App() {
         <WeeklyCompletedChart history={state.history} workouts={state.workouts} person={state.selectedPlan ?? 'original'} />
         {state.history.length ? <><div className="history-summary"><span><strong>{state.history.length}</strong> {state.history.length === 1 ? 'treino registrado' : 'treinos registrados'}</span><span><strong>{state.history.reduce((n, s) => n + getProgress(s).done, 0)}</strong> séries concluídas</span></div><div className="history-list">{state.history.map(s => <button className="history-row" key={s.id} onClick={() => setDialog({ type: 'detail', session: s })}><span className="history-date"><strong>{new Date(s.finishedAt!).getDate()}</strong><span>{new Date(s.finishedAt!).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></span><span className="history-copy"><strong>{s.workoutName}</strong><span>{getProgress(s).done}/{getProgress(s).total} séries <span>·</span> {Math.max(1, Math.round((s.finishedAt! - s.startedAt) / 60000))} min</span></span><ChevronRight size={19} /></button>)}</div></> : <div className="empty-state"><div className="empty-illustration"><History size={38} strokeWidth={1.4} /></div><h2>O primeiro é só o começo.</h2><p>Finalize um treino e acompanhe por aqui<br />as cargas e séries que você registrou.</p><button className="primary" onClick={() => navigate('home')}>Escolher um treino<ArrowRight size={17} /></button></div>}
       </>}
+      {view === 'profile' && <AvatarProfile team={team} person={profilePerson ?? person} onPerson={setProfilePerson} onChange={customizeAvatar} />}
       {view === 'settings' && <>
         <div className="page-heading"><div><span className="eyebrow">DO SEU JEITO</span><h1>Ajustes<span className="accent">.</span></h1><p className="subtitle">O essencial para deixar o treino com a sua cara.</p></div></div>
         <section className="settings-section routine-plan-section"><h2><LayoutGrid size={19} />Escolher ficha de treino</h2><p className="subtle">Cada celular guarda sua própria escolha, cargas e histórico. Ao trocar de ficha neste aparelho, suas edições ficam guardadas para quando voltar.</p><div className="routine-plan-options">{(['original', 'sheet', 'ivan'] as const).map(plan => <button key={plan} className={`routine-plan-option ${(state.selectedPlan ?? 'original') === plan ? 'selected' : ''}`} aria-pressed={(state.selectedPlan ?? 'original') === plan} disabled={!!active || (state.selectedPlan ?? 'original') === plan} onClick={() => setDialog({ type: 'plan', plan })}><span><strong>{planLabels[plan]}</strong><small>{plan === 'original' ? 'Sua configuração atual, preservada.' : plan === 'sheet' ? 'Ficha da foto · treinos A, B, C, D e E.' : 'Push, Pull, Legs, Upper e Lower · descanso quinta e domingo.'}</small></span>{(state.selectedPlan ?? 'original') === plan ? <CircleCheck size={21} /> : <ArrowRight size={20} />}</button>)}</div>{active && <p className="subtle">Finalize ou descarte o treino em andamento antes de trocar de ficha.</p>}<p className="subtle">Na ficha Ivan, as séries seguem a lista enviada; descanso de 90 s e tempo da prancha são metas editáveis.</p><p className="subtle">Na ficha Nick, séries, metas e combinações seguem a foto. Os dias da semana são sugestões editáveis.</p></section>
@@ -379,7 +392,7 @@ export default function App() {
         <p className="version-label">Gym Tracker · v1.1 · Feito para o seu ritmo.</p>
       </>}
     </main>
-    <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button></nav>
+    <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button><button className={`profile-nav ${view === 'profile' ? 'active' : ''}`} onClick={() => openProfile()}><UserRound size={21} /><span>Perfil</span></button></nav>
     {xpFeedback && dialog?.type !== 'finish' && <XPFeedback feedback={xpFeedback} />}
     {notice && <div className="toast" role="status"><CircleCheck size={18} /><span>{notice}</span></div>}
     <input ref={importRef} type="file" accept=".json,application/json" hidden aria-label="Selecionar arquivo de backup" onChange={e => { const file = e.target.files?.[0]; if (file) void importBackup(file); e.target.value = ''; }} />

@@ -1,4 +1,5 @@
 import { auraRewards } from './gamification';
+import { validAvatarProfiles } from './avatars';
 import { isCelebrationTheme } from './celebrationThemes';
 import type { AppState, Exercise, ExerciseLog, HoldSide, RestTimer, Session, Workout } from './types';
 import { canonicalExerciseId, getMuscle, LAST_IMAGE_INDEX, muscleLabels } from './catalog';
@@ -160,7 +161,7 @@ export function validateState(value: unknown): value is AppState {
   if (value.routineRevision !== undefined && !integer(value.routineRevision, 12)) return false;
   if (value.brunoPlanRevision !== 1 && typeof value.routineRevision === 'number' && value.routineRevision >= 5 && !['sheet', 'ivan'].includes(String(value.selectedPlan)) && (value.workouts as Workout[]).some(w => w.exercises.some(e => e.sets !== 3))) return false;
   if (value.exerciseNotes !== undefined && (!object(value.exerciseNotes) || !Object.values(value.exerciseNotes).every(note => typeof note === 'string' && note.length <= 1000))) return false;
-  return object(p) && validGamificationPreferences(p) && (p.celebrationTheme === undefined || isCelebrationTheme(p.celebrationTheme)) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';
+  return validAvatarProfiles(value.avatars) && object(p) && validGamificationPreferences(p) && (p.celebrationTheme === undefined || isCelebrationTheme(p.celebrationTheme)) && typeof p.autoRest === 'boolean' && typeof p.sound === 'boolean' && integer(p.restDuration, 600) && p.restDuration >= 15 && object(t) && integer(t.duration, 600) && t.duration >= 15 && number(t.remaining, 3600) && (t.endAt === null || number(t.endAt)) && typeof t.exercise === 'string' && t.exercise.length <= 160 && typeof t.started === 'boolean';
 }
 function validGamificationPreferences(p: Record<string, unknown>) {
   const profiles = ['original', 'sheet', 'ivan'];

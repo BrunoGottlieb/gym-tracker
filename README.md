@@ -2,6 +2,16 @@
 
 A personal, offline-first workout tracker with a light interface in Brazilian Portuguese. Built with React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), and a service worker.
 
+## Customizable avatars and team levels
+
+**Perfil**, the header portrait, or the portrait beside XP opens the soft 3D miniature. The wardrobe offers twelve free hairstyles, six free hair colors and six skin tones. Basic blue/coral/mint tops and a sports headband are available at level one. Wristbands unlock at level 2, a visor at 3, a cap and lavender top at 5, golden wristbands at 7, and headphones/a golden top at 10. Unlocks use the existing XP derived from completed personal history; changing appearance never changes XP or training data. A user can inspect a teammate's avatar without switching the selected routine or editing that teammate.
+
+Avatar configuration is stored per routine profile in IndexedDB and JSON/cloud backups. Restoring a profile preserves the other profiles' avatars. Customized cloud avatars also prevent an otherwise empty backup from being treated as an untouched seed. Older installations and backups receive distinct default appearances without resetting data.
+
+The home and profile screens show the team. Teammates' levels and appearance are read from their existing authenticated cloud backups, with an explicit unknown level until data exists; the selected user's history remains local. Team metadata is cached for offline use and refreshed on reconnect, at most once a minute while visible, or through the refresh button. Viewing team data never imports another person's workout history into local training records.
+
+`src/avatarScene.ts` builds the miniature with Three.js, soft lighting and interchangeable geometry. One shared renderer produces cached stills on demand rather than running a rendering loop per character. The renderer is loaded separately and precached by the PWA. The wardrobe remains usable with a matching configurable SVG fallback if WebGL is unavailable. `src/avatars.test.ts` covers free options, level gates, profile isolation, validation, cloud backup/restore and team XP.
+
 ## Ivan and Sunday-first calendars
 
 The saved plan keys remain `original` and `sheet`; only their visible labels change to **Bruno** and **Nick**, preserving installed users' current selection and customized routines. The additive `ivan` plan contains Push Monday, Pull Tuesday, Legs Wednesday, Upper Friday and Lower Saturday. Thursday and Sunday are suggested rest days; browsing and recording any workout remains unrestricted.
