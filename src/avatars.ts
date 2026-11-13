@@ -77,6 +77,7 @@ export function profileAvatar(state: AppState, person = state.selectedPlan ?? 'o
 }
 export function updateAvatar(state: AppState, patch: Partial<AvatarConfig>): AppState {
   const person = state.selectedPlan ?? 'original';
+  if (Object.keys(patch).some(key => !Object.hasOwn(defaultAvatars.original, key))) return state;
   const avatar = { ...profileAvatar(state, person), ...patch };
   if (!validAvatar(avatar)) return state;
   const level = levelProgress(personalXP(state.history, person)).level;

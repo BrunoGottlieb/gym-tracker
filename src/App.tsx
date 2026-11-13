@@ -122,8 +122,6 @@ export default function App() {
   const stateRef = useRef<AppState | null>(null);
   const cloudStreak = useCloudStreaks(state);
   const team = useTeamProfiles(state);
-  const [profilePerson, setProfilePerson] = useState<RoutinePlan | null>(null);
-  useEffect(() => { setProfilePerson(null); }, [state?.selectedPlan]);
   const [streakPreview, setStreakPreview] = useState(0);
   const [selfCompletion, setSelfCompletion] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -220,7 +218,7 @@ export default function App() {
 
   function setWeeklyGoal(goal: number) { commit(s => ({ ...s, preferences: { ...s.preferences, weeklyGoals: { ...s.preferences.weeklyGoals, [s.selectedPlan ?? 'original']: goal } } })); }
   function equipReward(aura: RewardAura) { commit(s => ({ ...s, preferences: { ...s.preferences, rewardAuras: { ...s.preferences.rewardAuras, [s.selectedPlan ?? 'original']: aura } } })); }
-  function openProfile(person = stateRef.current?.selectedPlan ?? 'original') { setProfilePerson(person); navigate('profile'); }
+  function openProfile() { navigate('profile'); }
   function customizeAvatar(patch: Partial<AvatarConfig>) { commit(s => updateAvatar(s, patch)); }
   function navigate(next: View) { setView(next); setDialog(null); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openProgress(exerciseId: string) { setProgressTab('loads'); setProgressExercise(canonicalExerciseId(exerciseId)); navigate('progress'); }
@@ -348,7 +346,7 @@ export default function App() {
             {inProgress && <div className="tile-progress"><span>{progress.done}/{progress.total} séries</span><div role="progressbar" aria-label={`Progresso de ${workout.name}`} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}><i style={{ width: `${progress.total ? progress.done / progress.total * 100 : 0}%` }} /></div></div>}
           </button>;
         })}</div>
-        <AvatarTeam team={team} selected={person} onSelect={openProfile} compact />
+        <AvatarTeam team={team} onOpenProfile={openProfile} compact />
         <WeeklyMuscleSummary workouts={state.workouts} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
@@ -378,7 +376,7 @@ export default function App() {
         <WeeklyCompletedChart history={state.history} workouts={state.workouts} person={state.selectedPlan ?? 'original'} />
         {state.history.length ? <><div className="history-summary"><span><strong>{state.history.length}</strong> {state.history.length === 1 ? 'treino registrado' : 'treinos registrados'}</span><span><strong>{state.history.reduce((n, s) => n + getProgress(s).done, 0)}</strong> séries concluídas</span></div><div className="history-list">{state.history.map(s => <button className="history-row" key={s.id} onClick={() => setDialog({ type: 'detail', session: s })}><span className="history-date"><strong>{new Date(s.finishedAt!).getDate()}</strong><span>{new Date(s.finishedAt!).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></span><span className="history-copy"><strong>{s.workoutName}</strong><span>{getProgress(s).done}/{getProgress(s).total} séries <span>·</span> {Math.max(1, Math.round((s.finishedAt! - s.startedAt) / 60000))} min</span></span><ChevronRight size={19} /></button>)}</div></> : <div className="empty-state"><div className="empty-illustration"><History size={38} strokeWidth={1.4} /></div><h2>O primeiro é só o começo.</h2><p>Finalize um treino e acompanhe por aqui<br />as cargas e séries que você registrou.</p><button className="primary" onClick={() => navigate('home')}>Escolher um treino<ArrowRight size={17} /></button></div>}
       </>}
-      {view === 'profile' && <AvatarProfile team={team} person={profilePerson ?? person} onPerson={setProfilePerson} onChange={customizeAvatar} />}
+      {view === 'profile' && <AvatarProfile team={team} onChange={customizeAvatar} />}
       {view === 'settings' && <>
         <div className="page-heading"><div><span className="eyebrow">DO SEU JEITO</span><h1>Ajustes<span className="accent">.</span></h1><p className="subtitle">O essencial para deixar o treino com a sua cara.</p></div></div>
         <section className="settings-section routine-plan-section"><h2><LayoutGrid size={19} />Escolher ficha de treino</h2><p className="subtle">Cada celular guarda sua própria escolha, cargas e histórico. Ao trocar de ficha neste aparelho, suas edições ficam guardadas para quando voltar.</p><div className="routine-plan-options">{(['original', 'sheet', 'ivan'] as const).map(plan => <button key={plan} className={`routine-plan-option ${(state.selectedPlan ?? 'original') === plan ? 'selected' : ''}`} aria-pressed={(state.selectedPlan ?? 'original') === plan} disabled={!!active || (state.selectedPlan ?? 'original') === plan} onClick={() => setDialog({ type: 'plan', plan })}><span><strong>{planLabels[plan]}</strong><small>{plan === 'original' ? 'Sua configuração atual, preservada.' : plan === 'sheet' ? 'Ficha da foto · treinos A, B, C, D e E.' : 'Push, Pull, Legs, Upper e Lower · descanso quinta e domingo.'}</small></span>{(state.selectedPlan ?? 'original') === plan ? <CircleCheck size={21} /> : <ArrowRight size={20} />}</button>)}</div>{active && <p className="subtle">Finalize ou descarte o treino em andamento antes de trocar de ficha.</p>}<p className="subtle">Na ficha Ivan, as séries seguem a lista enviada; descanso de 90 s e tempo da prancha são metas editáveis.</p><p className="subtle">Na ficha Nick, séries, metas e combinações seguem a foto. Os dias da semana são sugestões editáveis.</p></section>

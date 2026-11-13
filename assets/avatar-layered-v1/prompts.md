@@ -1,6 +1,6 @@
-# Layered avatar prototype
+# Layered avatar: approved original asset set
 
-Generated with the built-in image generator, using the approved “04 · Miniatura suave” mockup as a reference. Transparent PNGs are kept unchanged in `public/avatars/layered-v1/`; layout and alignment are applied in CSS. This prototype is a visual comparison only and does not change a saved avatar, levels or workout data.
+Generated with the built-in image generator, using the approved “04 · Miniatura suave” mockup as a reference. Transparent PNGs are kept unchanged in `public/avatars/layered-v1/`; layout and alignment are applied in CSS. This original prototype was approved and is now the app’s standard visual. Additional hairstyles, accessories and skin variants are documented in expansion-prompts.md.
 
 ## base.png
 
