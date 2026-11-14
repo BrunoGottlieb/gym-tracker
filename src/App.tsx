@@ -22,7 +22,7 @@ import { StreakBadge, StreakDetails, StreakSettings } from './StreakPanel';
 import { StreakCelebration } from './StreakCelebration';
 import { CelebrationSettings } from './CelebrationSettings';
 import { useCloudStreaks } from './useCloudStreaks';
-import { WeeklyMuscleSummary, WeeklyCompletedChart, WorkoutMuscleSummary } from './TrainingOverview';
+import { WeeklyMuscleSummary, WeeklyMuscleVolumeDetails, WeeklyCompletedChart, WorkoutMuscleSummary } from './TrainingOverview';
 import { DayMarkers, TrainingCalendar } from './TrainingCalendar';
 import { streakDate } from './streaks';
 import { localDateKey, sessionsOnDate, sessionsThisWeek } from './calendar';
@@ -41,7 +41,7 @@ const imageUrl = (image: number, id?: string) => exerciseIllustrationUrl(id, ima
 type View = 'home' | 'workout' | 'history' | 'settings' | 'progress' | 'profile';
 type SetAdjustment = { exerciseId: string; change: 1 | -1 };
 const adjustSession = (state: AppState, action: SetAdjustment) => action.change === 1 ? addSessionSet(state, action.exerciseId) : removeSessionSet(state, action.exerciseId);
-type DialogState = { type: 'workout-result'; result: WorkoutResult } | { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
+type DialogState = { type: 'weekly-volume'; muscle: MuscleGroup } | { type: 'workout-result'; result: WorkoutResult } | { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
 
 function Modal({ title, onClose, children, wide = false, className = '' }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -362,7 +362,7 @@ export default function App() {
           </button>;
         })}</div>
         <AvatarTeam team={team} onOpenProfile={openProfile} compact />
-        <WeeklyMuscleSummary workouts={state.workouts} history={state.history} person={person} now={now} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
+        <WeeklyMuscleSummary onSelectVolume={muscle => setDialog({ type: 'weekly-volume', muscle })} workouts={state.workouts} history={state.history} person={person} now={now} onSelect={muscle => setDialog({ type: 'muscle', muscle })} />
         <div className="home-footer"><Leaf size={16} /><p>{workoutToday ? 'Seu ritmo. Uma série de cada vez.' : 'O descanso também faz parte. Seus treinos continuam por aqui.'}</p></div>
       </>}
       {view === 'workout' && displayedSession && selectedWorkout && <>
@@ -413,6 +413,7 @@ export default function App() {
     {dialog?.type === 'streak' && <Modal title="Chama do grupo" className="streak-mini-modal" onClose={() => setDialog(null)}><StreakDetails cloud={cloudStreak} /></Modal>}
     {dialog?.type === 'plan' && <Modal title={`Usar ${planLabels[dialog.plan]}?`} onClose={() => setDialog(null)}><p className="subtle">A escolha vale apenas para este aparelho. A configuração da ficha atual ficará guardada para quando você voltar. Suas cargas e seu histórico serão mantidos neste aparelho; eles não são enviados para outro celular.</p><div className="modal-actions"><button className="secondary" onClick={() => setDialog(null)}>Cancelar</button><button className="primary" disabled={!!active} onClick={() => { const plan = dialog.plan; commit(current => selectRoutinePlan(current, plan)); setViewedWorkoutId(null); navigate('home'); setNotice(`Ficha selecionada: ${planLabels[plan]}.`); }}>Usar esta ficha</button></div></Modal>}
     {dialog?.type === 'timer' && <Modal title="Um respiro entre as séries" onClose={() => setDialog(null)}>{restPanel(true)}<label className="toggle-row"><span><strong>Começar automaticamente</strong><small>Ao marcar uma série como concluída.</small></span><input role="switch" type="checkbox" checked={state.preferences.autoRest} onChange={e => commit(s => ({ ...s, preferences: { ...s.preferences, autoRest: e.target.checked } }))} /></label></Modal>}
+    {dialog?.type === 'weekly-volume' && <Modal className="weekly-volume-modal" title={`${muscleLabels[dialog.muscle]} nesta semana`} onClose={() => setDialog(null)}><WeeklyMuscleVolumeDetails workouts={state.workouts} history={state.history} person={person} now={now} muscle={dialog.muscle} /></Modal>}
     {dialog?.type === 'workout-result' && <Modal title="Treino registrado!" className="result-modal" onClose={() => setDialog(null)}><WorkoutResults key={dialog.result.session.id} result={dialog.result} avatar={avatarSandbox.avatar ?? profileAvatar(state)} equipped={activeAura.id} onEquip={equipReward} onClose={() => setDialog(null)} /></Modal>}
     {dialog?.type === 'finish' && active && <Modal title={progress.done === progress.total ? 'Treino completo. Mandou bem!' : 'Finalizar treino?'} onClose={() => { if (!finishing) setDialog(null); }}>
       {xpFeedback && <XPFeedback feedback={xpFeedback} inline />}

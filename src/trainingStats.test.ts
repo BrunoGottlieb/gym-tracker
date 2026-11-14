@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completedWeeklyMuscleCounts, completedWorkoutAverages, completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import { completedWeeklyMuscleCounts, weeklyMuscleVolume, completedWorkoutAverages, completedWeekdayAverages, muscleOrder, plannedMuscleCounts } from './trainingStats';
 import { createInitialState } from './data';
 import { createSession, editHistorySession } from './domain';
 import type { MuscleGroup, Session } from './types';
@@ -30,7 +30,30 @@ describe('actual sets by workout type',()=>{
  });
 });
 describe('weekly planned muscle counts', () => {
-  it('counts completed exercise appearances from Sunday to now, with profile/date isolation and no duplicate sessions', () => {
+  it('compares weekly sets by exercise, merging repeated planned appearances, extras, partials and canonical aliases', () => {
+    const state = createInitialState(), now = new Date(2026, 10, 13, 20).getTime();
+    const bench = state.workouts[0].exercises[0], pec = state.workouts[0].exercises.find(e => e.id === 'pec-deck')!;
+    const row = state.workouts[1].exercises.find(e => e.id === 'chest-supported-row')!;
+    const calf = state.workouts[2].exercises.find(e => e.id === 'calf-raise')!;
+    const workouts = [{ ...state.workouts[0], exercises: [bench, pec] }, { ...state.workouts[3], exercises: [bench, row, calf] }];
+    const session = record(11, [{ muscle: 'chest', done: [true, true, true, true, true, true] }, { muscle: 'chest', done: [true, true, false] }, { muscle: 'chest', done: [true, true, true, true] }, { muscle: 'back', done: [true, true, false] }], 10);
+    session.exercises[0].exerciseId = 'bench-press'; session.exercises[1].exerciseId = 'bench-press';
+    session.exercises[2].exerciseId = 'custom-extra'; session.exercises[2].extra = true;
+    session.exercises[3].exerciseId = 'supported-row';
+    const repeated = { ...session, id: 'repeated-session', exercises: [session.exercises[1]] };
+    session.exercises.splice(1, 1);
+    const before = structuredClone({ workouts, session, repeated });
+    const volume = weeklyMuscleVolume(workouts, [session, repeated, { ...session, id: 'nick', person: 'sheet' }], 'original', now);
+    expect(volume.chest).toMatchObject({ plannedSets: 9, completedSets: 12 });
+    expect(volume.chest.exercises.find(e => e.id === 'bench-press')).toMatchObject({ plannedSets: 6, completedSets: 8 });
+    expect(volume.chest.exercises.find(e => e.id === 'pec-deck')).toMatchObject({ plannedSets: 3, completedSets: 0, sessions: [] });
+    expect(volume.chest.exercises.find(e => e.id === 'custom-extra')).toMatchObject({ plannedSets: 0, completedSets: 4, sessions: [{ sets: 4, extra: true }] });
+    expect(volume.back.exercises).toHaveLength(1);
+    expect(volume.back.exercises[0]).toMatchObject({ id: 'chest-supported-row', plannedSets: 3, completedSets: 2 });
+    expect(volume.legs.plannedSets).toBe(4);
+    expect({ workouts, session, repeated }).toEqual(before);
+  });
+  it('counts actual sets as three-set equivalents from Sunday to now, with profile/date isolation and no duplicate sessions', () => {
     const now = new Date(2026, 10, 13, 20).getTime();
     const sunday = record(8, [{ muscle: 'chest', done: [true, true, true] }, { muscle: 'triceps', done: [true, false, false] }], 10);
     const otherDay = record(10, [{ muscle: 'chest', done: [true] }, { muscle: 'abs', done: [true, true] }], 10);
@@ -39,11 +62,11 @@ describe('weekly planned muscle counts', () => {
     const future = record(14, [{ muscle: 'back', done: [true] }], 10);
     const active = { ...otherDay, id: 'active', finishedAt: undefined };
     const history = [sunday, sunday, otherDay, nick, previousWeek, future, active], before = structuredClone(history);
-    expect(completedWeeklyMuscleCounts(history, 'original', now)).toEqual({ chest: 2, triceps: 0, biceps: 0, legs: 0, shoulders: 0, back: 0, abs: 1, other: 0 });
-    expect(completedWeeklyMuscleCounts(history, 'sheet', now).chest).toBe(1);
+    expect(completedWeeklyMuscleCounts(history, 'original', now)).toEqual({ chest: 4 / 3, triceps: 1 / 3, biceps: 0, legs: 0, shoulders: 0, back: 0, abs: 2 / 3, other: 0 });
+    expect(completedWeeklyMuscleCounts(history, 'sheet', now).chest).toBe(1 / 3);
     expect(history).toEqual(before);
     const edited = { ...otherDay, exercises: otherDay.exercises.map(log => ({ ...log, muscle: 'other' as const })) };
-    expect(completedWeeklyMuscleCounts([edited], 'original', now).other).toBe(2);
+    expect(completedWeeklyMuscleCounts([edited], 'original', now).other).toBe(1);
     expect(completedWeeklyMuscleCounts(history, 'original', new Date(2026, 10, 15, 0).getTime()).chest).toBe(0);
   });
   it('counts occurrences by primary muscle, including repeated exercises across workouts', () => {

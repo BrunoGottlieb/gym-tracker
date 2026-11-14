@@ -1,4 +1,4 @@
-import { getMuscle } from './catalog';
+import { canonicalExerciseId, getMuscle } from './catalog';
 import { localDateKey, sessionsThisWeek } from './calendar';
 import type { MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
@@ -16,15 +16,46 @@ export function plannedMuscleCounts(workouts: Workout[]): Record<MuscleGroup, nu
   return counts;
 }
 
-/** Completed exercise appearances, not sets or unique catalog entries. */
+/** Three performed sets equal one exercise-equivalent, including fractions. */
 export function completedWeeklyMuscleCounts(history: Session[], person: RoutinePlan, now = Date.now()): Record<MuscleGroup, number> {
-  const counts = emptyCounts(), seen = new Set<string>();
-  for (const session of sessionsThisWeek(history, now, person)) {
-    if (seen.has(session.id)) continue;
-    seen.add(session.id);
-    for (const log of session.exercises) if (log.done.length > 0 && log.done.every(Boolean)) counts[getMuscle(log)]++;
+  const volume = weeklyMuscleVolume([], history, person, now);
+  return Object.fromEntries(muscleOrder.map(group => [group, volume[group].completedSets / 3])) as Record<MuscleGroup, number>;
+}
+
+export interface WeeklyExerciseVolume {
+  id: string; name: string; image: number; plannedSets: number; completedSets: number;
+  plannedIn: { name: string; day: number; sets: number; optional: boolean }[];
+  sessions: { id: string; workoutName: string; date: number; sets: number; extra: boolean }[];
+}
+export interface WeeklyGroupVolume {
+  plannedSets: number; completedSets: number; exercises: WeeklyExerciseVolume[];
+}
+export function weeklyMuscleVolume(workouts: Workout[], history: Session[], person: RoutinePlan, now = Date.now()): Record<MuscleGroup, WeeklyGroupVolume> {
+  const groups = Object.fromEntries(muscleOrder.map(group => [group, { plannedSets: 0, completedSets: 0, exercises: [] }])) as unknown as Record<MuscleGroup, WeeklyGroupVolume>;
+  const entries = new Map<string, WeeklyExerciseVolume>();
+  const ensure = (group: MuscleGroup, rawId: string, name: string, image: number) => {
+    const id = canonicalExerciseId(rawId), key = `${group}:${id}`;
+    let entry = entries.get(key);
+    if (!entry) { entry = { id, name, image, plannedSets: 0, completedSets: 0, plannedIn: [], sessions: [] }; entries.set(key, entry); groups[group].exercises.push(entry); }
+    return entry;
+  };
+  for (const workout of workouts) for (const exercise of workout.exercises) {
+    const group = getMuscle(exercise), entry = ensure(group, exercise.id, exercise.name, exercise.image);
+    entry.plannedSets += exercise.sets; groups[group].plannedSets += exercise.sets;
+    entry.plannedIn.push({ name: workout.name, day: workout.day, sets: exercise.sets, optional: !!workout.optional });
   }
-  return counts;
+  const seen = new Set<string>();
+  for (const session of sessionsThisWeek(history, now, person)) {
+    if (seen.has(session.id)) continue; seen.add(session.id);
+    for (const log of session.exercises) {
+      const sets = log.done.filter(Boolean).length; if (!sets) continue;
+      const group = getMuscle(log), entry = ensure(group, log.exerciseId, log.name, log.image);
+      entry.completedSets += sets; groups[group].completedSets += sets;
+      entry.sessions.push({ id: session.id, workoutName: session.workoutName, date: session.finishedAt!, sets, extra: !!log.extra || !!log.swappedFrom });
+    }
+  }
+  for (const group of muscleOrder) groups[group].exercises.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  return groups;
 }
 
 export interface WeekdayAverage {

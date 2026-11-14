@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Check, Minus } from 'lucide-react';
+import { Check, ChevronRight, Minus } from 'lucide-react';
+import { exerciseIllustrationUrl } from './motionCatalog';
 import { MuscleIcon } from './components';
 import { getMuscle, muscleLabels } from './catalog';
-import { completedWeeklyMuscleCounts, completedWorkoutAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
+import { weeklyMuscleVolume, completedWorkoutAverages, muscleColors, muscleOrder, plannedMuscleCounts } from './trainingStats';
 import type { ExerciseLog, MuscleGroup, RoutinePlan, Session, Workout } from './types';
 
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
-export function WeeklyMuscleSummary({ workouts, history, person, now, onSelect }: { workouts: Workout[]; history: Session[]; person: RoutinePlan; now: number; onSelect: (group: MuscleGroup) => void }) {
+export function WeeklyMuscleSummary({ workouts, history, person, now, onSelect, onSelectVolume }: { onSelectVolume: (group: MuscleGroup) => void; workouts: Workout[]; history: Session[]; person: RoutinePlan; now: number; onSelect: (group: MuscleGroup) => void }) {
   const counts = useMemo(() => plannedMuscleCounts(workouts), [workouts]);
-  const completed = useMemo(() => completedWeeklyMuscleCounts(history, person, now), [history, person, now]);
+  const volume = useMemo(() => weeklyMuscleVolume(workouts, history, person, now), [workouts, history, person, now]);
   const groups = muscleOrder.filter(group => group !== 'other' || counts.other > 0);
   return <section className="weekly-muscle-summary" aria-label="Exercícios por grupo muscular na semana">
     <h2>Sua semana por grupo muscular</h2>
@@ -19,11 +20,11 @@ export function WeeklyMuscleSummary({ workouts, history, person, now, onSelect }
       <span><strong>{counts[group]}</strong><small>{muscleLabels[group]}</small></span>
     </button>)}</div>
     <div className="weekly-actual-list"><div className="weekly-actual-heading"><h3>O que saiu do papel</h3><span>Esta semana</span></div>
-      <table><caption className="sr-only">Exercícios da ficha e exercícios concluídos nesta semana por grupo muscular</caption><thead><tr><th scope="col">Grupo</th><th scope="col">Ficha</th><th scope="col">Feitos</th></tr></thead><tbody>{muscleOrder.filter(group => group !== 'other' || counts.other > 0 || completed.other > 0).map(group => <tr key={group} data-muscle={group} data-completed={completed[group]}>
-        <th scope="row"><span className="weekly-actual-group"><span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={21} /></span>{muscleLabels[group]}</span></th>
-        <td className="weekly-actual-planned">{counts[group]}</td><td><span className={`weekly-actual-count ${completed[group] ? 'has-completed' : ''}`}>{completed[group] ? <Check size={15} /> : <Minus size={13} />}{completed[group]}</span></td>
+      <table><caption className="sr-only">Volume da ficha e realizado nesta semana. Três séries equivalem a um exercício.</caption><thead><tr><th scope="col">Grupo</th><th scope="col">Ficha</th><th scope="col">Feitos</th></tr></thead><tbody>{muscleOrder.filter(group => group !== 'other' || volume.other.plannedSets > 0 || volume.other.completedSets > 0).map(group => <tr key={group} data-muscle={group} data-completed={volume[group].completedSets / 3} data-sets={volume[group].completedSets} className="weekly-volume-row" onClick={() => onSelectVolume(group)}>
+        <th scope="row"><button type="button" className="weekly-actual-group" aria-label={`Detalhar ${muscleLabels[group]}: ${volume[group].completedSets} de ${volume[group].plannedSets} séries`}><span className="stats-muscle-icon" style={{ color: muscleColors[group], backgroundColor: `${muscleColors[group]}15` }}><MuscleIcon muscle={group} size={21} /></span>{muscleLabels[group]}<ChevronRight size={12} /></button></th>
+        <td className="weekly-actual-planned">{number(volume[group].plannedSets / 3)}<small>{volume[group].plannedSets} séries</small></td><td><span className={`weekly-actual-count ${volume[group].completedSets ? 'has-completed' : ''}`}>{volume[group].completedSets ? <Check size={15} /> : <Minus size={13} />}{number(volume[group].completedSets / 3)}</span><small>{volume[group].completedSets} séries</small></td>
       </tr>)}</tbody></table>
-      <p>Domingo até hoje · cada exercício conta ao concluir todas as séries em um treino finalizado. Repetições em outras sessões contam novamente, incluindo exercícios extras.</p>
+      <p><strong>3 séries = 1 exercício equivalente.</strong> Inclui séries extras e exercícios parciais em treinos finalizados, de domingo até hoje. Toque em um grupo para comparar os exercícios.</p>
     </div>
   </section>;
 }
@@ -60,5 +61,27 @@ export function WeeklyCompletedChart({ history,workouts,person }: { history: Ses
     {!!groups.length && <div className="stats-chart-legend">{groups.map(group => <span key={group}><i style={{ backgroundColor: muscleColors[group] }} /><MuscleIcon muscle={group} size={17} />{muscleLabels[group]}</span>)}</div>}
     {detail && <div className="weekday-chart-detail" aria-live="polite"><strong>{`${detail.label} · ${detail.name}`} · {number(detail.total)} séries em média</strong><p>{detail.sessions} {detail.sessions === 1 ? 'treino registrado' : 'treinos registrados'}</p><div>{muscleOrder.filter(group => detail.totals[group] > 0).map(group => <span key={group}><i style={{ backgroundColor: muscleColors[group] }} />{muscleLabels[group]}<b>{number(detail.averages[group])}</b></span>)}</div></div>}
     <p className="stats-method">Conta somente séries marcadas como feitas, incluindo treinos parciais. Cada sessão finalizada conta uma execução do respectivo treino. Treinos sem registro aparecem sem média. Toque em uma barra para ver os detalhes.</p>
+  </section>;
+}
+
+
+export function WeeklyMuscleVolumeDetails({ workouts, history, person, now, muscle }: { workouts: Workout[]; history: Session[]; person: RoutinePlan; now: number; muscle: MuscleGroup }) {
+  const volume = useMemo(() => weeklyMuscleVolume(workouts, history, person, now)[muscle], [workouts, history, person, now, muscle]);
+  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  return <section className="weekly-volume-details" aria-label={`Comparação de séries de ${muscleLabels[muscle]}`}>
+    <div className="weekly-volume-totals"><div><small>Na ficha</small><strong>{volume.plannedSets}<span> séries</span></strong><p>{number(volume.plannedSets / 3)} exercícios equivalentes</p></div><div><small>Feitas nesta semana</small><strong>{volume.completedSets}<span> séries</span></strong><p>{number(volume.completedSets / 3)} exercícios equivalentes</p></div></div>
+    <p className="weekly-volume-help">Comparação com a ficha atual. Um exercício repetido em vários treinos reúne todas as séries da semana.</p>
+    <div className="weekly-volume-exercises">{volume.exercises.map(exercise => {
+      const extra = exercise.plannedSets === 0, missing = exercise.completedSets === 0;
+      const optional = exercise.plannedIn.length > 0 && exercise.plannedIn.every(p => p.optional);
+      const status = extra ? 'Fora da ficha' : missing ? optional ? 'Opcional · ainda não feito' : 'Ainda não feito' : exercise.completedSets < exercise.plannedSets ? `Faltam ${exercise.plannedSets - exercise.completedSets} séries` : exercise.completedSets > exercise.plannedSets ? `+${exercise.completedSets - exercise.plannedSets} séries` : 'Meta cumprida';
+      return <article key={exercise.id} className={`weekly-volume-exercise ${extra ? 'volume-extra' : missing ? 'volume-missing' : exercise.completedSets < exercise.plannedSets ? 'volume-partial' : ''}`} data-exercise={exercise.id}>
+        <div className="volume-exercise-header"><img src={exerciseIllustrationUrl(exercise.id, exercise.image)} alt="" /><div><h3>{exercise.name}</h3><span className="volume-exercise-status">{status}</span></div></div>
+        <div className="volume-exercise-numbers"><span>Ficha <b>{exercise.plannedSets}</b> séries</span><span>Feitas <b>{exercise.completedSets}</b> séries</span></div>
+        {exercise.plannedIn.length > 0 && <p className="volume-exercise-plan">{exercise.plannedIn.map((entry, i) => <span key={i}>{days[entry.day]}{entry.optional ? ' (opcional)' : ''}: {entry.sets} séries{ i < exercise.plannedIn.length - 1 ? ' · ' : ''}</span>)}</p>}
+        {!!exercise.sessions.length && <details><summary>Ver sessões ({exercise.sessions.length})</summary><ul>{exercise.sessions.map((session, i) => <li key={`${session.id}-${i}`}><span>{new Date(session.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} · {session.workoutName}{session.extra ? ' · troca / extra' : ''}</span><b>{session.sets} séries</b></li>)}</ul></details>}
+      </article>;
+    })}</div>
+    {!volume.exercises.length && <p className="weekly-volume-help">Nenhum exercício previsto ou realizado para este grupo nesta semana.</p>}
   </section>;
 }
