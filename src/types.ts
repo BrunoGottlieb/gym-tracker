@@ -28,6 +28,7 @@ export interface ExerciseLog {
   kind: 'reps' | 'seconds';
   weight: number;
   done: boolean[];
+  xpBoost?: true;
   plannedSets?: number;
   seconds?: (number | null)[];
   secondsBySide?: Record<HoldSide, (number | null)[]>;
@@ -39,6 +40,7 @@ export interface ExerciseLog {
   instructions?: string;
 }
 export interface Session {
+  xpRules?: 2;
   id: string;
   workoutId: string;
   workoutName: string;

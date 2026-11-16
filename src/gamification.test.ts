@@ -5,7 +5,7 @@ import { XP_FRESH_START, auraRewards, equippedAura, exerciseXP, levelProgress, p
 import { profileBackup, restoreProfile } from './CloudBackup';
 import type { Session } from './types';
 
-function started() { const state = createInitialState(); return beginWorkout(state, state.workouts[0], undefined, XP_FRESH_START + 10_000); }
+function started() { const state = createInitialState(); const next = beginWorkout(state, state.workouts[0], undefined, XP_FRESH_START + 10_000); delete next.active!.xpRules; next.active!.exercises.forEach(e => delete e.xpBoost); return next; }
 function record(person: Session['person'], at: number): Session {
   const state = started();
   const session = state.active!;
@@ -182,4 +182,27 @@ it('restores cloud XP and personal rewards without replacing other profiles’ g
   expect(restored.preferences.weeklyGoals).toEqual({ original: 4, sheet: 2 });
   expect(restored.preferences.rewardAuras).toEqual({ original: 'amber', sheet: 'mint' });
   expect(validateState(restored)).toBe(true);
+});
+
+it('draws one persistent boost at start, stacks extra XP, keeps coin payouts and survives backup and swap', () => {
+  const base = createInitialState();
+  const state = beginWorkout(base, base.workouts[0], undefined, XP_FRESH_START + 10000);
+  expect(state.active!.xpRules).toBe(2);
+  expect(state.active!.exercises.filter(e => e.xpBoost)).toHaveLength(1);
+  const chosen = state.active!.exercises.find(e => e.xpBoost)!;
+  const swapped = swapSessionExercise(state, chosen.exerciseId, {...base.workouts[0].exercises[0],id:'boost-swap'});
+  expect(swapped.active!.exercises.find(e => e.exerciseId === 'boost-swap')!.xpBoost).toBe(true);
+  const next = addSessionSet(state, chosen.exerciseId);
+  const log = next.active!.exercises.find(e => e.xpBoost)!;
+  log.done.fill(true);
+  expect(exerciseXP(log).xp).toBe(65);
+  expect(sessionXP(next.active!, false).xp).toBe(65);
+  const finished = finishSession(next, next.active!.startedAt + 60000);
+  expect(sessionXP(finished.history[0]).xp).toBe(65);
+  expect(workoutResult(next, finished, finished.history[0]).coins).toBe(9);
+  const restored = parseBackup(createBackup(finished));
+  expect(restored.history[0].exercises.find(e => e.xpBoost)?.exerciseId).toBe(chosen.exerciseId);
+  expect(sessionXP(restored.history[0]).xp).toBe(65);
+  log.done[3] = false;
+  expect(exerciseXP(log).xp).toBe(45);
 });

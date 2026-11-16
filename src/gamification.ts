@@ -23,13 +23,13 @@ export function exerciseXP(log: ExerciseLog) {
   const sets = log.done.filter(Boolean).length;
   // Older records have no reliable snapshot of the planned routine.
   const extra = log.done.filter((done, index) => done && index >= (log.plannedSets ?? log.done.length)).length;
-  return { sets, extra, xp: sets * XP_PER_SET + extra * EXTRA_SET_BONUS };
+  return { sets, extra, xp: sets * (XP_PER_SET + (log.xpBoost ? 5 : 0)) + extra * EXTRA_SET_BONUS };
 }
 export function sessionXP(session: Session, finalized = session.finishedAt !== undefined) {
   const entries = session.exercises.map(exerciseXP);
   const sets = entries.reduce((sum, e) => sum + e.sets, 0);
   const extra = entries.reduce((sum, e) => sum + e.extra, 0);
-  return { sets, extra, xp: entries.reduce((sum, e) => sum + e.xp, 0) + (finalized && sets ? WORKOUT_XP : 0) };
+  return { sets, extra, xp: entries.reduce((sum, e) => sum + e.xp, 0) + (finalized && sets && session.xpRules !== 2 ? WORKOUT_XP : 0) };
 }
 export function personalXP(history: Session[], person: RoutinePlan) {
   const seen = new Set<string>();
@@ -103,4 +103,10 @@ export function workoutResult(before: AppState, after: AppState, session: Sessio
     records: personalRecords(session, before.history),
     goalReached: !weeklyGoal(before, now).reached && weeklyGoal(after, now).reached,
   };
+}
+
+// Preserve the original coin payout independently of XP Boost.
+export function sessionCoinXP(session: Session) {
+  const { sets, extra } = sessionXP(session);
+  return sets * XP_PER_SET + extra * EXTRA_SET_BONUS + (sets ? WORKOUT_XP : 0);
 }

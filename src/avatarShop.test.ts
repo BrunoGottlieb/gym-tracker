@@ -3,13 +3,14 @@ import { avatarEquipment, avatarWallet, buyAvatarOutfit, defaultAvatars, outfitC
 import { createInitialState } from './data';
 import { addSessionSet, beginWorkout, createBackup, editHistorySession, finishSession, parseBackup, validateState } from './domain';
 import { profileBackup, restoreProfile, canReplaceEmptyCloudSeed } from './CloudBackup';
-import { personalXP, sessionXP, workoutResult, XP_FRESH_START } from './gamification';
+import { personalXP, sessionCoinXP, sessionXP, workoutResult, XP_FRESH_START } from './gamification';
 import { migrateState } from './migrations';
 import type { AppState } from './types';
 
 const now = XP_FRESH_START + 100000;
 function finish(state = createInitialState(), sets = 3) {
   let next = beginWorkout(state, state.workouts[0], undefined, now);
+  next.active!.exercises.forEach(e => delete e.xpBoost);
   if (sets > 3) next = addSessionSet(next, next.active!.exercises[0].exerciseId);
   next.active!.exercises[0].done.fill(true);
   return { before: next, after: finishSession(next, now + 60000) };
@@ -37,12 +38,12 @@ describe('avatar coin shop', () => {
   it('awards coins only on finishing, includes extra-set XP, and never spends level XP', () => {
     const { before, after } = finish(undefined, 4);
     expect(walletBalance(avatarWallet(before))).toBe(0);
-    expect(sessionXP(after.history[0]).xp).toBe(95);
+    expect(sessionXP(after.history[0]).xp).toBe(45);
     expect(walletBalance(avatarWallet(after))).toBe(9);
     expect(workoutResult(before, after, after.history[0]).coins).toBe(9);
     const paid = buyAvatarOutfit(after, { head: 'headband' });
     expect(walletBalance(avatarWallet(paid))).toBe(5);
-    expect(personalXP(paid.history, 'original')).toBe(95);
+    expect(personalXP(paid.history, 'original')).toBe(45);
     expect(finishSession(after)).toBe(after);
     const replay = finishSession({ ...after, active: before.active }, now + 60000);
     expect(walletBalance(avatarWallet(replay))).toBe(9);
@@ -77,7 +78,7 @@ describe('avatar coin shop', () => {
     expect(Math.min(...prices.filter(n => n > 0))).toBe(3);
     const complete = beginWorkout(createInitialState(), createInitialState().workouts[0], undefined, now);
     complete.active!.exercises.forEach(e => e.done.fill(true));
-    expect(Math.ceil(175 / Math.floor(sessionXP(complete.active!, true).xp / 10))).toBe(7);
+    expect(Math.ceil(175 / Math.floor(sessionCoinXP(complete.active!) / 10))).toBe(7);
   });
   it('does not reclaim spent coins or award more when a historical workout changes or is deleted', () => {
     const { after } = finish();

@@ -29,3 +29,10 @@
 .workout-results .result-coins{margin-bottom:17px}.workout-results .result-stats{margin-top:0}
 @media(max-height:740px){.result-avatar{width:108px;height:118px;margin-bottom:10px}.workout-results .result-xp{font-size:36px}.result-progress{margin-bottom:15px}}
 @media(prefers-reduced-motion:reduce){.result-avatar{animation:none}}
+
+.exercise-xp-boost { position: relative; animation: boost-outline 7s ease-in-out infinite; }
+.xp-boost-label { color: #b87c00; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; margin-left: auto; animation: boost-electricity 2.6s ease-in-out infinite; }
+.xp-boost-label svg { color: #edb500; flex-shrink: 0; }
+@keyframes boost-electricity { 0%, 100% { text-shadow: none; } 45%, 55% { color: #d49a00; text-shadow: 0 0 8px #ffda58a0; } 50% { color: #a66d00; text-shadow: 0 0 13px #ffc400; } }
+@keyframes boost-outline { 0%, 65%, 100% { box-shadow: 0 0 0 1px #edbd2930; } 75% { box-shadow: 0 -3px 0 0 #f2c430, 0 0 12px #f4cb3440; } 83% { box-shadow: 3px 0 0 0 #f2c430, 0 0 16px #f4cb3440; } 91% { box-shadow: 0 3px 0 0 #f2c430, 0 0 12px #f4cb3440; } }
+@media (prefers-reduced-motion: reduce) { .exercise-xp-boost, .xp-boost-label { animation: none; } }

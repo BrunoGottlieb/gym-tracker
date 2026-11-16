@@ -1,4 +1,4 @@
-import { levelProgress, personalXP, sessionXP, xpStartAt } from './gamification';
+import { levelProgress, personalXP, sessionCoinXP, xpStartAt } from './gamification';
 import type { AppState, RoutinePlan, Session } from './types';
 
 export const hairstyles = [
@@ -134,7 +134,7 @@ export const equipmentItem = (slot: EquipmentSlot, id: string) => avatarEquipmen
 export function avatarWallet(state: AppState, person = state.selectedPlan ?? 'original'): AvatarWallet {
   if (state.avatarWallets?.[person]) return state.avatarWallets[person];
   const awards: Record<string, number> = {};
-  for (const session of state.history) if ((session.person ?? 'original') === person && session.finishedAt !== undefined && session.finishedAt >= xpStartAt(person) && !Object.hasOwn(awards, session.id)) awards[session.id] = Math.floor(sessionXP(session).xp / COIN_XP);
+  for (const session of state.history) if ((session.person ?? 'original') === person && session.finishedAt !== undefined && session.finishedAt >= xpStartAt(person) && !Object.hasOwn(awards, session.id)) awards[session.id] = Math.floor(sessionCoinXP(session) / COIN_XP);
   // Retain the outfit already legitimately equipped before the coin shop.
   const legacy = unlockedAvatar(state.avatars?.[person] ?? defaultAvatars[person], levelProgress(personalXP(state.history, person)).level);
   const gifts = (Object.keys(avatarEquipment) as EquipmentSlot[]).filter(slot => (equipmentItem(slot, legacy[slot] ?? 'none')?.price ?? 0) > 0).map(slot => equipmentKey(slot, legacy[slot]!));
@@ -163,7 +163,7 @@ export function buyAvatarOutfit(state: AppState, patch: Partial<AvatarConfig>): 
 }
 export function awardWorkoutCoins(state: AppState, session: Session): AppState['avatarWallets'] {
   const person = session.person ?? 'original', wallet = avatarWallet(state, person);
-  const coins = session.finishedAt !== undefined && session.finishedAt >= xpStartAt(person) ? Math.floor(sessionXP(session).xp / COIN_XP) : 0;
+  const coins = session.finishedAt !== undefined && session.finishedAt >= xpStartAt(person) ? Math.floor(sessionCoinXP(session) / COIN_XP) : 0;
   return { ...state.avatarWallets, [person]: { ...wallet, awards: { ...wallet.awards, [session.id]: wallet.awards[session.id] ?? coins } } };
 }
 export function validAvatarWallets(value: unknown) {
