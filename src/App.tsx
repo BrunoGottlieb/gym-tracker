@@ -33,7 +33,7 @@ import { profileAvatar, buyAvatarOutfit, type AvatarConfig } from './avatars';
 import { useTeamProfiles } from './useTeamProfiles';
 import { useAvatarSandbox } from './useAvatarSandbox';
 import { exerciseIllustrationUrl } from './motionCatalog';
-import { equippedAura, exerciseXP, levelProgress, personalXP, sessionXP, workoutResult, type RewardAura, type WorkoutResult } from './gamification';
+import { XP_PER_SET, equippedAura, exerciseXP, levelProgress, personalXP, sessionXP, workoutResult, type RewardAura, type WorkoutResult } from './gamification';
 import { GamificationDashboard, GamificationSettings, RestDayNote, SessionXP, WorkoutResults, XPFeedback, type XPFeedbackData } from './GamificationPanel';
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -64,6 +64,7 @@ function ExerciseRow({ exercise, log, motion, previous, onWeight, onToggle, onAd
   useEffect(() => { setDraft(String(log.weight)); }, [log.weight]);
   const complete = log.done.every(Boolean);
   const earnedXP = exerciseXP(log);
+  const bonusXP = earnedXP.xp - earnedXP.sets * XP_PER_SET;
   function changeWeight(value: string) {
     setDraft(value);
     const parsed = Number(value.replace(',', '.'));
@@ -80,7 +81,7 @@ function ExerciseRow({ exercise, log, motion, previous, onWeight, onToggle, onAd
         <label className="weight-label">{log.exerciseId === 'assisted-pullup' ? 'Assistência' : ['tuck-front-lever', 'hanging-leg-raise', 'parallel-bar-dips', 'front-lever', 'l-sit', 'pullup'].includes(log.exerciseId) ? 'Carga extra' : 'Carga'}<span className="weight-input"><input inputMode="decimal" type="text" value={draft} onChange={e => changeWeight(e.target.value)} onBlur={() => setDraft(String(log.weight))} aria-label={`Carga de ${log.name}`} /><span>kg</span></span></label>
         <div className="set-control"><span className="field-caption">Séries</span><div className="series-line"><div className="set-buttons" ref={seriesRef} tabIndex={0} aria-label={`Séries de ${log.name}`}>{log.done.map((done, i) => <button key={i} className={`set-button ${done ? 'is-done' : ''}`} aria-label={`${done ? 'Desmarcar' : 'Concluir'} série ${i + 1} de ${log.name}`} aria-pressed={done} title={`${i >= (log.plannedSets ?? log.done.length) ? "Série extra · " : ""}${10 + (log.xpBoost ? 5 : 0) + (i >= (log.plannedSets ?? log.done.length) ? 5 : 0)} XP ao concluir`} data-extra={i >= (log.plannedSets ?? log.done.length) || undefined} disabled={!!log.holdStartedAt} onClick={() => onToggle(i)}><span>{i + 1}</span>{done && <Check size={13} strokeWidth={2.5} />}</button>)}</div></div><div className="series-actions"><button className="remove-set-button" onClick={onRemoveSet} disabled={log.done.length <= 1 || log.done.every(Boolean) || !!log.holdStartedAt} aria-label={`Remover série de ${log.name}`} title={log.done.every(Boolean) ? "Desmarque uma série antes de removê-la" : "Remover a última série não concluída deste treino"}>−1</button><button className="add-set-button" onClick={onAddSet} disabled={log.done.length >= MAX_SESSION_SETS} aria-label={`Adicionar série de ${log.name}`} title="Adicionar uma série neste treino">+1</button></div></div>
       </div>
-      {earnedXP.extra > 0 && <span className="extra-xp-badge">+{earnedXP.extra * 5} XP de bônus nas extras</span>}
+      {bonusXP > 0 && <span className="extra-xp-badge">+{bonusXP} XP de bônus{log.xpBoost ? '' : ' nas extras'}</span>}
       <button className="text-button swap-exercise" onClick={onSwap} disabled={log.done.some(Boolean) || !!log.holdStartedAt || hasRecordedHold(log)}>Trocar só hoje</button>{log.extra && <span className="session-extra-badge">Extra desta sessão</span>}{log.swappedFrom && <p className="subtle">Hoje no lugar de {log.swappedFrom}</p>}<div className="exercise-foot"><span>{previous ? `Última carga: ${previous.weight.toLocaleString('pt-BR')} kg` : 'Primeiro registro'}</span><button onClick={onRest} aria-label={`Descansar após ${log.name}`}><Timer size={13} /> {exercise.rest} s</button><button className="exercise-progress-link" onClick={onProgress} aria-label={`Ver evolução de ${log.name}`}><TrendingUp size={13} />Ver evolução</button></div>
     </div>
     <HoldRecorder log={log} onStart={onHoldStart} onSave={onHoldSave} />

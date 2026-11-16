@@ -30,7 +30,7 @@
 @media(max-height:740px){.result-avatar{width:108px;height:118px;margin-bottom:10px}.workout-results .result-xp{font-size:36px}.result-progress{margin-bottom:15px}}
 @media(prefers-reduced-motion:reduce){.result-avatar{animation:none}}
 
-.exercise-xp-boost { position: relative; animation: boost-outline 7s ease-in-out infinite; }
+.exercise-row.exercise-xp-boost { border-radius: 17px; position: relative; animation: boost-outline 7s ease-in-out infinite; }
 .xp-boost-label { color: #b87c00; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; margin-left: auto; animation: boost-electricity 2.6s ease-in-out infinite; }
 .xp-boost-label svg { color: #edb500; flex-shrink: 0; }
 @keyframes boost-electricity { 0%, 100% { text-shadow: none; } 45%, 55% { color: #d49a00; text-shadow: 0 0 8px #ffda58a0; } 50% { color: #a66d00; text-shadow: 0 0 13px #ffc400; } }
