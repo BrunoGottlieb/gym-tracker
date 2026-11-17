@@ -11,7 +11,7 @@ export function exerciseEntries(state: AppState): ExerciseEntry[] {
     const id = canonicalExerciseId(e.exerciseId);
     if (!entries.has(id)) entries.set(id, { id, name: e.name, image: e.image, muscle: getMuscle(e), archived: true });
   }
-  return [...entries.values()];
+  return [...entries.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 }
 export function loadPoints(state: AppState, exerciseId: string): LoadPoint[] {
   return state.history.flatMap(s => {

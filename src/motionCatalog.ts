@@ -10,6 +10,8 @@ export const animatedExercises: Record<string, number> = {
   'decline-situp': 34, 'cable-row': 7, pushup: 45, 'incline-machine': 30,
   'vertical-chest-press': 46, crossover: 22, 'dumbbell-shoulder-press': 47,
   'front-raise': 48, 'lateral-raise': 19,
+  'lat-pulldown': 26, 'alternating-curl': 39, 'reverse-fly': 20,
+  'hammer-curl': 11, 'machine-triceps': 58,
 };
 // Earlier catalog names depict the same movement. Preserve their distinct saved
 // identities, loads and selected image numbers while reusing the demonstration.
