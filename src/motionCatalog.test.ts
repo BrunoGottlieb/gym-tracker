@@ -19,7 +19,7 @@ describe('shared updated exercise illustrations', () => {
     expect(sharedExerciseMotionId('machine-row', 8)).toBe('chest-supported-row');
     expect(sharedExerciseMotionId('machine-chest-press', 1)).toBe('vertical-chest-press');
     expect(sharedExerciseMotionId('straight-bar-cable-curl', 57)).toBe('cable-curl');
-    for (const [id, image] of [['machine-preacher-curl', 38], ['pullup', 6], ['side-plank', 51], ['leg-curl', 5]] as const) expect(sharedExerciseMotionId(id, image)).toBeUndefined();
+    for (const [id, image] of [['pullup', 6], ['side-plank', 51], ['leg-curl', 5]] as const) expect(sharedExerciseMotionId(id, image)).toBeUndefined();
     expect(exerciseIllustrationUrl('leg-curl', 5)).toContain('/exercise-5.webp');
   });
   it('updates matching Nick and Ivan illustrations and covers without modifying any prescribed exercises or sets', () => {

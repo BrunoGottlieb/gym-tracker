@@ -12,6 +12,8 @@ export const animatedExercises: Record<string, number> = {
   'front-raise': 48, 'lateral-raise': 19,
   'lat-pulldown': 26, 'alternating-curl': 39, 'reverse-fly': 20,
   'hammer-curl': 11, 'machine-triceps': 58,
+  'smith-squat': 63, 'hip-thrust': 60, 'roman-chair-extension': 61,
+  deadlift: 62, 'machine-preacher-curl': 38,
 };
 // Earlier catalog names depict the same movement. Preserve their distinct saved
 // identities, loads and selected image numbers while reusing the demonstration.
