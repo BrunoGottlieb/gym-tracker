@@ -22,7 +22,7 @@ export function TeamCamp({ cloud, team, state }: { cloud: CloudStreakController;
     <p className="camp-subtitle">Uma série de cada vez. Juntos.</p>
     <div className="camp-streak"><Flame size={19} fill="currentColor" /><strong>{current}</strong> {current === 1 ? 'dia de chama' : 'dias de chama'}</div>
     <div className="camp-scene" aria-label="Bruno, Nick e Ivan em pé ao redor da fogueira">
-      <div className="camp-ground" />
+      <img className="camp-scenery" src={`${import.meta.env.BASE_URL}images/team-camp-scenery.webp`} alt="" />
       <div className="camp-light" />
       {members.map(member => <div key={member.person} className={`camp-person camp-${member.person} ${member.done ? 'camp-done' : ''}`} data-person={member.person}>
         <div className="camp-avatar"><AvatarArt avatar={member.avatar} /></div>
