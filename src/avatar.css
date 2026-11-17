@@ -32,7 +32,7 @@
 .avatar-face-layer.face-monocle{transform:translate(-10.8%,-5.4%)}
 .avatar-facial-hair-layer{clip-path:inset(30% 38% 61% 43%)}
 .avatar-facial-hair-layer[src$="moustache.png"]{transform:translate(-.5%,1%) scale(.8);transform-origin:54% 34%}
-.avatar-shirt-layer.shirt-tone-hoodie{transform:scaleY(.84)}
+.avatar-shirt-layer.shirt-tone-hoodie{transform:translateY(-2%) scaleY(.94)}
 .avatar-shirt-layer.shirt-tone-leather-jacket{transform:translateY(-.7%) scaleY(.97)}
 .avatar-shirt-layer.shirt-tone-skull-tee{transform:translateY(-1.3%)}
 .avatar-extra-layer.extra-tone-watch{transform:translateY(-5.5%)}
@@ -71,7 +71,7 @@
 @media(max-width:380px){.level-emblem.avatar-level-link{width:88px;height:100px}.game-level{padding:16px;gap:12px}.level-info strong{font-size:13px}.level-info small{font-size:10px}.team-portrait,.compact-team .team-portrait{border-radius:17px}.avatar-team-list{gap:8px}}
 
 /* Fit headgear to the skull/ears rather than letting it float above the head. */
-.avatar-head-layer.head-headphones{transform:translateY(2.2%) scaleX(.92)}
+.avatar-head-layer.head-headphones{transform:translateY(.2%) scaleX(.92)}
 .avatar-head-layer.head-crown{transform:translateY(-4%) scale(.86);transform-origin:50% 26%}
 .avatar-head-layer.head-cowboy-hat{transform:translateY(-6%) scale(.92);transform-origin:50% 26%}
 .avatar-head-layer.head-bunny-ears{transform:translateY(-1%) scaleY(.82);transform-origin:50% 22%}
@@ -99,3 +99,7 @@
 .shop-checkout>.primary{min-height:42px;font-size:12px;padding:10px 15px;white-space:nowrap}.discard-outfit{display:block;margin:3px auto 0;font-size:10px;min-height:27px;padding:4px 12px}.shop-earning-note{font-size:10px;line-height:1.7;color:#8696b1;margin:11px 0 0;text-align:center}
 @media(max-width:600px){.avatar-shop .customizer-preview{height:155px}.avatar-shop .customizer-preview>.avatar-art{width:175px;height:175px}.shop-footer{padding:10px 15px 5px}}
 @media(max-height:700px){.avatar-shop .customizer-preview{height:110px}.avatar-shop .customizer-preview>.avatar-art{width:130px;height:130px}.avatar-shop .avatar-editor-heading{padding-top:10px}}
+
+.avatar-composition>.avatar-head-skin-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
+
+.avatar-composition>svg.avatar-base-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}

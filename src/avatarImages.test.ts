@@ -51,7 +51,7 @@ describe('the adopted image avatar library', () => {
   });
   it('layers combined clothes, watch, moustache, glasses and hat without replacing independent choices', () => {
     const layers = avatarLayers({ ...defaultAvatars.original, shirt: 'leather-jacket', extra: 'watch', facialHair: 'moustache', face: 'sunglasses', head: 'top-hat' });
-    expect(layers.map(layer => layer.id)).toEqual(['base', 'shirt', 'hands', 'hair-front', 'extra', 'facialHair', 'face', 'head']);
+    expect(layers.map(layer => layer.id)).toEqual(['base', 'shirt', 'head-skin', 'hands', 'hair-front', 'extra', 'facialHair', 'face', 'head']);
     expect(layers.find(layer => layer.id === 'shirt')?.file).toBe('leather-jacket');
     expect(layers.find(layer => layer.id === 'extra')?.file).toBe('watch');
     expect(layers.find(layer => layer.id === 'hair-front')?.className).toContain('under-cap');
@@ -78,4 +78,17 @@ it.each(['original', 'sheet', 'ivan'] as const)('only personalizes the currently
   expect(next.history).toBe(state.history); expect(next.active).toBe(state.active); expect(next.workouts).toBe(state.workouts);
   expect(state).toEqual(before);
   expect(updateAvatar(state, { person: 'sheet', hair: 'bald' } as never)).toBe(state);
+});
+
+it('places the selected skin head above sleeved clothing and below hair without changing the outfit', () => {
+  for (const shirt of ['hoodie', 'leather-jacket'] as const) for (const skin of skinTones) {
+    const avatar = { ...defaultAvatars.original, shirt, skin: skin.id, hair: 'long' as const };
+    const layers = avatarLayers(avatar);
+    const head = layers.find(layer => layer.id === 'head-skin')!;
+    expect(head.file).toBe(skin.id === 'peach' ? 'base' : `base-${skin.id}`);
+    expect(layers.indexOf(head)).toBeGreaterThan(layers.findIndex(layer => layer.id === 'shirt'));
+    expect(layers.indexOf(head)).toBeLessThan(layers.findIndex(layer => layer.id === 'hair-front'));
+    expect(avatar.shirt).toBe(shirt);
+  }
+  expect(avatarLayers(defaultAvatars.original).some(layer => layer.id === 'head-skin')).toBe(false);
 });

@@ -1,6 +1,6 @@
 import type { AvatarConfig, EquipmentSlot } from './avatars';
 
-export interface AvatarLayer { id: string; file: string; className: string; mask?: 'hands' | 'crown-front' | 'headphones-front' }
+export interface AvatarLayer { id: string; file: string; className: string; mask?: 'head-skin' | 'hands' | 'crown-front' | 'headphones-front' }
 export const avatarAsset = (file: string) => `${import.meta.env.BASE_URL}avatars/layered-v1/${file}.png`;
 
 // Frame the actual piece independently of card dimensions and the full-figure padding.
@@ -36,6 +36,7 @@ export function avatarLayers(avatar: AvatarConfig): AvatarLayer[] {
   if (hasBack) layers.push({ id: 'hair-back', file: `hair-${avatar.hair}`, className: `avatar-hair-back ${hairClass}` });
   layers.push({ id: 'base', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-base-layer' });
   if (avatar.shirt !== 'blue') layers.push({ id: 'shirt', file: clothing.has(avatar.shirt) ? avatar.shirt : 'shirt-mint', className: `avatar-shirt-layer shirt-tone-${avatar.shirt}` });
+  if (['hoodie', 'leather-jacket'].includes(avatar.shirt)) layers.push({ id: 'head-skin', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-head-skin-layer', mask: 'head-skin' });
   if (avatar.shirt !== 'blue') layers.push({ id: 'hands', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-hands-layer', mask: 'hands' });
   if (avatar.hair !== 'bald') layers.push({ id: 'hair-front', file: `hair-${avatar.hair}`, className: `avatar-hair-front ${hairClass}${hasBack ? ' has-back-layer' : ''}` });
   if (avatar.extra !== 'none') layers.push({ id: 'extra', file: extraFile(avatar.extra), className: `avatar-extra-layer extra-tone-${avatar.extra}` });
