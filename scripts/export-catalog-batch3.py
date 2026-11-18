@@ -5,7 +5,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 NAMES = ('bent-over-row', 'linear-hack-squat', 'walking-lunge')
 for name in NAMES:
-    sheet = Image.open(ROOT / 'assets/catalog-motion-batch3' / f'{name}.png').convert('RGB')
+    source = 'bent-over-row-olympic-v2.png' if name == 'bent-over-row' else f'{name}.png'
+    sheet = Image.open(ROOT / 'assets/catalog-motion-batch3' / source).convert('RGB')
     half = sheet.width // 2
     assert sheet.width == sheet.height * 2
     for position in (1, 2):
