@@ -14,6 +14,7 @@ export const animatedExercises: Record<string, number> = {
   'hammer-curl': 11, 'machine-triceps': 58,
   'smith-squat': 63, 'hip-thrust': 60, 'roman-chair-extension': 61,
   deadlift: 62, 'machine-preacher-curl': 38,
+  'bent-over-row': 37, 'linear-hack-squat': 40, 'walking-lunge': 41,
 };
 // Earlier catalog names depict the same movement. Preserve their distinct saved
 // identities, loads and selected image numbers while reusing the demonstration.
@@ -35,7 +36,7 @@ export function exerciseIllustrationUrl(id: string | undefined, image: number) {
   const animation = sharedExerciseMotionId(id, image);
   return `${import.meta.env.BASE_URL}images/${animation ? `motion/${animation}-1` : `exercise-${image}`}.webp`;
 }
-const croppedCovers = new Set(['bench-press', 'assisted-pullup', 'lever-squat', 'incline-dumbbell', 'preacher-curl', 'tuck-front-lever', 'dumbbell-shoulder-press']);
+const croppedCovers = new Set(['linear-hack-squat', 'bench-press', 'assisted-pullup', 'lever-squat', 'incline-dumbbell', 'preacher-curl', 'tuck-front-lever', 'dumbbell-shoulder-press']);
 export function workoutCoverUrl(_plan: string | undefined, _workout: string, image: number) {
   const animation = Object.keys(animatedExercises).find(id => animatedExercises[id] === image)
     ?? Object.values(aliases).find(entry => entry.image === image)?.animation;
