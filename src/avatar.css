@@ -105,8 +105,8 @@
 .avatar-composition>svg.avatar-base-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 
 /* New pieces retain the common canvas and existing neck/hand occlusion. */
-.avatar-head-layer.head-beanie{transform:translateY(-4%)}
-.avatar-head-layer.head-wizard-hat{transform:translateY(-5%) scale(.82);transform-origin:50% 25%}
+.avatar-head-layer.head-beanie{transform:translateY(-3%)}
+.avatar-head-layer.head-wizard-hat{transform:translateY(-2.5%) scale(.92);transform-origin:50% 25%}
 .avatar-head-layer.head-knight-helmet{transform:translateY(-2%)}
 .avatar-art[data-avatar-head="knight-helmet"] .avatar-hair-front{display:none}
 .avatar-shirt-layer.shirt-tone-plaid-shirt,.avatar-shirt-layer.shirt-tone-varsity-jacket{transform:translateY(-2%) scaleY(.94)}
@@ -114,3 +114,5 @@
 
 /* Voluminous curls are tucked inside new hats, avoiding a straight clipped shelf. */
 .avatar-art:is([data-avatar-head="beanie"],[data-avatar-head="wizard-hat"]):is([data-avatar-hair="afro"],[data-avatar-hair="curly"]) .avatar-hair-front{display:none}
+
+.avatar-art:is([data-avatar-head="beanie"],[data-avatar-head="wizard-hat"]) .avatar-hair-back{clip-path:inset(40% 0 0)}
