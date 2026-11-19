@@ -19,10 +19,13 @@ const equipmentFrames: Record<string, [number, number, number, number]> = {
   'short-beard': [497, 426, 295, 174], 'long-beard': [451, 425, 381, 319],
   poncho: [332, 510, 588, 500], necktie: [559, 593, 198, 367], 'bow-tie': [535, 587, 238, 123],
   'necktie-front-v2': [614, 640, 142, 320],
+  beanie: [400, 65, 430, 340], 'wizard-hat': [380, 0, 475, 400], 'knight-helmet': [395, 140, 450, 400],
+  'plaid-shirt': [345, 490, 550, 380], 'varsity-jacket': [340, 490, 555, 380], 'hawaiian-shirt': [370, 495, 490, 365],
 };
 export const equipmentViewBox = (file: string) => equipmentFrames[file]?.join(' ') ?? '0 0 1254 1254';
 
-const clothing = new Set(['hoodie', 'skull-tee', 'leather-jacket', 'poncho']);
+const clothing = new Set(['hoodie', 'skull-tee', 'leather-jacket', 'poncho', 'plaid-shirt', 'varsity-jacket', 'hawaiian-shirt']);
+export const longSleevedShirts = new Set<string>(['hoodie', 'leather-jacket', 'plaid-shirt', 'varsity-jacket']);
 const wristbands = new Set(['wristbands', 'goldbands']);
 const extraFile = (id: string) => wristbands.has(id) ? 'wristbands' : id === 'necktie' ? 'necktie-front-v2' : id;
 
@@ -32,11 +35,11 @@ export function avatarLayers(avatar: AvatarConfig): AvatarLayer[] {
   const headFile = avatar.head === 'headphones' ? 'headphones-perspective-v3' : avatar.head;
   if (avatar.head === 'crown' || avatar.head === 'headphones') layers.push({ id: 'head-back', file: headFile, className: `avatar-head-layer avatar-head-back head-${avatar.head}` });
   const hasBack = ['long', 'bob', 'ponytail'].includes(avatar.hair);
-  const hairClass = `hair-tone-${avatar.hairColor}${['cap', 'top-hat', 'cowboy-hat'].includes(avatar.head) ? ' under-cap' : ''}`;
+  const hairClass = `hair-tone-${avatar.hairColor}${['cap', 'top-hat', 'cowboy-hat', 'beanie', 'wizard-hat', 'knight-helmet'].includes(avatar.head) ? ' under-cap' : ''}`;
   if (hasBack) layers.push({ id: 'hair-back', file: `hair-${avatar.hair}`, className: `avatar-hair-back ${hairClass}` });
   layers.push({ id: 'base', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-base-layer' });
   if (avatar.shirt !== 'blue') layers.push({ id: 'shirt', file: clothing.has(avatar.shirt) ? avatar.shirt : 'shirt-mint', className: `avatar-shirt-layer shirt-tone-${avatar.shirt}` });
-  if (['hoodie', 'leather-jacket'].includes(avatar.shirt)) layers.push({ id: 'head-skin', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-head-skin-layer', mask: 'head-skin' });
+  if (longSleevedShirts.has(avatar.shirt) || avatar.shirt === 'hawaiian-shirt') layers.push({ id: 'head-skin', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-head-skin-layer', mask: 'head-skin' });
   if (avatar.shirt !== 'blue') layers.push({ id: 'hands', file: avatar.skin === 'peach' ? 'base' : `base-${avatar.skin}`, className: 'avatar-hands-layer', mask: 'hands' });
   if (avatar.hair !== 'bald') layers.push({ id: 'hair-front', file: `hair-${avatar.hair}`, className: `avatar-hair-front ${hairClass}${hasBack ? ' has-back-layer' : ''}` });
   if (avatar.extra !== 'none') layers.push({ id: 'extra', file: extraFile(avatar.extra), className: `avatar-extra-layer extra-tone-${avatar.extra}` });
