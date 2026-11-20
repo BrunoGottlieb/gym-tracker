@@ -25,7 +25,8 @@ describe('avatar coin shop', () => {
     const heads = [...avatarEquipment.head].filter(item => item.price > 0).sort((a, b) => a.price - b.price);
     expect(heads[0].id).toBe('cap');
     expect(heads[1].price).toBeGreaterThan(heads[0].price);
-    expect([...avatarEquipment.face].filter(item => item.price > 0).sort((a, b) => a.price - b.price).map(item => item.id)).toEqual(['scar', 'earrings', 'eyepatch', 'monocle', 'star-glasses', 'sunglasses', 'deal-with-it']);
+    const originalFaces = ['scar', 'earrings', 'eyepatch', 'monocle', 'star-glasses', 'sunglasses', 'deal-with-it'];
+    expect([...avatarEquipment.face].filter(item => originalFaces.includes(item.id)).sort((a, b) => a.price - b.price).map(item => item.id)).toEqual(originalFaces);
   });
   it('keeps historical purchase costs and ownership intact after a catalog discount', () => {
     const state = funded();

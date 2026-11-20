@@ -43,6 +43,10 @@ export const avatarEquipment = {
     { id: 'scar', name: 'Cicatriz', level: 7, price: 15, color: '#B77E70' },
     { id: 'deal-with-it', name: 'Óculos Turn Down for What', level: 13, price: 100, color: '#303747' },
     { id: 'earrings', name: 'Brincos de argola', level: 5, price: 20, color: '#EAC36A' },
+    { id: 'aviator-glasses', name: 'Óculos de aviador', level: 14, price: 95, color: '#D9B66A' },
+    { id: 'ski-goggles', name: 'Óculos de ski', level: 19, price: 130, color: '#6EA9E5' },
+    { id: 'war-paint', name: 'Pintura de guerra', level: 8, price: 40, color: '#383D47' },
+    { id: 'round-glasses', name: 'Óculos redondos de grau', level: 10, price: 60, color: '#69513B' },
   ],
   facialHair: [
     { id: 'none', name: 'Sem bigode', level: 1, price: 0, color: '#DCE3F4' },
@@ -50,6 +54,7 @@ export const avatarEquipment = {
     { id: 'handlebar', name: 'Bigode de respeito', level: 12, price: 55, color: '#4A3029' },
     { id: 'short-beard', name: 'Barba curta', level: 6, price: 20, color: '#4A3029' },
     { id: 'long-beard', name: 'Barba cheia', level: 15, price: 60, color: '#4A3029' },
+    { id: 'viking-beard', name: 'Barba viking com trança', level: 18, price: 105, color: '#4A3029' },
   ],
   shirt: [
     { id: 'blue', name: 'Regata azul', level: 1, price: 0, color: '#5277EC' },

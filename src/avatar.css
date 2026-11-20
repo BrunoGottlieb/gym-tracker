@@ -27,6 +27,11 @@
 .avatar-head-layer.head-top-hat{transform:translateY(-6%)}
 .avatar-head-layer.head-crown{transform:translateY(-7%)}
 .avatar-face-layer.face-sunglasses{transform:translate(-3.4%,-6.8%) scale(.86)}
+.avatar-face-layer.face-aviator-glasses{transform:translate(-2.4%,-5.3%) scale(.88);transform-origin:53% 34%}
+.avatar-face-layer.face-ski-goggles{transform:translate(-2.6%,-7.5%) scale(.8);transform-origin:53% 34%}
+.avatar-face-layer.face-war-paint{transform:translate(-2.3%,-7.5%) scaleX(.94);transform-origin:53% 42%}
+.avatar-face-layer.face-round-glasses{transform:translate(-2.8%,-5.8%) scale(.92);transform-origin:53% 34%}
+.avatar-facial-hair-layer.facial-hair-viking-beard{clip-path:none;transform:translate(-.5%,-3.4%) scaleY(.72);transform-origin:53% 36%}
 .avatar-face-layer.face-star-glasses{transform:translateY(-1.9%) scaleX(.88);transform-origin:53% 33%}
 .avatar-face-layer.face-eyepatch{transform:translate(.8%,-4.8%)}
 .avatar-face-layer.face-monocle{transform:translate(-10.8%,-5.4%)}
