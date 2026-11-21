@@ -29,6 +29,7 @@ import { streakDate } from './streaks';
 import { localDateKey, sessionsOnDate, sessionsThisWeek } from './calendar';
 import { holidayName } from './holidays';
 import { AvatarArt } from './AvatarArt';
+import { WeeklyReview } from './WeeklyReview';
 import { AvatarProfile, AvatarTeam } from './AvatarProfile';
 import { profileAvatar, buyAvatarOutfit, type AvatarConfig } from './avatars';
 import { useTeamProfiles } from './useTeamProfiles';
@@ -39,7 +40,7 @@ import { GamificationDashboard, GamificationSettings, RestDayNote, SessionXP, Wo
 
 const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const imageUrl = (image: number, id?: string) => exerciseIllustrationUrl(id, image);
-type View = 'home' | 'workout' | 'history' | 'settings' | 'progress' | 'profile';
+type View = 'weekly' | 'home' | 'workout' | 'history' | 'settings' | 'progress' | 'profile';
 type SetAdjustment = { exerciseId: string; change: 1 | -1 };
 const adjustSession = (state: AppState, action: SetAdjustment) => action.change === 1 ? addSessionSet(state, action.exerciseId) : removeSessionSet(state, action.exerciseId);
 type DialogState = { type: 'weekly-volume'; muscle: MuscleGroup } | { type: 'workout-result'; result: WorkoutResult } | { type: 'muscle'; muscle: MuscleGroup } | { type: 'streak' } | { type: 'edit-history'; session: Session } | { type: 'plan'; plan: RoutinePlan } | { type: 'extra'; workout: Workout } | { type: 'switch'; workout: Workout; extraExercise?: Exercise; firstSet?: { exerciseId: string; index: number }; setAdjustment?: SetAdjustment } | { type: 'finish' } | { type: 'discard' } | { type: 'timer' } | { type: 'edit'; workout: Workout } | { type: 'import'; data: AppState } | { type: 'detail'; session: Session } | { type: 'day'; date: string } | null;
@@ -334,6 +335,7 @@ export default function App() {
         </section>
         <GamificationDashboard state={state} avatar={avatarSandbox.avatar ?? profileAvatar(state)} now={now} onGoal={setWeeklyGoal} onProfile={() => openProfile()} />
         {(!workoutToday || workoutToday.optional || holidayName(localDateKey(now))) && <RestDayNote flameProtected={cloudStreak.group.restToday} />}
+        <button className="weekly-review-link" onClick={() => navigate('weekly')}><TrendingUp size={17} />Ver resumo semanal<ChevronRight size={16} /></button>
         <div className="section-heading"><h2>Seus treinos</h2><span>{weeklyCards ? `${weeklyCards} de ${state.workouts.length} feitos nesta semana` : workoutToday ? (workoutToday.optional ? 'Opcional hoje: em casa' : `Sugestão de hoje: ${workoutToday.id.toUpperCase()}`) : 'Você escolhe a ordem'}</span></div>
         <div className="workout-grid">{state.workouts.map(workout => {
           const coverUrl = workoutCoverUrl(state.selectedPlan, workout.id, workout.image);
@@ -387,7 +389,9 @@ export default function App() {
       </>}
       {view === 'workout' && !selectedWorkout && <div className="empty-state"><Dumbbell size={42} /><h1>Qual vai ser o treino?</h1><p>Escolha um treino para começar.</p><button className="primary" onClick={() => navigate('home')}>Ver meus treinos</button></div>}
       {view === 'progress' && <><div className="evolution-tabs" role="group" aria-label="Tipo de evolução"><button aria-pressed={progressTab==='loads'} onClick={()=>setProgressTab('loads')}>Cargas</button><button aria-pressed={progressTab==='body'} onClick={()=>setProgressTab('body')}>Avaliações</button></div>{progressTab==='body' ? <BodyAssessments state={state} onChange={assessments=>commit(s=>({...s,assessments}))}/> : <Progression state={state} exerciseId={progressExercise} onSelect={setProgressExercise} onPreview={(image, title, exerciseId) => setPreview({ image, title, exerciseId })} onOpenSession={id => { const session = state.history.find(s => s.id === id); if (session) setDialog({ type: 'detail', session }); }} />}</>}
+      {view === 'weekly' && <WeeklyReview key={person} state={state} now={now} onBack={() => navigate('home')} onSession={session => setDialog({ type: 'detail', session })} />}
       {view === 'history' && <>
+        <button className="weekly-review-link" onClick={() => navigate('weekly')}><TrendingUp size={17} />Ver resumo semanal<ChevronRight size={16} /></button>
         <div className="page-heading"><div><span className="eyebrow">UM PASSO DE CADA VEZ</span><h1>Seu histórico<span className="accent">.</span></h1><p className="subtitle">Cada treino conta. Aqui ficam os seus.</p></div><History className="heading-decoration" size={38} strokeWidth={1.4} /></div>
         <TrainingCalendar history={state.history} now={now} onDate={date => setDialog({ type: 'day', date })} />
         <WeeklyCompletedChart history={state.history} workouts={state.workouts} person={state.selectedPlan ?? 'original'} />
@@ -407,7 +411,7 @@ export default function App() {
         <p className="version-label">Gym Tracker · v1.1 · Feito para o seu ritmo.</p>
       </>}
     </main>
-    <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button><button className={`profile-nav ${view === 'profile' ? 'active' : ''}`} onClick={() => openProfile()}><UserRound size={21} /><span>Perfil</span></button></nav>
+    <nav className="bottom-nav" aria-label="Navegação principal"><button className={view === 'home' || view === 'workout' ? 'active' : ''} onClick={() => navigate('home')}><LayoutGrid size={21} /><span>Treinos</span></button><button className={view === 'progress' ? 'active' : ''} onClick={() => navigate('progress')}><TrendingUp size={21} /><span>Evolução</span></button><button className={dialog?.type === 'timer' ? 'active' : ''} onClick={() => setDialog({ type: 'timer' })}><Timer size={22} /><span>{isRunning ? formatTime(remaining) : 'Descanso'}</span>{isRunning && <span className="nav-dot" />}</button><button className={view === 'history' || view === 'weekly' ? 'active' : ''} onClick={() => navigate('history')}><History size={21} /><span>Histórico</span></button><button className={`profile-nav ${view === 'profile' ? 'active' : ''}`} onClick={() => openProfile()}><UserRound size={21} /><span>Perfil</span></button></nav>
     {xpFeedback && dialog?.type !== 'finish' && <XPFeedback feedback={xpFeedback} />}
     {notice && <div className="toast" role="status"><CircleCheck size={18} /><span>{notice}</span></div>}
     <input ref={importRef} type="file" accept=".json,application/json" hidden aria-label="Selecionar arquivo de backup" onChange={e => { const file = e.target.files?.[0]; if (file) void importBackup(file); e.target.value = ''; }} />

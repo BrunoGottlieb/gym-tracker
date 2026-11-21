@@ -278,20 +278,5 @@ export function migrateState(original: AppState): AppState {
     state.brunoShoulderPressRevision = 1;
   }
   state.avatarWallets = Object.fromEntries((['original', 'sheet', 'ivan'] as const).map(person => [person, avatarWallet(state, person)]));
-  // Owner-requested reversal of Nick's accidental cowboy purchase. Remove the
-  // recorded debit (whatever price was paid), never mint a fixed coin award.
-  const nickWallet = state.avatarWallets.sheet!;
-  const refund = 'refund-nick-cowboy-1795226235325';
-  const accidentalEditAt = 1795226235325;
-  if (!Object.hasOwn(nickWallet.awards, refund) && Object.hasOwn(nickWallet.purchases, 'head:cowboy-hat') &&
-      (state.avatarChangedAt?.sheet ?? 0) <= accidentalEditAt) {
-    const purchases = { ...nickWallet.purchases };
-    delete purchases['head:cowboy-hat'];
-    state.avatarWallets.sheet = { ...nickWallet, purchases, awards: { ...nickWallet.awards, [refund]: 0 }, gifts: nickWallet.gifts.filter(key => key !== 'head:cowboy-hat') };
-    if (state.avatars?.sheet?.head === 'cowboy-hat') {
-      state.avatars = { ...state.avatars, sheet: { ...state.avatars.sheet, head: 'none' } };
-      state.avatarChangedAt = { ...state.avatarChangedAt, sheet: accidentalEditAt + 1 };
-    }
-  }
   return state;
 }

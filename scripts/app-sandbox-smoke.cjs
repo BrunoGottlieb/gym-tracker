@@ -51,7 +51,7 @@ const out = 'artifacts/app-sandbox'; fs.mkdirSync(out, { recursive: true });
     const preview = page.getByRole('switch', { name: 'Modo sandbox neste aparelho', exact: true });
     if (await preview.isChecked()) await preview.uncheck();
     assert.equal(await page.getByRole('complementary', { name: 'Sandbox neste PC' }).count(), 1);
-    await click('Personalizar avatar'); await click('Equipamentos'); await click('Coroa dourada'); await click('Comprar e usar');
+    await click('Personalizar avatar'); await click('Equipamentos'); await click('Coroa dourada'); await click('Comprar e usar'); await page.getByRole('button', { name: /^Confirmar e pagar / }).click();
     await click('Treinos'); await page.locator('.workout-tile[data-workout=a]').click();
     await page.locator('.exercise-row').first().getByRole('button', { name: /Concluir série 3/ }).click();
     await click('Finalizar treino'); await click('Salvar e finalizar');

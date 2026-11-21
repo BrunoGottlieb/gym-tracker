@@ -50,7 +50,7 @@ const out = 'artifacts/avatar-shop'; fs.mkdirSync(out, { recursive: true });
     await page.locator('.result-coins').filter({ hasText: '+8 moedas' }).waitFor();
     await click('Continuar'); console.log('Workout reward OK');
     await click('Perfil'); await click('Personalizar avatar'); await click('Equipamentos');
-    await click('Faixa esportiva'); await click('Comprar e usar');
+    await click('Faixa esportiva'); await click('Comprar e usar'); await page.getByRole('button', { name: /^Confirmar e pagar / }).click();
     const purchased = await read(); assert.equal(balance(purchased), 4); assert.equal(purchased.avatars.original.head, 'headband');
     assert.equal(purchased.avatarWallets.original.purchases['head:headband'], 4);
     await click('Personalizar avatar'); await click('Equipamentos'); await click('Sem acessório'); await click('Salvar visual');
@@ -80,7 +80,7 @@ const out = 'artifacts/avatar-shop'; fs.mkdirSync(out, { recursive: true });
     }
     console.log('Outfit draft and layout OK');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({ path: `${out}/outfit-checkout.png` }); await click('Comprar e usar');
+    await page.screenshot({ path: `${out}/outfit-checkout.png` }); await click('Comprar e usar'); await page.getByRole('button', { name: /^Confirmar e pagar / }).click();
     const after = await read(); assert.equal(balance(after), 290);
     assert.deepEqual(after.history, before.history); assert.deepEqual(after.workouts, before.workouts);
     assert.equal(after.avatars.original.head, 'headphones'); assert.equal(after.avatars.original.shirt, 'skull-tee');

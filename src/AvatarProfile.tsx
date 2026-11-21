@@ -26,12 +26,25 @@ export function AvatarTeam({ team, onOpenProfile, compact = false }: { team: Tea
 
 const slotNames = { head: 'Cabeça', face: 'Rosto', facialHair: 'Bigode', shirt: 'Roupa', extra: 'Extra' };
 
+function PurchaseConfirmation({ cart, balance, onConfirm, onCancel }: { cart: ReturnType<typeof outfitCart>; balance: number; onConfirm: () => void; onCancel: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  useEffect(() => { const dialog = ref.current!; dialog.showModal(); return () => { if (dialog.open) dialog.close(); }; }, []);
+  return <dialog ref={ref} className="purchase-confirmation" aria-labelledby="purchase-confirm-title" onCancel={event => { event.preventDefault(); event.stopPropagation(); onCancel(); }} onClick={event => { if (event.target === ref.current) onCancel(); }}>
+    <span className="purchase-confirm-icon"><Coins size={26} /></span><h2 id="purchase-confirm-title">Confirmar compra?</h2><p>{cart.length === 1 ? 'Este item vai para o seu guarda-roupa.' : 'Estes itens vão para o seu guarda-roupa.'}</p>
+    <ul>{cart.map(item => <li key={item.key}><span>{item.name}</span><b>{item.price}</b></li>)}</ul>
+    <div className="purchase-confirm-total"><span>Total</span><strong><Coins size={16} />{total} moedas</strong></div><p>Saldo após a compra: <b>{balance - total} moedas</b></p>
+    <button className="primary full-width" disabled={total > balance} onClick={onConfirm}>Confirmar e pagar {total} moedas</button><button className="secondary full-width" autoFocus onClick={onCancel}>Voltar ao provador</button>
+  </dialog>;
+}
+
 function AvatarCustomizer({ member, wallet, onChange, onClose, initialSlot, sandbox }: { wallet: AvatarWallet; sandbox: boolean; member: TeamMember; onChange: (patch: Partial<AvatarConfig>) => boolean; onClose: () => void; initialSlot: EquipmentSlot | null }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [tab, setTab] = useState<'hair' | 'colors' | 'equipment'>(initialSlot ? 'equipment' : 'hair');
   const [slot, setSlot] = useState<EquipmentSlot>(initialSlot ?? 'head');
   const [draft, setDraft] = useState<AvatarConfig>(() => ({ ...member.avatar }));
   const [error, setError] = useState('');
+  const [confirming, setConfirming] = useState(false);
   const change = (patch: Partial<AvatarConfig>) => { setDraft(previous => ({ ...previous, ...patch })); setError(''); };
   const cart = sandbox ? [] : outfitCart(wallet, draft);
   const total = cart.reduce((sum, item) => sum + item.price, 0), balance = walletBalance(wallet);
@@ -40,7 +53,7 @@ function AvatarCustomizer({ member, wallet, onChange, onClose, initialSlot, sand
     return () => { if (node.open) node.close(); document.body.style.overflow = previous; };
   }, []);
   if (!member.current) return null;
-  const save = () => { if (onChange(draft)) onClose(); else setError('O saldo mudou. Confira as moedas e tente novamente.'); };
+  const save = () => { setConfirming(false); if (onChange(draft)) onClose(); else setError('O saldo mudou. Confira as moedas e tente novamente.'); };
   return <dialog className="avatar-editor avatar-shop" ref={dialog} aria-labelledby="avatar-editor-title" onCancel={event => { event.preventDefault(); onClose(); }}>
     <div className="avatar-editor-heading"><div><h2 id="avatar-editor-title">Do seu jeito.</h2><p>Experimente tudo. Compre quando gostar.</p></div><span className="coin-balance" aria-label={`Saldo: ${balance} moedas`}><Coins size={16} /><b>{balance}</b></span><button className="icon-button" aria-label="Fechar personalização" onClick={onClose}><X size={21} /></button></div>
     <div className="customizer-preview"><AvatarArt avatar={draft} /><span><Sparkles size={13} />{sandbox ? 'Prévia local' : 'Provador livre'}</span></div>
@@ -55,9 +68,10 @@ function AvatarCustomizer({ member, wallet, onChange, onClose, initialSlot, sand
     </div>
     <footer className="avatar-editor-footer shop-footer">
       {!!cart.length && <div className="outfit-cart"><span>{cart.length} {cart.length === 1 ? 'item novo' : 'itens novos'}</span><div>{cart.map(item => <span key={item.key}>{item.name} <b>{item.price}</b></span>)}</div></div>}
-      <div className="shop-checkout"><div className="shop-checkout-info">{sandbox ? <p>Teste local · sem gastar moedas</p> : total > 0 ? <><strong><Coins size={14} /> {total} moedas</strong><p>{total > balance ? `Faltam ${total - balance} moedas` : `Saldo após a compra: ${balance - total}`}</p></> : <p>Seu visual só muda ao salvar</p>}{error && <p role="alert">{error}</p>}</div><button className="primary" disabled={!sandbox && total > balance} onClick={save}>{sandbox ? 'Salvar prévia' : total > 0 ? 'Comprar e usar' : 'Salvar visual'}</button></div>
+      <div className="shop-checkout"><div className="shop-checkout-info">{sandbox ? <p>Teste local · sem gastar moedas</p> : total > 0 ? <><strong><Coins size={14} /> {total} moedas</strong><p>{total > balance ? `Faltam ${total - balance} moedas` : `Saldo após a compra: ${balance - total}`}</p></> : <p>Seu visual só muda ao salvar</p>}{error && <p role="alert">{error}</p>}</div><button className="primary" disabled={!sandbox && total > balance} onClick={() => !sandbox && total > 0 ? setConfirming(true) : save()}>{sandbox ? 'Salvar prévia' : total > 0 ? 'Comprar e usar' : 'Salvar visual'}</button></div>
       <button className="text-button discard-outfit" onClick={onClose}>Cancelar</button>
     </footer>
+    {confirming && <PurchaseConfirmation cart={cart} balance={balance} onConfirm={save} onCancel={() => setConfirming(false)} />}
   </dialog>;
 }
 
